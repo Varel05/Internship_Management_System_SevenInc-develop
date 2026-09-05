@@ -69,19 +69,40 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Download::class, 'user_id');
     }
 
-    public function dailyReports(): HasMany
+    public function dailyReports()
     {
-        return $this->hasMany(DailyReport::class, 'user_id');
+        return $this->hasManyThrough(
+            DailyReport::class,
+            InternshipRegistration::class,
+            'user_id', // Foreign key on internship_registrations table
+            'intern_id', // Foreign key on daily_reports table
+            'id', // Local key on users table
+            'id' // Local key on internship_registrations table
+        );
     }
 
-    public function leaveRequests(): HasMany
+    public function leaveRequests()
     {
-        return $this->hasMany(LeaveRequest::class, 'user_id');
+        return $this->hasManyThrough(
+            LeaveRequest::class,
+            InternshipRegistration::class,
+            'user_id',
+            'intern_id',
+            'id',
+            'id'
+        );
     }
 
-    public function pendingTasks(): HasMany
+    public function pendingTasks()
     {
-        return $this->hasMany(PendingTask::class, 'user_id');
+        return $this->hasManyThrough(
+            PendingTask::class,
+            InternshipRegistration::class,
+            'user_id',
+            'intern_id',
+            'id',
+            'id'
+        );
     }
 
     // Event to listen to when a user's status changes

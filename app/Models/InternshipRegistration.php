@@ -215,4 +215,19 @@ class InternshipRegistration extends Model
         return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 
+    public function dailyReports()
+    {
+        return $this->hasMany(\App\Models\DailyReport::class, 'intern_id');
+    }
+
+    public function leaveRequests()
+    {
+        return $this->hasMany(\App\Models\LeaveRequest::class, 'intern_id');
+    }
+
+    public function pendingTasks()
+    {
+        return $this->hasMany(\App\Models\PendingTask::class, 'intern_id');
+    }
+
 }

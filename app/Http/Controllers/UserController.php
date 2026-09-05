@@ -160,7 +160,7 @@ class UserController extends Controller
                 ->with('error', 'Laporan untuk tanggal tersebut sudah pernah dikirim.');
         }
 
-        $user->dailyReports()->create($validated);
+        $user->internshipRegistration->dailyReports()->create($validated);
 
         return redirect()
             ->route('user.dailyReport')
@@ -203,7 +203,7 @@ class UserController extends Controller
             'reason.required'     => 'Alasan izin wajib diisi.',
         ]);
 
-        $user->leaveRequests()->create($validated);
+        $user->internshipRegistration->leaveRequests()->create($validated);
 
         return redirect()
             ->route('user.leaveRequest')
@@ -242,7 +242,7 @@ class UserController extends Controller
             'task_description.required' => 'Deskripsi tugas wajib diisi.',
         ]);
 
-        $user->pendingTasks()->create([
+        $user->internshipRegistration->pendingTasks()->create([
             'title'       => $validated['task_title'],
             'description' => $validated['task_description'],
         ]);

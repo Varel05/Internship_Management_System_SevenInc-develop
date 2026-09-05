@@ -10,17 +10,15 @@ class LeaveRequest extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 
+        'intern_id', 
         'leave_type', 
         'leave_date', 
         'reason',
         'status',
     ];
 
-    // Definisikan relasi dengan User (jika dibutuhkan)
-    public function user()
+    public function internshipRegistration()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(InternshipRegistration::class, 'intern_id');
     }
-
 }
