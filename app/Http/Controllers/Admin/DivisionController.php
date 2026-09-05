@@ -12,7 +12,7 @@ class DivisionController extends Controller
     /** GET /admin/form-settings/divisions */
     public function index()
     {
-        $divisions = Division::orderBy('sort_order')->orderBy('name')->get();
+        $divisions = Division::orderBy('name')->get();
         return view('admin.form_settings.divisions', compact('divisions'));
     }
 
@@ -23,13 +23,10 @@ class DivisionController extends Controller
             'name' => 'required|string|max:100|unique:divisions,name',
         ]);
 
-        $maxOrder = Division::max('sort_order') ?? 0;
-
         Division::create([
             'name'       => trim($validated['name']),
             'slug'       => Str::slug(trim($validated['name']), '_'),
             'is_active'  => true,
-            'sort_order' => $maxOrder + 1,
         ]);
 
         return redirect()->route('admin.form-settings.divisions')
@@ -79,9 +76,7 @@ class DivisionController extends Controller
             'ids.*' => 'integer|exists:divisions,id',
         ]);
 
-        foreach ($validated['ids'] as $order => $id) {
-            Division::where('id', $id)->update(['sort_order' => $order + 1]);
-        }
+        // Reordering is disabled since sort_order column was removed
 
         return response()->json(['ok' => true]);
     }
