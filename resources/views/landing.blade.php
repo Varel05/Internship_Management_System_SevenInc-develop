@@ -39,7 +39,7 @@
   <div style="flex:1;">
     <p style="font-weight:700;color:#15803d;font-size:14px;margin-bottom:4px;">Pendaftaran Berhasil! 🎉</p>
     <p style="color:#166534;font-size:13px;line-height:1.5;">{{ session('success') }}</p>
-    <a href="#login" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:#1a5c38;color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;text-decoration:none;">
+    <a href="{{ route('user.login') }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:#1a5c38;color:#fff;font-size:13px;font-weight:600;padding:8px 16px;border-radius:8px;text-decoration:none;">
       <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
       Login Sekarang
     </a>
@@ -54,11 +54,11 @@
       <span style="color:#9ca3af;font-size:12px;display:none;" class="sm:inline">· Seveninc</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
-      <a href="#daftar" style="background:#1a5c38;color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;text-decoration:none;transition:.2s;"
+      <a href="{{ route('user.register') }}" style="background:#1a5c38;color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;text-decoration:none;transition:.2s;"
          onmouseover="this.style.background='#145c30'" onmouseout="this.style.background='#1a5c38'">
         Daftar Magang
       </a>
-      <a href="#login" style="color:#374151;font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;border:1px solid #d1d5db;text-decoration:none;transition:.2s;"
+      <a href="{{ route('user.login') }}" style="color:#374151;font-size:13px;font-weight:500;padding:8px 16px;border-radius:8px;border:1px solid #d1d5db;text-decoration:none;transition:.2s;"
          onmouseover="this.style.borderColor='#1a5c38';this.style.color='#1a5c38'" onmouseout="this.style.borderColor='#d1d5db';this.style.color='#374151'">
         Login
       </a>
@@ -83,7 +83,7 @@
         mentoring langsung, dan dokumen resmi yang diakui industri.
       </p>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <a href="#daftar" style="display:inline-flex;align-items:center;gap:8px;background:#4ade80;color:#14532d;font-weight:700;font-size:14px;padding:14px 28px;border-radius:12px;text-decoration:none;box-shadow:0 4px 20px rgba(74,222,128,.3);">
+        <a href="{{ route('user.register') }}" style="display:inline-flex;align-items:center;gap:8px;background:#4ade80;color:#14532d;font-weight:700;font-size:14px;padding:14px 28px;border-radius:12px;text-decoration:none;box-shadow:0 4px 20px rgba(74,222,128,.3);">
           <i class="fas fa-rocket" style="font-size:12px;"></i> Daftar Sekarang
         </a>
         <a href="#ketentuan" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);font-weight:500;font-size:14px;padding:14px 24px;border-radius:12px;text-decoration:none;">
@@ -148,132 +148,7 @@
   </div>
 </section>
 
-{{-- FORM --}}
-<section id="daftar" style="padding:80px 20px;background:#fff;">
-  <div style="max-width:880px;margin:0 auto;">
-    <div style="text-align:center;margin-bottom:48px;">
-      <p style="color:#1a5c38;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Mulai Sekarang</p>
-      <h2 style="font-size:32px;font-weight:800;color:#111;margin-bottom:8px;">Daftar atau Masuk</h2>
-      <p style="color:#6b7280;">Buat akun baru untuk daftar magang, atau login jika sudah punya akun.</p>
-    </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-
-      {{-- REGISTER --}}
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-          <div style="width:40px;height:40px;border-radius:10px;background:#1a5c38;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="fas fa-user-plus" style="color:#fff;font-size:14px;"></i>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#111;font-size:15px;">Daftar Baru</div>
-            <div style="color:#9ca3af;font-size:12px;">Belum punya akun? Daftar di sini</div>
-          </div>
-        </div>
-
-        @if(session('success'))
-          <div style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:16px;">
-            {{ session('success') }}
-          </div>
-        @endif
-        @if($errors->any())
-          <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:16px;">
-            @foreach($errors->all() as $err) <div>{{ $err }}</div> @endforeach
-          </div>
-        @endif
-
-        <form action="{{ route('user.register.submit') }}" method="POST">
-          @csrf
-          <div style="margin-bottom:14px;">
-            <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">
-              Nama Lengkap <span style="color:#ef4444;">*</span>
-            </label>
-            <input type="text" name="name" required value="{{ old('name') }}" placeholder="Sesuai ijazah"
-                   style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;color:#111;background:#fff;box-sizing:border-box;transition:.2s;"
-                   onfocus="this.style.borderColor='#1a5c38'" onblur="this.style.borderColor='#e5e7eb'">
-            <p style="font-size:11px;color:#d97706;margin-top:4px;">⚠️ Nama ini dipakai untuk sertifikat, tidak bisa diubah.</p>
-          </div>
-          <div style="margin-bottom:14px;">
-            <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Email <span style="color:#ef4444;">*</span></label>
-            <input type="email" name="email" required value="{{ old('email') }}" placeholder="email@contoh.com"
-                   style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;color:#111;background:#fff;box-sizing:border-box;"
-                   onfocus="this.style.borderColor='#1a5c38'" onblur="this.style.borderColor='#e5e7eb'">
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">
-            <div>
-              <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Password <span style="color:#ef4444;">*</span></label>
-              <input type="password" name="password" required placeholder="Min. 8 karakter"
-                     style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;box-sizing:border-box;"
-                     onfocus="this.style.borderColor='#1a5c38'" onblur="this.style.borderColor='#e5e7eb'">
-            </div>
-            <div>
-              <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Konfirmasi <span style="color:#ef4444;">*</span></label>
-              <input type="password" name="password_confirmation" required placeholder="Ulangi"
-                     style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;box-sizing:border-box;"
-                     onfocus="this.style.borderColor='#1a5c38'" onblur="this.style.borderColor='#e5e7eb'">
-            </div>
-          </div>
-          <button type="submit"
-                  style="width:100%;padding:13px;background:#1a5c38;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;"
-                  onmouseover="this.style.background='#145c30'" onmouseout="this.style.background='#1a5c38'">
-            <i class="fas fa-user-plus" style="margin-right:8px;font-size:12px;"></i> Buat Akun & Daftar Magang
-          </button>
-        </form>
-      </div>
-
-      {{-- LOGIN --}}
-      <div id="login" style="background:#fff;border:1px solid #e5e7eb;border-radius:20px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.06);">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-          <div style="width:40px;height:40px;border-radius:10px;background:#111827;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="fas fa-sign-in-alt" style="color:#fff;font-size:14px;"></i>
-          </div>
-          <div>
-            <div style="font-weight:700;color:#111;font-size:15px;">Masuk</div>
-            <div style="color:#9ca3af;font-size:12px;">Sudah punya akun? Login di sini</div>
-          </div>
-        </div>
-
-        @if(session('error'))
-          <div style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:16px;">
-            {{ session('error') }}
-          </div>
-        @endif
-
-        <form action="{{ route('user.login.submit') }}" method="POST">
-          @csrf
-          <div style="margin-bottom:14px;">
-            <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Email</label>
-            <input type="email" name="email" required value="{{ old('email') }}" placeholder="email@contoh.com"
-                   style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;color:#111;background:#fff;box-sizing:border-box;"
-                   onfocus="this.style.borderColor='#374151'" onblur="this.style.borderColor='#e5e7eb'">
-          </div>
-          <div style="margin-bottom:20px;">
-            <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Password</label>
-            <input type="password" name="password" required placeholder="Password"
-                   style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;box-sizing:border-box;"
-                   onfocus="this.style.borderColor='#374151'" onblur="this.style.borderColor='#e5e7eb'">
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
-            <input type="checkbox" name="remember" id="remember" style="width:14px;height:14px;accent-color:#1a5c38;">
-            <label for="remember" style="font-size:13px;color:#6b7280;cursor:pointer;">Ingat saya</label>
-          </div>
-          <button type="submit"
-                  style="width:100%;padding:13px;background:#111827;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;"
-                  onmouseover="this.style.background='#1f2937'" onmouseout="this.style.background='#111827'">
-            <i class="fas fa-sign-in-alt" style="margin-right:8px;font-size:12px;"></i> Masuk ke Dashboard
-          </button>
-        </form>
-
-        <div style="margin-top:20px;padding-top:20px;border-top:1px solid #f3f4f6;text-align:center;">
-          <p style="font-size:12px;color:#9ca3af;">Belum punya akun?
-            <a href="#daftar" style="color:#1a5c38;font-weight:600;text-decoration:none;">Daftar sekarang</a>
-          </p>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
 
 {{-- FOOTER --}}
 <footer style="background:#fff;border-top:1px solid #f3f4f6;padding:28px 20px;">
@@ -289,12 +164,6 @@
   </div>
 </footer>
 
-{{-- Responsive 1 kolom di mobile --}}
-<style>
-  @media (max-width: 640px) {
-    #daftar > div > div:last-child { grid-template-columns: 1fr !important; }
-  }
-</style>
 
 </body>
 </html>

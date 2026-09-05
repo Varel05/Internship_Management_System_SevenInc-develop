@@ -58,22 +58,22 @@ Route::get('/', function () {
 })->name('home');
 
 /* =================== AUTH (GUEST) =================== */
-// GET /login → redirect ke landing page section #login
+// GET /login
 Route::get('/login', function() {
     if (auth()->check()) {
         return auth()->user()->role === 'admin'
             ? redirect()->route('admin.dashboard.index')
             : redirect()->route('pemagang.dashboard');
     }
-    return redirect()->to('/#login');
+    return view('auth.login');
 })->name('user.login')->middleware('guest');
 
 Route::post('/login', [AuthController::class, 'login'])
     ->name('user.login.submit');
 
-// GET /register → redirect ke landing page section #daftar
+// GET /register
 Route::get('/register', function() {
-    return redirect()->to('/#daftar');
+    return view('auth.register');
 })->name('user.register')->middleware('guest');
 
 Route::post('/register', [AuthController::class, 'register'])
