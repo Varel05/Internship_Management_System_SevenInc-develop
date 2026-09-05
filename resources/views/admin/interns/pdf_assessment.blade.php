@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Form Penilaian Magang - {{ $assessment->fullname }}</title>
+  <style>
+    @page { size: A4; margin: 60px; }
+
+    body {
+        font-family: "Times New Roman", serif;
+        font-size: 13px;
+        color: #000;
+        line-height: 1.5;
+        position: relative;
+    }
+
+    .wrap { width: 100%; max-width: 700px; margin: 0 auto; position: relative; }
+
+    /* ===== HEADER ===== */
+    .header-table {
+        width: 100%;
+        border-collapse: collapse;
+        height: 90px;
+    }
+
+    .header-table td { vertical-align: middle; border: none; }
+
+    .header-logo img {
+        height: {{ $assessment->logo_height ?? 70 }}px;
+        width: auto;
+    }
+
+    .company { text-align: center; }
+    .company h1 { font-size: 20px; margin: 0; font-weight: bold; line-height: 1.3; }
+    .company p { margin: 0; font-size: 12px; line-height: 1.3; }
+
+    hr { border: none; border-top: 2px solid #000; margin: 8px 0 12px; }
+
+    /* ===== BODY ===== */
+    .title {
+        text-align: center;
+        font-weight: bold;
+        text-decoration: underline;
+        margin-bottom: 10px;
+    }
+
+    .info { margin-bottom: 12px; }
+    .label { width: 160px; display: inline-block; }
+    .range { margin-top: 10px; font-size: 12px; }
+
+    /* ===== SIGNATURE ===== */
+    .signature {
+        width: 100%;
+        margin-top: 70px;
+        position: relative;
+        clear: both;
+    }
+
+    .signature-inner {
+        width: 260px;
+        float: right;
+        text-align: center;
+        position: relative;
+    }
+
+    .signature-text {
+        text-align: center;
+        line-height: 1.4;
+        margin-bottom: 20px;
+    }
+
+    .signature-image-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .signature img.ttd {
+        height: {{ $assessment->sig_height ?? 90 }}px;
+        width: auto;
+        margin-bottom: 5px;
+        z-index: 2;
+    }
+
+    .signature .name {
+        font-weight: bold;
+        text-decoration: underline;
+        text-align: center;
+        z-index: 3;
+    }
+
+    /* === WATERMARK === */
+    .signature img.logo-bg {
+        position: absolute;
+        right: 35px;
+        bottom: 15px;
+        height: calc({{ $assessment->logo_height ?? 70 }}px * 1.8);
+        width: auto;
+        opacity: 0.8;
+        z-index: 1;
+        filter: blur(0.4px);
+    }
+  </style>
+</head>
+<body>
+    <div class="wrap">
+        {{-- HEADER --}}
+        <table class="header-table">
+            <tr>
+                <!-- Column for Logo -->
+                <td class="header-logo" style="width: 25%; text-align: left;">
+                    <img src="{{ $logoSrc }}" alt="Logo">  <!-- Logo perusahaan -->
+                </td>
+
+                <!-- Column for Company Information -->
+                <td style="width: 50%; text-align: center;">
+                    <div class="company">
+                        <h1>{{ $assessment->company_name ?? 'SEVEN INC.' }}</h1>
+                        <p>{!! nl2br(e($assessment->company_address ?? 'Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe, Banguntapan, Bantul, Yogyakarta')) !!}</p>
+                    </div>
+                </td>
+
+                <!-- Dummy Column -->
+                <td style="width: 25%; text-align: center;">
+                    <!-- This is a placeholder for a dummy column -->
+                </td>
+            </tr>
+        </table>
+
+        <hr>
+
+        <div class="title">FORM PENILAIAN MAGANG {{ strtoupper($assessment->company_name ?? 'SEVEN INC.') }}</div>
+
+        <div class="info">
+            Dengan ini pihak <b>{{ $assessment->company_name ?? 'SEVEN INC.' }}</b> memberikan penilaian selama pelaksanaan magang kepada:<br>
+            <span class="label">Nama</span>: {{ $assessment->fullname }}<br>
+            <span class="label">NIM/NIS</span>: {{ $assessment->nim_or_nis }}<br>
+            <span class="label">Program Studi</span>: {{ $assessment->study_program }}<br>
+            <span class="label">Divisi/Keahlian</span>: {{ $assessment->div }}
+        </div>
+
+        {{-- TABEL ASPEK PENILAIAN --}}
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px; border: 1px solid #000;">
+            <thead>
+                <tr style="background-color: #f3f3f3; text-align: center;">
+                    <th style="width:50px; border: 1px solid #000; padding: 6px;">No</th>
+                    <th style="border: 1px solid #000; padding: 6px;">Aspek Penilaian</th>
+                    <th style="width:90px; border: 1px solid #000; padding: 6px;">Nilai</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(json_decode($assessment->aspek_penilaian, true) as $index => $item)
+                <tr>
+                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">{{ $index + 1 }}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">{{ $item['aspek'] }}</td>
+                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">{{ $item['nilai'] }}</td>
+                </tr>
+                @endforeach
+                <tr>
+                    <td colspan="2" style="border: 1px solid #000; text-align: center; font-weight: bold; padding: 6px;">Rata-rata</td>
+                    <td style="border: 1px solid #000; text-align: center; font-weight: bold; padding: 6px;">{{ $assessment->rata_rata }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="range">
+            <b>Keterangan rentang nilai:</b><br>
+            81–100 : Amat Baik<br>
+            65–80 : Baik<br>
+            50–64 : Cukup<br>
+            &lt; 50 : Kurang
+        </div>
+
+        {{-- SIGNATURE --}}
+        <div class="signature">
+            <div class="signature-inner">
+                <p class="signature-text">
+                    Yogyakarta, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
+                    {{ $assessment->signature_position ?? 'Direktur SEVEN INC' }}
+                </p>
+
+                <div class="signature-image-block">
+                    <img class="ttd" src="{{ $sigSrc }}" alt="Tanda Tangan">  <!-- Tanda tangan -->
+                    <span class="name">{{ $assessment->signature_name ?? 'Rekario Danny Sanjaya, S.Kom' }}</span>
+                </div>
+
+                {{-- WATERMARK yang ikut resize --}}
+                <img class="logo-bg" src="{{ $logoSrc }}" alt="Logo Transparan">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
