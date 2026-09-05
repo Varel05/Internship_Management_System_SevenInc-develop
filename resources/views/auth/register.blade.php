@@ -47,15 +47,7 @@
 
     <form action="{{ route('user.register.submit') }}" method="POST">
       @csrf
-      <div style="margin-bottom:14px;">
-        <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">
-          Nama Lengkap <span style="color:#ef4444;">*</span>
-        </label>
-        <input type="text" name="name" required value="{{ old('name') }}" placeholder="Sesuai ijazah"
-               style="width:100%;padding:10px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;color:#111;background:#fff;box-sizing:border-box;transition:.2s;"
-               onfocus="this.style.borderColor='#1a5c38'" onblur="this.style.borderColor='#e5e7eb'">
-        <p style="font-size:11px;color:#d97706;margin-top:4px;">⚠️ Nama ini dipakai untuk sertifikat, tidak bisa diubah.</p>
-      </div>
+
       <div style="margin-bottom:14px;">
         <label style="display:block;font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;">Email <span style="color:#ef4444;">*</span></label>
         <input type="email" name="email" required value="{{ old('email') }}" placeholder="email@contoh.com"
