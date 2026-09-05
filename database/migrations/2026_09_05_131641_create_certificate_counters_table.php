@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('certificate_counters', function (Blueprint $table) {
             $table->id();
-            $table->string('email', 150)->unique();
-            $table->string('password');
-            $table->enum('role', ['admin', 'pemagang', 'user'])->default('pemagang');
-            $table->boolean('is_online')->default(false);
-            $table->boolean('is_banned')->default(false);
+            $table->smallInteger('year')->unsigned();
+            $table->tinyInteger('month')->unsigned();
+            $table->integer('last_number')->unsigned()->default(0);
+            $table->unique(['year', 'month']);
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('certificate_counters');
     }
 };

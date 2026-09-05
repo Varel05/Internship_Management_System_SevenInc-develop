@@ -30,14 +30,12 @@ class DivisionSeeder extends Seeder
             'Customer Service',
         ];
 
-        foreach ($divisions as $i => $name) {
-            Division::firstOrCreate(
-                ['name' => $name],
-                [
-                    'is_active'  => true,
-                    'sort_order' => $i + 1,
-                ]
-            );
+        foreach ($divisions as $name) {
+            \Illuminate\Support\Facades\DB::table('divisions')->insert([
+                'name' => $name,
+                'slug' => \Illuminate\Support\Str::slug($name),
+                'is_active' => true,
+            ]);
         }
     }
 }

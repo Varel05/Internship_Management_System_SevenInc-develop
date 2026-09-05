@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('webinar_attendances', function (Blueprint $table) {
             $table->id();
-            $table->string('email', 150)->unique();
-            $table->string('password');
-            $table->enum('role', ['admin', 'pemagang', 'user'])->default('pemagang');
-            $table->boolean('is_online')->default(false);
-            $table->boolean('is_banned')->default(false);
+            $table->foreignId('webinar_id')->constrained('webinars')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('webinar_attendances');
     }
 };

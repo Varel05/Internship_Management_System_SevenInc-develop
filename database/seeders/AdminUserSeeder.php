@@ -16,7 +16,6 @@ class AdminUserSeeder extends Seeder
         // Cek apakah admin sudah ada
         if (!User::where('email', 'admin@example.com')->exists()) {
             User::create([
-                'name' => 'Super Admin',
                 'email' => 'admin@example.com',
                 'password' => Hash::make('password'), // default password
                 'role' => 'admin', // pastikan ada kolom role di tabel users

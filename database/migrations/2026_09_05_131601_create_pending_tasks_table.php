@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('pending_tasks', function (Blueprint $table) {
             $table->id();
-            $table->string('email', 150)->unique();
-            $table->string('password');
-            $table->enum('role', ['admin', 'pemagang', 'user'])->default('pemagang');
-            $table->boolean('is_online')->default(false);
-            $table->boolean('is_banned')->default(false);
+            $table->foreignId('intern_id')->constrained('internship_registrations')->onDelete('cascade');
+            $table->string('title');
+            $table->text('description');
+            $table->enum('status', ['pending', 'in_progress', 'completed'])->default('pending');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('pending_tasks');
     }
 };
