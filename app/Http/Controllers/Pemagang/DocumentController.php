@@ -83,9 +83,9 @@ class DocumentController extends Controller
                 ?? InternAssessment::where('fullname', $registration->fullname)->latest()->first();
         }
 
-        // Membercard: cek di tabel downloads
-        $membercardRecord = $isCompleted
-            ? \App\Models\Download::where('user_id', $user->id)->latest()->first()
+        // Membercard: cek di tabel alumni_membercards
+        $membercardRecord = ($isCompleted && $registration)
+            ? \App\Models\AlumniMembercard::where('intern_id', $registration->id)->latest()->first()
             : null;
 
         // Tentukan availability tiap dokumen
@@ -191,7 +191,7 @@ class DocumentController extends Controller
             return back()->with('error', 'Membercard hanya tersedia setelah masa magang selesai.');
         }
 
-        $membercard = $user->downloads()->latest()->first();
+        $membercard = \App\Models\AlumniMembercard::where('intern_id', $reg->id)->latest()->first();
 
         if (!$membercard) {
             return back()->with('error', 'Membercard belum tersedia. Hubungi admin.');
@@ -214,25 +214,25 @@ class DocumentController extends Controller
             abort(403, 'Membercard hanya tersedia setelah masa magang selesai.');
         }
 
-        $membercard = $user->downloads()->latest()->first();
+        $membercard = \App\Models\AlumniMembercard::where('intern_id', $reg->id)->latest()->first();
 
         if (!$membercard) {
             return back()->with('error', 'Membercard belum tersedia. Hubungi admin.');
         }
 
         $data = [
-            'name'     => $membercard->name,
-            'code'     => $membercard->code,
-            'brand'    => $membercard->brand ?? 'magangjogja.com',
-            'angkatan' => $membercard->angkatan,
-            'instansi' => $membercard->instansi,
+            'name'     => $membercard->intern->fullname,
+            'code'     => $membercard->member_code,
+            'brand'    => $membercard->intern->brand ?? 'magangjogja.com',
+            'angkatan' => $membercard->batch_year,
+            'instansi' => $membercard->intern->institution_name,
         ];
 
         // Pakai Browsershot — set ukuran persis kartu kredit standar (85.6 × 54mm)
         $html = view('pemagang.membercard-pdf', $data)->render();
 
-        $safeName = \Illuminate\Support\Str::slug($membercard->name);
-        $filename = "Membercard-{$safeName}-{$membercard->code}.pdf";
+        $safeName = \Illuminate\Support\Str::slug($membercard->intern->fullname);
+        $filename = "Membercard-{$safeName}-{$membercard->member_code}.pdf";
         $tmpPath  = storage_path("app/tmp/{$filename}");
 
         if (!is_dir(dirname($tmpPath))) {

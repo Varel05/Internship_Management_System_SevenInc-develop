@@ -64,10 +64,7 @@ class User extends Authenticatable
             ->latestOfMany('id');
     }
 
-    public function downloads(): HasMany
-    {
-        return $this->hasMany(\App\Models\Download::class, 'user_id');
-    }
+
 
     public function dailyReports()
     {

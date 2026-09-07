@@ -1,15 +1,15 @@
 @php
   use Carbon\Carbon;
 
-  // Get the download record by user_id
-  $download = \App\Models\Download::where('user_id', $user->id)->first();
+  // Get the download record by intern_id
+  $download = \App\Models\AlumniMembercard::where('intern_id', $intern->id)->first();
 
   // Ensure fallbacks for rendering
-  $name = $download->name ?? $user->name;
-  $code = $download->code ?? 'UNKNOWN';
-  $angkatan = $download->angkatan ?? Carbon::parse($intern->start_date)->format('Y');
-  $instansi = $download->instansi ?? $intern->institution_name;
-  $brand = $download->brand ?? $intern->brand ?? 'magangjogja.com';
+  $name = $intern->fullname ?? $user->name;
+  $code = $download->member_code ?? 'UNKNOWN';
+  $angkatan = $download->batch_year ?? Carbon::parse($intern->start_date)->format('Y');
+  $instansi = $intern->institution_name;
+  $brand = $intern->brand ?? 'magangjogja.com';
   $modelUrl = $download ? $download->model_url : asset('storage/models/Membercard.glb');
 @endphp
 

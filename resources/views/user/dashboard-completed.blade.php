@@ -17,14 +17,8 @@
   $intern = $reg;
   $download = null;
 
-  if ($canDownload && $intern && $intern->start_date) {
-      $angkatanYear = \Carbon\Carbon::parse($intern->start_date)->format('Y');
-      $angkatan = substr($angkatanYear, -2);
-      $idPadded = str_pad($user->id, 3, '0', STR_PAD_LEFT);
-      $brand = $intern->brand ?? 'magangjogja.com';
-      $prefix = $user->getBrandPrefix($brand);
-      $code = "{$prefix}{$angkatan}{$idPadded}";
-      $download = \App\Models\Download::where('code', $code)->first();
+  if ($canDownload && $intern) {
+      $download = \App\Models\AlumniMembercard::where('intern_id', $intern->id)->first();
   }
 
   $internships = $internships
