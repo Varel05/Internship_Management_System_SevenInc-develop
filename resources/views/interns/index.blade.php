@@ -1559,12 +1559,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <select name="brand"
                         class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659]">
                         <option value="">— Belum dipilih —</option>
-                        ${[
-                            'Magangjogja','Areakerja','Republikweb','Titipsini','Ambilpaket',
-                            'Bikinkepo','Bimbelcerdas.com','Latihankerja.com','Lowkerjateng.com',
-                            'Lowkerjogja.com','Pijatjogja.com','Sayabantu.com','Titikvisual',
-                            'Tuantanah','Tukanglas.org','Adakamar.id','Seven Inc'
-                        ].map(b => `<option value="${b}" ${it.brand === b ? 'selected' : ''}>${b}</option>`).join('')}
+                        ${(@json($brands ?? [])).map(b => `<option value="${b.name}" ${it.brand === b.name ? 'selected' : ''}>${b.name}</option>`).join('')}
                     </select>
                 </div>
             </div>
