@@ -91,7 +91,7 @@
                                 class="transition hover:bg-[#F4F8F6] {{ !$division->is_active ? 'opacity-60' : '' }}" id="row-{{ $division->id }}">
 
                                 {{-- Urutan --}}
-                                <td class="px-5 py-3 text-[13px] text-[#4B5F5A]">{{ $division->sort_order }}</td>
+                                <td class="px-5 py-3 text-[13px] text-[#4B5F5A]">{{ $loop->iteration }}</td>
 
                                 {{-- Nama --}}
                                 <td class="px-5 py-3">
