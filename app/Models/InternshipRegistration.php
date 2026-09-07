@@ -24,24 +24,13 @@ class InternshipRegistration extends Model
 
     protected $fillable = [
         'user_id',
-        'fullname', 'born_date', 'student_id', 'email', 'gender', 'phone_number',
-        'institution_name', 'study_program', 'faculty', 'current_city',
+        'fullname', 'born_date', 'student_id', 'gender', 'phone_number',
+        'city_id', 'institution_id', 'study_program_id', 'faculty_id',
         'internship_reason', 'internship_type', 'internship_arrangement',
-        'current_status',
-        'english_book_ability', 'supervisor_contact',
-        'internship_interest', 'internship_interest_other',
-        'design_software', 'video_software', 'programming_languages',
-        'digital_marketing_type', 'digital_marketing_type_other',
-        'laptop_equipment', 'owned_tools', 'owned_tools_other',
+        'current_status', 'english_book_ability',
+        'division_id', 'brand_id',
         'start_date', 'end_date',
-        'internship_info_sources', 'internship_info_other',
-        'cv_ktp_portofolio_pdf', 'portofolio_visual',
-        'current_activities', 'boarding_info', 'family_status',
-        'parent_wa_contact', 'social_media_instagram',
         'internship_status',
-        'brand',
-        'is_draft',
-        'draft_saved_at',
     ];
 
     /**
@@ -57,11 +46,11 @@ class InternshipRegistration extends Model
     ];
 
     protected $appends = [
-        'email', 'current_city', 'institution_name', 'study_program', 'faculty'
+        'email', 'current_city', 'institution_name', 'study_program', 'faculty', 'internship_interest', 'brand'
     ];
 
     protected $with = [
-        'user', 'city', 'institution', 'studyProgramRel', 'facultyRel'
+        'user', 'city', 'institution', 'studyProgramRel', 'facultyRel', 'division', 'brandRel'
     ];
 
     /* ============================================================
@@ -266,6 +255,26 @@ class InternshipRegistration extends Model
     public function getFacultyAttribute()
     {
         return $this->facultyRel ? $this->facultyRel->name : null;
+    }
+
+    public function division()
+    {
+        return $this->belongsTo(\App\Models\Division::class, 'division_id');
+    }
+
+    public function brandRel()
+    {
+        return $this->belongsTo(\App\Models\Brand::class, 'brand_id');
+    }
+
+    public function getInternshipInterestAttribute()
+    {
+        return $this->division ? $this->division->slug : null;
+    }
+
+    public function getBrandAttribute()
+    {
+        return $this->brandRel ? $this->brandRel->name : null;
     }
 
     public function dailyReports()

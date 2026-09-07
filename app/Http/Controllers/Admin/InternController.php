@@ -438,6 +438,24 @@ class InternController extends Controller
             unset($validatedData['faculty']);
         }
 
+        if (array_key_exists('internship_interest', $validatedData)) {
+            if (!empty($validatedData['internship_interest'])) {
+                // frontend sends division slug
+                $division = \App\Models\Division::where('slug', $validatedData['internship_interest'])->first();
+                if ($division) {
+                    $validatedData['division_id'] = $division->id;
+                }
+            }
+            unset($validatedData['internship_interest']);
+        }
+
+        if (array_key_exists('brand', $validatedData)) {
+            if (!empty($validatedData['brand'])) {
+                $validatedData['brand_id'] = $getRelationId(\App\Models\Brand::class, $validatedData['brand']);
+            }
+            unset($validatedData['brand']);
+        }
+
         if (array_key_exists('email', $validatedData)) {
             if (!empty($validatedData['email']) && $intern->user) {
                 // Check jika email sudah dipakai user lain
