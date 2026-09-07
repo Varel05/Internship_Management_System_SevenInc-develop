@@ -26,36 +26,36 @@
     
     <div class="rounded-[12px] border border-[#DCE7E1] bg-white shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-[#4B5F5A]">
-                <thead class="bg-[#F9FAF9] text-[12px] font-bold uppercase text-[#1B3A34] border-b border-[#DCE7E1]">
+            <table class="w-full min-w-[600px] text-left text-sm">
+                <thead>
                     <tr>
-                        <th class="px-5 py-4">Kode</th>
-                        <th class="px-5 py-4">Nama Brand</th>
-                        <th class="px-5 py-4">Logo</th>
-                        <th class="px-5 py-4 text-center">Aksi</th>
+                        <th class="bg-[#1B3A34] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-white">Kode</th>
+                        <th class="bg-[#1B3A34] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-white">Nama Brand</th>
+                        <th class="bg-[#1B3A34] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-white">Logo</th>
+                        <th class="bg-[#1B3A34] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-white text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[#DCE7E1]">
                     @forelse($brands as $brand)
-                    <tr class="hover:bg-[#F9FAF9] transition">
-                        <td class="px-5 py-3 font-semibold text-[#1B3A34]">{{ $brand->code }}</td>
-                        <td class="px-5 py-3">{{ $brand->name }}</td>
-                        <td class="px-5 py-3">
+                    <tr class="transition hover:bg-[#F4F8F6]">
+                        <td class="px-5 py-4 text-[13px] font-semibold text-[#1B3A34]">{{ $brand->code }}</td>
+                        <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $brand->name }}</td>
+                        <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">
                             @if($brand->logo)
                                 <img src="{{ asset('storage/' . $brand->logo) }}" alt="Logo {{ $brand->name }}" class="h-10 object-contain">
                             @else
                                 <span class="text-xs text-gray-400">Tidak ada logo</span>
                             @endif
                         </td>
-                        <td class="px-5 py-3 text-center">
+                        <td class="px-5 py-4 text-[13px] text-center">
                             <div class="flex items-center justify-center gap-2">
-                                <a href="{{ route('admin.brands.edit', $brand->id) }}" class="flex h-8 w-8 items-center justify-center rounded-[8px] bg-blue-50 text-blue-600 hover:bg-blue-100 transition" title="Edit">
+                                <a href="{{ route('admin.brands.edit', $brand->id) }}" class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] text-[#2D8659] hover:border-[#2D8659] hover:bg-[#F4F8F6] transition" title="Edit">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                 </a>
                                 <form action="{{ route('admin.brands.destroy', $brand->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus brand ini?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-[8px] bg-red-50 text-red-600 hover:bg-red-100 transition" title="Hapus">
+                                    <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-red-200 text-[#D32F2F] hover:bg-red-50 hover:border-red-300 transition" title="Hapus">
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                     </button>
                                 </form>
