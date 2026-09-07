@@ -208,6 +208,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'preve
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
     Route::get('/', fn () => redirect()->route('admin.dashboard.index'))->name('home');
 
+    // Manajemen Brand
+    Route::resource('brands', \App\Http\Controllers\Admin\BrandController::class);
+
     // Pengaturan Form — Divisi & Field Builder
     Route::prefix('form-settings')->name('form-settings.')->group(function () {
         // Divisi
