@@ -73,6 +73,8 @@ class DummyPemagangSeeder extends Seeder
                     'division_id'            => !empty($divisionIds) ? $divisionIds[array_rand($divisionIds)] : 1,
                     'brand_id'               => !empty($brandIds) ? $brandIds[array_rand($brandIds)] : null,
                     'internship_status'      => $status,
+                    'start_date'             => '2026-09-01',
+                    'end_date'               => '2026-12-01',
                 ]);
             }
         }

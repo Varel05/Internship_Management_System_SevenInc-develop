@@ -88,6 +88,8 @@ class InternshipRegistrationSeeder extends Seeder
                 'division_id' => $pick($divisionIds),
                 'brand_id' => $pick($brandIds),
                 'internship_status' => $pick($statusWeighted),
+                'start_date' => $randDate('2026-08-01', '2026-10-01'),
+                'end_date' => $randDate('2026-12-01', '2027-02-01'),
             ]);
 
             // 3. Create Pivots
