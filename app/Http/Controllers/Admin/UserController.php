@@ -12,43 +12,45 @@ class UserController extends Controller
     // Menampilkan semua pengguna
     public function index(Request $request)
     {
-        $query = User::query();
+        $query = User::query()
+            ->select('users.*', 'internship_registrations.fullname as name')
+            ->leftJoin('internship_registrations', 'users.id', '=', 'internship_registrations.user_id');
 
         // filter per kolom
         if ($name = $request->get('name')) {
-            $query->where('name', 'like', "%$name%");
+            $query->where('internship_registrations.fullname', 'like', "%$name%");
         }
 
         if ($email = $request->get('email')) {
-            $query->where('email', 'like', "%$email%");
+            $query->where('users.email', 'like', "%$email%");
         }
 
         if ($role = $request->get('role')) {
-            $query->where('role', $role);
+            $query->where('users.role', $role);
         }
 
         // Filter berdasarkan status ban
         if ($status = $request->get('status')) {
             if ($status === 'banned') {
-                $query->where('is_banned', true);
+                $query->where('users.is_banned', true);
             } elseif ($status === 'active') {
-                $query->where('is_banned', false);
+                $query->where('users.is_banned', false);
             }
         }
 
         // sorting
         switch ($request->get('sort')) {
-            case 'name_asc':   $query->orderBy('name', 'asc'); break;
-            case 'name_desc':  $query->orderBy('name', 'desc'); break;
-            case 'email_asc':  $query->orderBy('email', 'asc'); break;
-            case 'email_desc': $query->orderBy('email', 'desc'); break;
-            case 'role_asc':   $query->orderBy('role', 'asc'); break;
-            case 'role_desc':  $query->orderBy('role', 'desc'); break;
-            case 'status_asc': $query->orderBy('is_online', 'asc'); break;   // offline dulu
-            case 'status_desc':$query->orderBy('is_online', 'desc'); break;  // online dulu
+            case 'name_asc':   $query->orderBy('internship_registrations.fullname', 'asc'); break;
+            case 'name_desc':  $query->orderBy('internship_registrations.fullname', 'desc'); break;
+            case 'email_asc':  $query->orderBy('users.email', 'asc'); break;
+            case 'email_desc': $query->orderBy('users.email', 'desc'); break;
+            case 'role_asc':   $query->orderBy('users.role', 'asc'); break;
+            case 'role_desc':  $query->orderBy('users.role', 'desc'); break;
+            case 'status_asc': $query->orderBy('users.is_online', 'asc'); break;   // offline dulu
+            case 'status_desc':$query->orderBy('users.is_online', 'desc'); break;  // online dulu
             default:
                 // ✅ Default: Online dulu
-                $query->orderBy('is_online', 'desc')->orderBy('name', 'asc');
+                $query->orderBy('users.is_online', 'desc')->orderBy('internship_registrations.fullname', 'asc');
         }
 
 
