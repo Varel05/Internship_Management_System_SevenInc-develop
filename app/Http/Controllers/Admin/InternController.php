@@ -440,11 +440,8 @@ class InternController extends Controller
 
         if (array_key_exists('internship_interest', $validatedData)) {
             if (!empty($validatedData['internship_interest'])) {
-                // frontend sends division slug
-                $division = \App\Models\Division::where('slug', $validatedData['internship_interest'])->first();
-                if ($division) {
-                    $validatedData['division_id'] = $division->id;
-                }
+                // frontend sends division name
+                $validatedData['division_id'] = $getRelationId(\App\Models\Division::class, $validatedData['internship_interest']);
             }
             unset($validatedData['internship_interest']);
         }

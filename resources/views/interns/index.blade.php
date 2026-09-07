@@ -1472,7 +1472,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const divisions = @json($divisions ?? []);
             const interestOpts = divisions.map(d => 
-                `<option value="${d.slug}" ${it.internship_interest === d.slug ? 'selected' : ''}>${d.name}</option>`
+                `<option value="${d.name}" ${it.internship_interest === d.name ? 'selected' : ''}>${d.name}</option>`
             ).join('');
 
             dynamicFieldsHtml = `

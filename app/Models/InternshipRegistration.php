@@ -269,7 +269,7 @@ class InternshipRegistration extends Model
 
     public function getInternshipInterestAttribute()
     {
-        return $this->division ? $this->division->slug : null;
+        return $this->division ? $this->division->name : null;
     }
 
     public function getBrandAttribute()
