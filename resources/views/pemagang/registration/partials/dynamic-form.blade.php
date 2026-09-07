@@ -32,9 +32,29 @@
                 if ($field->field_type === 'tel') {
                     $extra = 'pattern="[0-9]{10,15}" inputmode="numeric"';
                 }
+                
+                $listAttr = '';
+                $extraClass = '';
+                if ($field->field_type === 'text') {
+                    $dlMap = [
+                        'current_city' => ['cities', $cities ?? []],
+                        'institution_name' => ['institutions', $institutions ?? []],
+                        'study_program' => ['study-programs', $studyPrograms ?? []],
+                        'faculty' => ['faculties', $faculties ?? []]
+                    ];
+                    if (isset($dlMap[$field->field_key])) {
+                        $extraClass = ' tomselect-input';
+                        $optionsArr = [];
+                        foreach ($dlMap[$field->field_key][1] as $item) {
+                            $optionsArr[] = $item->name;
+                        }
+                        $listAttr = " id=\"{$field->field_key}\" data-options='" . htmlspecialchars(json_encode($optionsArr), ENT_QUOTES) . "'";
+                    }
+                }
+                
                 $html .= '<input type="' . $field->field_type . '" name="' . e($field->field_key) . '" '
-                    . $required . ' placeholder="' . $ph . '" class="' . $input . '" '
-                    . $extra . ' value="' . e($val) . '">';
+                    . $required . ' placeholder="' . $ph . '" class="' . $input . $extraClass . '" '
+                    . $extra . $listAttr . ' value="' . e($val) . '">';
                 break;
 
             case 'date':

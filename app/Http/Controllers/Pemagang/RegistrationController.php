@@ -56,8 +56,14 @@ class RegistrationController extends Controller
             // Tabel belum ada → fallback ke form statis
         }
 
+        $cities = \App\Models\City::orderBy('name')->get();
+        $institutions = \App\Models\Institution::orderBy('name')->get();
+        $faculties = \App\Models\Faculty::orderBy('name')->get();
+        $studyPrograms = \App\Models\StudyProgram::orderBy('name')->get();
+
         return view('pemagang.registration.form', compact(
-            'registration', 'divisions', 'mainFields', 'extraFields', 'useFormFields'
+            'registration', 'divisions', 'mainFields', 'extraFields', 'useFormFields',
+            'cities', 'institutions', 'faculties', 'studyPrograms'
         ));
     }
 
@@ -115,8 +121,8 @@ class RegistrationController extends Controller
         }
 
         // Checkbox arrays → CSV
-        $validated['owned_tools'] = $this->arrayToCsv($request->input('owned_tools', []));
-        $validated['internship_info_sources'] = $this->arrayToCsv($request->input('internship_info_sources', []));
+        $validated['owned_tools'] = $request->input('owned_tools');
+        $infoSourcesArr = $request->input('internship_info_sources', []);
 
         // Upload file
         foreach (['cv_ktp_portofolio_pdf', 'portofolio_visual'] as $fileField) {
@@ -127,15 +133,19 @@ class RegistrationController extends Controller
 
         // Pastikan kolom NOT NULL yang tidak tampil di form selalu punya nilai
         $notNullDefaults = [
-            'family_status'          => 'Tidak',
+            'family_status'          => 'Belum Menikah',
             'boarding_info'          => 'Tidak',
             'supervisor_contact'     => '-',
             'parent_wa_contact'      => '-',
             'social_media_instagram' => '-',
             'current_activities'     => '-',
             'design_software'        => $validated['design_software'] ?? '-',
+            'digital_marketing_type' => $validated['digital_marketing_type'] ?? '-',
+            'parent_name'            => $validated['parent_name'] ?? '-',
             'video_software'         => $validated['video_software'] ?? '-',
             'programming_languages'  => $validated['programming_languages'] ?? '-',
+            'laptop_equipment'       => $validated['laptop_equipment'] ?? '-',
+            'owned_tools'            => $validated['owned_tools'] ?? '-',
             // Kolom NOT NULL yang bisa kosong saat draft
             'gender'                 => $validated['gender'] ?? 'Laki-laki',
             'internship_type'        => $validated['internship_type'] ?? 'Magang Mandiri',
@@ -170,6 +180,38 @@ class RegistrationController extends Controller
             $validated['user_id']           = $user->id;
         }
 
+                $getRelationId = function($modelClass, $name, $extra = []) {
+            if (empty($name)) return null;
+            $name = ucwords(strtolower(trim($name)));
+            $existing = $modelClass::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
+            if ($existing) return $existing->id;
+            return $modelClass::create(array_merge(['name' => $name], $extra))->id;
+        };
+
+        if (!empty($validated['current_city'])) {
+            $validated['city_id'] = $getRelationId(\App\Models\City::class, $validated['current_city']);
+            unset($validated['current_city']);
+        }
+        if (!empty($validated['institution_name'])) {
+            $validated['institution_id'] = $getRelationId(\App\Models\Institution::class, $validated['institution_name']);
+            unset($validated['institution_name']);
+        }
+        if (!empty($validated['faculty'])) {
+            $extra = isset($validated['institution_id']) ? ['institution_id' => $validated['institution_id']] : [];
+            $validated['faculty_id'] = $getRelationId(\App\Models\Faculty::class, $validated['faculty'], $extra);
+            unset($validated['faculty']);
+        }
+        if (!empty($validated['study_program'])) {
+            $extra = isset($validated['faculty_id']) ? ['faculty_id' => $validated['faculty_id']] : [];
+            $validated['study_program_id'] = $getRelationId(\App\Models\StudyProgram::class, $validated['study_program'], $extra);
+            unset($validated['study_program']);
+        }
+        if (!empty($validated['internship_interest'])) {
+            $validated['division_id'] = $getRelationId(\App\Models\Division::class, $validated['internship_interest']);
+            // Do not unset internship_interest because it might be used by status logic, but actually InternController unset it.
+            unset($validated['internship_interest']);
+        }
+
         // Upsert — update kalau sudah ada, buat baru kalau belum
         $existing = IR::where('user_id', $user->id)->latest('id')->first();
 
@@ -186,7 +228,44 @@ class RegistrationController extends Controller
                 $user->role = 'pemagang';
                 $user->save();
             }
-            IR::create($validated);
+                        IR::create($validated);
+        }
+
+        // Get the latest registration to sync relations
+        $intern = IR::where('user_id', $user->id)->latest('id')->first();
+
+        if ($intern) {
+            // Sync Skills
+            $intern->skills()->delete();
+            $skillCategories = [
+                'design' => $validated['design_software'] ?? '',
+                'video' => $validated['video_software'] ?? '',
+                'programming' => $validated['programming_languages'] ?? '',
+                'digital_marketing' => $validated['digital_marketing_type'] ?? ''
+            ];
+            foreach ($skillCategories as $cat => $val) {
+                if (!empty($val) && $val !== '-') {
+                    $intern->skills()->create(['skill_category' => $cat, 'skill_name' => $val]);
+                }
+            }
+
+            // Sync Tools
+            $intern->tools()->delete();
+            $mergedTools = collect(array_merge(
+                array_map('trim', explode(',', $validated['laptop_equipment'] ?? '')),
+                array_map('trim', explode(',', $validated['owned_tools'] ?? ''))
+            ))->filter(fn($val) => !empty($val) && $val !== '-')->unique();
+            foreach ($mergedTools as $t) {
+                $intern->tools()->create(['tool_name' => $t]);
+            }
+
+            // Sync Info Sources
+            $intern->infoSources()->delete();
+            if (!empty($infoSourcesArr)) {
+                foreach ($infoSourcesArr as $s) {
+                    $intern->infoSources()->create(['source_name' => trim($s)]);
+                }
+            }
         }
 
         if ($isDraft) {
@@ -238,6 +317,10 @@ class RegistrationController extends Controller
             'design_software'    => 'nullable|string|max:255',
             'video_software'     => 'nullable|string|max:255',
             'programming_languages' => 'nullable|string|max:255',
+                        'digital_marketing_type' => 'nullable|string|max:255',
+            'laptop_equipment'   => 'nullable|string|max:255',
+            'owned_tools'        => 'nullable|string|max:255',
+            'parent_name'        => 'nullable|string|max:255',
             'family_status'      => 'nullable|string|max:50',
             'boarding_info'      => 'nullable|string|max:50',
             'parent_wa_contact'  => 'nullable|regex:/^[0-9]{0,15}$/',

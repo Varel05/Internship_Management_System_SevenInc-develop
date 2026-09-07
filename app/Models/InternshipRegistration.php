@@ -49,11 +49,14 @@ class InternshipRegistration extends Model
     ];
 
     protected $appends = [
-        'email', 'current_city', 'institution_name', 'study_program', 'faculty', 'internship_interest', 'brand'
+        'email', 'current_city', 'institution_name', 'study_program', 'faculty', 'internship_interest', 'brand',
+        'owned_tools', 'internship_info_sources', 'laptop_equipment',
+        'design_software', 'video_software', 'programming_languages', 'digital_marketing_type'
     ];
 
     protected $with = [
-        'user', 'city', 'institution', 'studyProgramRel', 'facultyRel', 'division', 'brandRel'
+        'user', 'city', 'institution', 'studyProgramRel', 'facultyRel', 'division', 'brandRel',
+        'tools', 'infoSources', 'skills'
     ];
 
     /* ============================================================
@@ -178,18 +181,41 @@ class InternshipRegistration extends Model
     }
 
     /* ============================================================
-     |  Optional: list helper untuk kolom CSV
+     |  Virtual Attributes dari Relasi
      * ============================================================ */
-    public function getOwnedToolsListAttribute(): array
+    public function getOwnedToolsAttribute(): string
     {
-        $raw = (string) ($this->attributes['owned_tools'] ?? '');
-        return array_values(array_filter(array_map('trim', explode(',', $raw))));
+        return $this->tools->pluck('tool_name')->implode(', ');
     }
 
-    public function getInfoSourcesListAttribute(): array
+    public function getLaptopEquipmentAttribute(): string
     {
-        $raw = (string) ($this->attributes['internship_info_sources'] ?? '');
-        return array_values(array_filter(array_map('trim', explode(',', $raw))));
+        return '';
+    }
+
+    public function getInternshipInfoSourcesAttribute(): string
+    {
+        return $this->infoSources->pluck('source_name')->implode(', ');
+    }
+
+    public function getDesignSoftwareAttribute(): string
+    {
+        return $this->skills->where('skill_category', 'design')->pluck('skill_name')->implode(', ');
+    }
+
+    public function getVideoSoftwareAttribute(): string
+    {
+        return $this->skills->where('skill_category', 'video')->pluck('skill_name')->implode(', ');
+    }
+
+    public function getProgrammingLanguagesAttribute(): string
+    {
+        return $this->skills->where('skill_category', 'programming')->pluck('skill_name')->implode(', ');
+    }
+
+    public function getDigitalMarketingTypeAttribute(): string
+    {
+        return $this->skills->where('skill_category', 'digital_marketing')->pluck('skill_name')->implode(', ');
     }
 
     /* ============================================================
@@ -233,6 +259,11 @@ class InternshipRegistration extends Model
     public function tools()
     {
         return $this->hasMany(\App\Models\InternTool::class, 'internship_registration_id');
+    }
+
+    public function infoSources()
+    {
+        return $this->hasMany(\App\Models\InternInfoSource::class, 'internship_registration_id');
     }
 
     public function studyProgramRel()

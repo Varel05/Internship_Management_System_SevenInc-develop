@@ -291,6 +291,10 @@ class InternController extends Controller
             'scope'     => $scope,
             'brands'    => \App\Models\Brand::orderBy('name')->get(),
             'divisions' => \App\Models\Division::orderBy('name')->get(),
+            'cities'    => \App\Models\City::orderBy('name')->get(),
+            'institutions' => \App\Models\Institution::orderBy('name')->get(),
+            'faculties' => \App\Models\Faculty::orderBy('name')->get(),
+            'studyPrograms' => \App\Models\StudyProgram::orderBy('name')->get(),
         ]);
     }
 
@@ -409,12 +413,12 @@ class InternController extends Controller
         }
 
         // Helper untuk mencari atau membuat relasi (case-insensitive)
-        $getRelationId = function($modelClass, $name) {
+        $getRelationId = function($modelClass, $name, $extra = []) {
             if (empty($name)) return null;
-            $name = trim($name);
+            $name = ucwords(strtolower(trim($name)));
             $existing = $modelClass::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
             if ($existing) return $existing->id;
-            return $modelClass::create(['name' => $name])->id;
+            return $modelClass::create(array_merge(['name' => $name], $extra))->id;
         };
 
         if (array_key_exists('current_city', $validatedData)) {
@@ -429,17 +433,19 @@ class InternController extends Controller
             }
             unset($validatedData['institution_name']);
         }
-        if (array_key_exists('study_program', $validatedData)) {
-            if (!empty($validatedData['study_program'])) {
-                $validatedData['study_program_id'] = $getRelationId(\App\Models\StudyProgram::class, $validatedData['study_program']);
-            }
-            unset($validatedData['study_program']);
-        }
         if (array_key_exists('faculty', $validatedData)) {
             if (!empty($validatedData['faculty'])) {
-                $validatedData['faculty_id'] = $getRelationId(\App\Models\Faculty::class, $validatedData['faculty']);
+                $extra = isset($validatedData['institution_id']) ? ['institution_id' => $validatedData['institution_id']] : [];
+                $validatedData['faculty_id'] = $getRelationId(\App\Models\Faculty::class, $validatedData['faculty'], $extra);
             }
             unset($validatedData['faculty']);
+        }
+        if (array_key_exists('study_program', $validatedData)) {
+            if (!empty($validatedData['study_program'])) {
+                $extra = isset($validatedData['faculty_id']) ? ['faculty_id' => $validatedData['faculty_id']] : [];
+                $validatedData['study_program_id'] = $getRelationId(\App\Models\StudyProgram::class, $validatedData['study_program'], $extra);
+            }
+            unset($validatedData['study_program']);
         }
 
         if (array_key_exists('internship_interest', $validatedData)) {
@@ -494,18 +500,41 @@ class InternController extends Controller
         }
 
         // Sync Tools
+        $intern->tools()->delete();
+        $allTools = [];
         if (array_key_exists('owned_tools', $validatedData)) {
-            $intern->tools()->delete();
             $val = trim($validatedData['owned_tools']);
+            if (!empty($val) && strtolower($val) !== 'tidak ada' && strtolower($val) !== '-') {
+                $allTools = array_merge($allTools, array_filter(array_map('trim', explode(',', $val))));
+            }
+            unset($validatedData['owned_tools']);
+        }
+        if (array_key_exists('laptop_equipment', $validatedData)) {
+            $val = trim($validatedData['laptop_equipment']);
+            if (!empty($val) && strtolower($val) !== 'tidak ada' && strtolower($val) !== '-') {
+                $allTools[] = $val;
+            }
+            unset($validatedData['laptop_equipment']);
+        }
+        foreach (array_unique($allTools) as $item) {
+            $intern->tools()->create([
+                'tool_name' => $item
+            ]);
+        }
+
+        // Sync Info Sources
+        if (array_key_exists('internship_info_sources', $validatedData)) {
+            $intern->infoSources()->delete();
+            $val = trim($validatedData['internship_info_sources']);
             if (!empty($val) && strtolower($val) !== 'tidak ada' && strtolower($val) !== '-') {
                 $items = array_filter(array_map('trim', explode(',', $val)));
                 foreach ($items as $item) {
-                    $intern->tools()->create([
-                        'tool_name' => $item
+                    $intern->infoSources()->create([
+                        'source_name' => $item
                     ]);
                 }
             }
-            unset($validatedData['owned_tools']);
+            unset($validatedData['internship_info_sources']);
         }
 
         // Jangan timpa internship_status lewat update biasa jika tidak dikirim

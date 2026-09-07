@@ -1298,13 +1298,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[#4B5F5A]">Berkas Unggahan</p>
                 <div class="flex flex-wrap gap-2">
                     ${it.cv_ktp_portofolio_pdf ? `
-                    <a href="${it.cv_ktp_portofolio_pdf}" target="_blank"
+                    <a href="{{ asset('storage') }}/${it.cv_ktp_portofolio_pdf}" target="_blank"
                         class="inline-flex items-center gap-2 rounded-[8px] border border-[#DCE7E1] px-3 py-2 text-[13px] font-semibold text-[#2D8659] hover:bg-[#F4F8F6]">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/></svg>
                         CV / KTP / Portofolio (PDF)
                     </a>` : ''}
                     ${it.portofolio_visual ? `
-                    <a href="${it.portofolio_visual}" target="_blank"
+                    <a href="{{ asset('storage') }}/${it.portofolio_visual}" target="_blank"
                         class="inline-flex items-center gap-2 rounded-[8px] border border-[#DCE7E1] px-3 py-2 text-[13px] font-semibold text-[#2D8659] hover:bg-[#F4F8F6]">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 9 3 3-3 3"/><path d="m15 15-3-3 3-3"/></svg>
                         Portofolio Visual
@@ -1385,11 +1385,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         <input type="date" name="${f.field_key}" value="${dateV}" class="${inputClass}">
                     </div>`;
                 }
-                default:
+                default: {
+                    let datalistHtml = '';
+                    let listAttr = '';
+                    if (f.field_key === 'current_city') {
+                        listAttr = 'list="cities-list"';
+                        datalistHtml = `<datalist id="cities-list">${(@json($cities ?? [])).map(c => `<option value="${c.name}">`).join('')}</datalist>`;
+                    } else if (f.field_key === 'institution_name') {
+                        listAttr = 'list="institutions-list"';
+                        datalistHtml = `<datalist id="institutions-list">${(@json($institutions ?? [])).map(c => `<option value="${c.name}">`).join('')}</datalist>`;
+                    } else if (f.field_key === 'study_program') {
+                        listAttr = 'list="study-programs-list"';
+                        datalistHtml = `<datalist id="study-programs-list">${(@json($studyPrograms ?? [])).map(c => `<option value="${c.name}">`).join('')}</datalist>`;
+                    } else if (f.field_key === 'faculty') {
+                        listAttr = 'list="faculties-list"';
+                        datalistHtml = `<datalist id="faculties-list">${(@json($faculties ?? [])).map(c => `<option value="${c.name}">`).join('')}</datalist>`;
+                    }
                     return `<div class="${spanClass}">
                         <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">${f.label}${reqMark}</label>
-                        <input type="${f.field_type || 'text'}" name="${f.field_key}" value="${v}" class="${inputClass}">
+                        <input type="${f.field_type || 'text'}" ${listAttr} name="${f.field_key}" value="${v}" class="${inputClass}">
+                        ${datalistHtml}
                     </div>`;
+                }
             }
         }
 
@@ -1478,12 +1495,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 ${editField('Email', 'email', it.email, 'email')}
                 ${editField('No. HP / WA', 'phone_number', it.phone_number)}
-                ${editField('Kota Tinggal', 'current_city', it.current_city)}
+                <div>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Kota Tinggal</label>
+                    <input type="text" list="fb-cities-list" name="current_city" value="${fmtStr(it.current_city)==='-'?'':fmtStr(it.current_city)}" class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                    <datalist id="fb-cities-list">${(@json($cities ?? [])).map(c => `<option value="${c.name}">`).join('')}</datalist>
+                </div>
 
                 ${section('Data Akademik')}
-                ${editField('Asal Sekolah / Kampus', 'institution_name', it.institution_name)}
-                ${editField('Program Studi', 'study_program', it.study_program)}
-                ${editField('Fakultas', 'faculty', it.faculty)}
+                <div>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Asal Sekolah / Kampus</label>
+                    <input type="text" list="fb-institutions-list" name="institution_name" value="${fmtStr(it.institution_name)==='-'?'':fmtStr(it.institution_name)}" class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                    <datalist id="fb-institutions-list">${(@json($institutions ?? [])).map(c => `<option value="${c.name}">`).join('')}</datalist>
+                </div>
+                <div>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Program Studi</label>
+                    <input type="text" list="fb-study-programs-list" name="study_program" value="${fmtStr(it.study_program)==='-'?'':fmtStr(it.study_program)}" class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                    <datalist id="fb-study-programs-list">${(@json($studyPrograms ?? [])).map(c => `<option value="${c.name}">`).join('')}</datalist>
+                </div>
+                <div>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Fakultas</label>
+                    <input type="text" list="fb-faculties-list" name="faculty" value="${fmtStr(it.faculty)==='-'?'':fmtStr(it.faculty)}" class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                    <datalist id="fb-faculties-list">${(@json($faculties ?? [])).map(c => `<option value="${c.name}">`).join('')}</datalist>
+                </div>
 
                 ${section('Informasi Magang')}
                 <div>
@@ -1519,12 +1552,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${editField('Software Video', 'video_software', it.video_software)}
                 ${editField('Bahasa Pemrograman', 'programming_languages', it.programming_languages)}
                 ${editField('Digital Marketing', 'digital_marketing_type', it.digital_marketing_type)}
-                ${editField('Alat yang Dimiliki', 'owned_tools', it.owned_tools)}
+                ${editField('Peralatan Laptop', 'laptop_equipment', it.laptop_equipment)}
+                ${editField('Alat Tambahan yang Dimiliki', 'owned_tools', it.owned_tools)}
 
                 ${section('Informasi Tambahan')}
+                <div>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Info Tempat Tinggal</label>
+                    <select name="boarding_info" class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659]">
+                        <option value="">-- Pilih --</option>
+                        <option value="Ya" ${it.boarding_info === 'Ya' ? 'selected' : ''}>Ya</option>
+                        <option value="Tidak" ${it.boarding_info === 'Tidak' ? 'selected' : ''}>Tidak</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Status Keluarga</label>
+                    <select name="family_status" class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659]">
+                        <option value="">-- Pilih --</option>
+                        <option value="Belum Menikah" ${it.family_status === 'Belum Menikah' ? 'selected' : ''}>Belum Menikah</option>
+                        <option value="Sudah Menikah" ${it.family_status === 'Sudah Menikah' ? 'selected' : ''}>Sudah Menikah</option>
+                    </select>
+                </div>
                 ${editField('Nama Wali / Ortu', 'parent_name', it.parent_name)}
                 ${editField('No. WA Wali / Ortu', 'parent_wa_contact', it.parent_wa_contact)}
                 ${editField('Instagram', 'social_media_instagram', it.social_media_instagram)}
+                ${editField('Sumber Info Magang', 'internship_info_sources', it.internship_info_sources)}
                 <div class="sm:col-span-2">
                     <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Kegiatan Lain Selain Magang</label>
                     <textarea name="current_activities" rows="2"

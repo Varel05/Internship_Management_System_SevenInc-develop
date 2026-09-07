@@ -1,5 +1,26 @@
 @extends('pemagang.layouts.app')
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+<style>
+  .ts-control {
+      border: 1px solid #d1d5db; /* border-gray-300 */
+      border-radius: 0.5rem; /* rounded-lg */
+      padding: 0.5rem 0.75rem; /* px-3 py-2 */
+      font-size: 0.875rem; /* text-sm */
+      min-height: 42px;
+  }
+  .ts-control.focus {
+      border-color: #1a5c38;
+      box-shadow: 0 0 0 1px #1a5c38;
+  }
+  .tom-select .ts-dropdown {
+      font-size: 0.875rem; /* text-sm */
+      border-radius: 0.5rem;
+  }
+</style>
+@endpush
+
 @section('title', 'Daftar Magang')
 @section('breadcrumb', 'Pendaftaran')
 
@@ -26,7 +47,7 @@
   };
 @endphp
 
-<div class="max-w-2xl mx-auto">
+<div class="max-w-4xl mx-auto">
   <div class="bg-white rounded-xl border border-gray-100 p-6">
     <h2 class="text-lg font-semibold text-gray-800 mb-1">Form Pendaftaran Magang</h2>
     <p class="text-sm text-gray-500 mb-6">Lengkapi data berikut untuk mendaftar program magang Seveninc</p>
@@ -99,13 +120,15 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="{{ $label }}">Universitas <span class="text-red-500">*</span></label>
-          <input type="text" name="institution_name" required placeholder="Telkom University"
-            class="{{ $input }}" value="{{ $old('institution_name') }}">
+          <input type="text" id="institution_name" name="institution_name" required placeholder="Telkom University"
+            class="{{ $input }} tomselect-input" value="{{ $old('institution_name') }}"
+            data-options="{{ json_encode(collect($institutions ?? [])->pluck('name')) }}">
         </div>
         <div>
           <label class="{{ $label }}">Program Studi <span class="text-red-500">*</span></label>
-          <input type="text" name="study_program" required placeholder="Rekayasa Perangkat Lunak"
-            class="{{ $input }}" value="{{ $old('study_program') }}">
+          <input type="text" id="study_program" name="study_program" required placeholder="Rekayasa Perangkat Lunak"
+            class="{{ $input }} tomselect-input" value="{{ $old('study_program') }}"
+            data-options="{{ json_encode(collect($studyPrograms ?? [])->pluck('name')) }}">
         </div>
       </div>
 
@@ -113,13 +136,15 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="{{ $label }}">Fakultas <span class="text-red-500">*</span></label>
-          <input type="text" name="faculty" required placeholder="Ilmu Komputer"
-            class="{{ $input }}" value="{{ $old('faculty') }}">
+          <input type="text" id="faculty" name="faculty" required placeholder="Ilmu Komputer"
+            class="{{ $input }} tomselect-input" value="{{ $old('faculty') }}"
+            data-options="{{ json_encode(collect($faculties ?? [])->pluck('name')) }}">
         </div>
         <div>
           <label class="{{ $label }}">Kota Domisili <span class="text-red-500">*</span></label>
-          <input type="text" name="current_city" required placeholder="Yogyakarta"
-            class="{{ $input }}" value="{{ $old('current_city') }}">
+          <input type="text" id="current_city" name="current_city" required placeholder="Yogyakarta"
+            class="{{ $input }} tomselect-input" value="{{ $old('current_city') }}"
+            data-options="{{ json_encode(collect($cities ?? [])->pluck('name')) }}">
         </div>
       </div>
 
@@ -188,23 +213,28 @@
           <label class="{{ $label }}">Jenis Magang <span class="text-red-500">*</span></label>
           <select name="internship_type" required class="{{ $input }}" id="select-internship-type-static">
             <option value="">-- Pilih --</option>
-            <option value="Magang Mitra"             @selected($old('internship_type') === 'Magang Mitra')>Magang Mitra</option>
-            <option value="Magang Reguler"           @selected($old('internship_type') === 'Magang Reguler')>Magang Reguler</option>
-            <option value="Magang Inisiatif Pribadi" @selected($old('internship_type') === 'Magang Inisiatif Pribadi')>Magang Inisiatif Pribadi</option>
+            <option value="Kampus Merdeka" @selected($old('internship_type') === 'Kampus Merdeka')>Kampus Merdeka (MBKM)</option>
+            <option value="Magang Kampus"  @selected($old('internship_type') === 'Magang Kampus')>Magang Kampus</option>
+            <option value="Magang Mandiri" @selected($old('internship_type') === 'Magang Mandiri')>Magang Mandiri</option>
+            <option value="PKL"            @selected($old('internship_type') === 'PKL')>PKL (Praktik Kerja Lapangan)</option>
           </select>
           {{-- Keterangan jenis magang --}}
           <div id="internship-type-desc-static" class="mt-2 rounded-lg bg-gray-50 border border-gray-100 px-3 py-2 space-y-1">
-            <p class="text-xs text-gray-500 leading-snug desc-item" data-for-type="Magang Mitra">
-              <span class="font-semibold text-gray-700">Magang Mitra:</span>
-              Magang melalui kerja sama kampus dengan perusahaan berdasarkan rekomendasi atau penempatan dari kampus.
+            <p class="text-xs text-gray-500 leading-snug desc-item" data-for-type="Kampus Merdeka">
+              <span class="font-semibold text-gray-700">Kampus Merdeka (MBKM):</span>
+              Program magang bersertifikat resmi dari Kemendikbudristek (MSIB).
             </p>
-            <p class="text-xs text-gray-500 leading-snug desc-item" data-for-type="Magang Reguler">
-              <span class="font-semibold text-gray-700">Magang Reguler:</span>
-              Magang dari kampus yang dipilih dan diajukan sendiri oleh pemagang, serta digunakan untuk pemenuhan atau penilaian akademik.
+            <p class="text-xs text-gray-500 leading-snug desc-item" data-for-type="Magang Kampus">
+              <span class="font-semibold text-gray-700">Magang Kampus:</span>
+              Magang dari kampus untuk pemenuhan tugas akhir atau penilaian akademik.
             </p>
-            <p class="text-xs text-gray-500 leading-snug desc-item" data-for-type="Magang Inisiatif Pribadi">
-              <span class="font-semibold text-gray-700">Magang Inisiatif Pribadi:</span>
-              Magang atas inisiatif sendiri tanpa rekomendasi atau kerja sama khusus dari kampus.
+            <p class="text-xs text-gray-500 leading-snug desc-item" data-for-type="Magang Mandiri">
+              <span class="font-semibold text-gray-700">Magang Mandiri:</span>
+              Magang inisiatif pribadi secara mandiri tanpa terikat penilaian akademik kampus.
+            </p>
+            <p class="text-xs text-gray-500 leading-snug desc-item" data-for-type="PKL">
+              <span class="font-semibold text-gray-700">PKL:</span>
+              Praktik Kerja Lapangan, umumnya untuk siswa siswi tingkat SMK/sederajat.
             </p>
           </div>
         </div>
@@ -246,11 +276,16 @@
       </div>
 
       {{-- Skill Fields --}}
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="{{ $label }}">Software Desain</label>
           <input type="text" name="design_software" placeholder="Figma, Photoshop"
             class="{{ $input }}" value="{{ $old('design_software') }}">
+        </div>
+        <div>
+          <label class="{{ $label }}">Software Video</label>
+          <input type="text" name="video_software" placeholder="Premiere Pro, After Effects"
+            class="{{ $input }}" value="{{ $old('video_software') }}">
         </div>
         <div>
           <label class="{{ $label }}">Bahasa Pemrograman</label>
@@ -258,9 +293,23 @@
             class="{{ $input }}" value="{{ $old('programming_languages') }}">
         </div>
         <div>
-          <label class="{{ $label }}">Materi Digital Marketing</label>
-          <input type="text" name="video_software" placeholder="SEO, Ads"
-            class="{{ $input }}" value="{{ $old('video_software') }}">
+          <label class="{{ $label }}">Digital Marketing</label>
+          <input type="text" name="digital_marketing_type" placeholder="SEO, Ads"
+            class="{{ $input }}" value="{{ $old('digital_marketing_type') }}">
+        </div>
+      </div>
+
+      {{-- Peralatan --}}
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="{{ $label }}">Peralatan Laptop</label>
+          <input type="text" name="laptop_equipment" placeholder="Asus ROG, Macbook"
+            class="{{ $input }}" value="{{ $old('laptop_equipment') }}">
+        </div>
+        <div>
+          <label class="{{ $label }}">Alat Tambahan yang Dimiliki</label>
+          <input type="text" name="owned_tools" placeholder="Kamera, Tripod"
+            class="{{ $input }}" value="{{ $old('owned_tools') }}">
         </div>
       </div>
 
@@ -273,7 +322,7 @@
             style="--file-bg: #1a5c38;">
           @if($reg?->cv_ktp_portofolio_pdf)
             <p class="text-xs text-gray-400 mt-1">
-              File sebelumnya: {{ basename($reg->cv_ktp_portofolio_pdf) }}
+              File sebelumnya: <a href="{{ asset('storage/' . $reg->cv_ktp_portofolio_pdf) }}" target="_blank" class="text-blue-600 hover:underline">{{ basename($reg->cv_ktp_portofolio_pdf) }}</a>
             </p>
           @endif
         </div>
@@ -283,7 +332,7 @@
             class="{{ $input }} file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:text-white cursor-pointer">
           @if($reg?->portofolio_visual)
             <p class="text-xs text-gray-400 mt-1">
-              File sebelumnya: {{ basename($reg->portofolio_visual) }}
+              File sebelumnya: <a href="{{ asset('storage/' . $reg->portofolio_visual) }}" target="_blank" class="text-blue-600 hover:underline">{{ basename($reg->portofolio_visual) }}</a>
             </p>
           @endif
         </div>
@@ -303,8 +352,8 @@
           <div>
             <label class="{{ $label }}">Status Keluarga</label>
             <select name="family_status" class="{{ $input }}">
-              <option value="Tidak" @selected(($old('family_status') ?: 'Tidak') === 'Tidak')>Belum Menikah</option>
-              <option value="Ya"    @selected($old('family_status') === 'Ya')>Sudah Menikah</option>
+              <option value="Belum Menikah" @selected(($old('family_status') ?: 'Belum Menikah') === 'Belum Menikah')>Belum Menikah</option>
+              <option value="Sudah Menikah" @selected($old('family_status') === 'Sudah Menikah')>Sudah Menikah</option>
             </select>
           </div>
 
@@ -317,7 +366,12 @@
             </select>
           </div>
 
-          {{-- No WA Wali / Orang Tua --}}
+          {{-- Nama & No WA Wali / Orang Tua --}}
+          <div>
+            <label class="{{ $label }}">Nama Wali / Orang Tua</label>
+            <input type="text" name="parent_name" placeholder="Nama lengkap wali"
+              class="{{ $input }}" value="{{ $old('parent_name', $reg?->parent_name !== '-' ? $reg?->parent_name : '') }}">
+          </div>
           <div>
             <label class="{{ $label }}">No. WA Wali / Orang Tua</label>
             <input type="tel" name="parent_wa_contact" placeholder="08xxxxxxxxxx"
@@ -632,8 +686,39 @@
       sel.addEventListener('change', updateDesc);
       updateDesc(); // run on load
     })();
+
+    // ===== TomSelect untuk Autocomplete dengan Create ======
+    document.querySelectorAll('.tomselect-input').forEach(function(el) {
+        var rawOptions = el.getAttribute('data-options');
+        var options = [];
+        if (rawOptions) {
+            options = JSON.parse(rawOptions).map(function(name) {
+                return { value: name, text: name };
+            });
+        }
+        
+        new TomSelect(el, {
+            options: options,
+            create: true,
+            maxItems: 1,
+            maxOptions: 50,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            render: {
+                option_create: function(data, escape) {
+                    return '<div class="create">Gunakan teks <strong>"' + escape(data.input) + '"</strong>&hellip;</div>';
+                },
+                no_results: function(data, escape) {
+                    return '<div class="no-results">Tekan enter untuk menambahkan "' + escape(data.input) + '"</div>';
+                }
+            }
+        });
+    });
   });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 @endpush
 
 @endsection
