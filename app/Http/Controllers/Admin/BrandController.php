@@ -45,6 +45,11 @@ class BrandController extends Controller
         return redirect()->route('admin.brands.index')->with('success', 'Brand berhasil ditambahkan.');
     }
 
+    public function show(Brand $brand)
+    {
+        return view('admin.brands.show', compact('brand'));
+    }
+
     public function edit(Brand $brand)
     {
         return view('admin.brands.edit', compact('brand'));

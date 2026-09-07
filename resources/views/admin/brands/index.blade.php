@@ -49,6 +49,9 @@
                         </td>
                         <td class="px-5 py-4 text-[13px] text-center">
                             <div class="flex items-center justify-center gap-2">
+                                <a href="{{ route('admin.brands.show', $brand->id) }}" class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] text-[#1B3A34] hover:border-[#1B3A34] hover:bg-[#F4F8F6] transition" title="Lihat">
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </a>
                                 <a href="{{ route('admin.brands.edit', $brand->id) }}" class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] text-[#2D8659] hover:border-[#2D8659] hover:bg-[#F4F8F6] transition" title="Edit">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                 </a>
