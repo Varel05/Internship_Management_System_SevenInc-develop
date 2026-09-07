@@ -261,8 +261,8 @@
 @php
   $reg = auth()->user()->internshipRegistration;
   $isCompleted = $reg?->internship_status === 'completed';
-  $alreadyFeedback = \Illuminate\Support\Facades\DB::table('feedback')
-      ->where('user_id', auth()->id())->exists();
+  $alreadyFeedback = $reg ? \Illuminate\Support\Facades\DB::table('feedback')
+      ->where('intern_id', $reg->id)->exists() : false;
 @endphp
 <div class="bg-white rounded-xl border border-gray-100 p-5 mt-6">
   <p class="text-sm font-semibold text-gray-700 mb-1">Feedback</p>

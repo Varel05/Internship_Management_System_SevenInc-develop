@@ -9,6 +9,7 @@ use App\Models\WebinarAttendance;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\DB;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -83,9 +84,10 @@ class AppServiceProvider extends ServiceProvider
                 }
 
                 // ── Notifikasi sertifikat webinar baru ──
-                $newWebinarCerts = DocumentDownload::where('user_id', $user->id)
-                    ->where('doc_type', DocumentDownload::TYPE_SERTIFIKAT_WEBINAR)
-                    ->where('created_at', '>=', now()->subDays(7))
+                $newWebinarCerts = DB::table('webinar_certificates')
+                    ->join('webinar_attendances', 'webinar_certificates.attendance_id', '=', 'webinar_attendances.id')
+                    ->where('webinar_attendances.user_id', $user->id)
+                    ->where('webinar_certificates.created_at', '>=', now()->subDays(7))
                     ->count();
 
                 if ($newWebinarCerts > 0) {
