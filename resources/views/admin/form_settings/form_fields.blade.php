@@ -10,13 +10,6 @@
             <h1 class="text-2xl font-extrabold tracking-tight text-[#1B3A34] sm:text-[28px]">Pengaturan Form Pendaftaran</h1>
             <p class="mt-1 text-sm text-[#4B5F5A]">Kelola pertanyaan yang tampil pada form pendaftaran pemagang. Perubahan langsung terlihat pada preview di sisi kanan.</p>
         </div>
-        <a href="{{ route('admin.form-settings.divisions') }}"
-            class="flex items-center gap-2 rounded-[9px] border border-[#DCE7E1] bg-white px-4 py-2 text-[13px] font-medium text-[#1B3A34] hover:border-[#2D8659] transition">
-            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <path d="M9 3H5a2 2 0 0 0-2 2v4"/><path d="M9 21H5a2 2 0 0 1-2-2v-4"/><path d="M15 3h4a2 2 0 0 1 2 2v4"/><path d="M15 21h4a2 2 0 0 0 2-2v-4"/><rect x="7" y="7" width="10" height="10" rx="1"/>
-            </svg>
-            Pengaturan Divisi
-        </a>
     </div>
 
     {{-- Alert --}}

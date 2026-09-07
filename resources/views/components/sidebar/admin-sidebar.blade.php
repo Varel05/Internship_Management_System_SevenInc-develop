@@ -20,6 +20,7 @@
                 ['label' => 'Dashboard',         'route' => 'admin.dashboard.index',          'icon' => 'dashboard'],
                 ['label' => 'Semua Pengguna',     'route' => 'admin.users.index',              'icon' => 'users'],
                 ['label' => 'Manajemen Brand',    'route' => 'admin.brands.index',             'icon' => 'settings'],
+                ['label' => 'Manajemen Divisi',   'route' => 'admin.form-settings.divisions',  'icon' => 'settings'],
                 ['label' => 'Pengaturan Form',     'route' => 'admin.form-settings.fields',     'icon' => 'settings'],
             ],
         ],
