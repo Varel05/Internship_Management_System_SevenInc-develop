@@ -59,7 +59,7 @@
                 <div>
                     <label class="block mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#4B5F5A]">Logo Brand</label>
                     @if($brand->logo)
-                        <img src="{{ asset('storage/' . $brand->logo) }}" alt="Logo" class="h-20 object-contain rounded border border-[#DCE7E1] p-2 bg-gray-50">
+                        <img src="{{ Storage::url($brand->logo) }}" alt="Logo" class="h-20 object-contain rounded border border-[#DCE7E1] p-2 bg-gray-50">
                     @else
                         <p class="text-sm text-[#4B5F5A] italic">Belum ada logo</p>
                     @endif
@@ -67,7 +67,7 @@
                 <div>
                     <label class="block mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#4B5F5A]">Tanda Tangan</label>
                     @if($brand->signature)
-                        <img src="{{ asset('storage/' . $brand->signature) }}" alt="Signature" class="h-20 object-contain rounded border border-[#DCE7E1] p-2 bg-gray-50">
+                        <img src="{{ Storage::url($brand->signature) }}" alt="Signature" class="h-20 object-contain rounded border border-[#DCE7E1] p-2 bg-gray-50">
                     @else
                         <p class="text-sm text-[#4B5F5A] italic">Belum ada tanda tangan</p>
                     @endif
@@ -75,7 +75,7 @@
                 <div>
                     <label class="block mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#4B5F5A]">Background Sertifikat Magang</label>
                     @if($brand->internship_certificate_bg)
-                        <img src="{{ asset('storage/' . $brand->internship_certificate_bg) }}" alt="BG Magang" class="h-32 object-contain rounded border border-[#DCE7E1] p-2 bg-gray-50">
+                        <img src="{{ Storage::url($brand->internship_certificate_bg) }}" alt="BG Magang" class="h-32 object-contain rounded border border-[#DCE7E1] p-2 bg-gray-50">
                     @else
                         <p class="text-sm text-[#4B5F5A] italic">Belum ada background</p>
                     @endif
@@ -83,7 +83,7 @@
                 <div>
                     <label class="block mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#4B5F5A]">Background Sertifikat Webinar</label>
                     @if($brand->webinar_certificate_bg)
-                        <img src="{{ asset('storage/' . $brand->webinar_certificate_bg) }}" alt="BG Webinar" class="h-32 object-contain rounded border border-[#DCE7E1] p-2 bg-gray-50">
+                        <img src="{{ Storage::url($brand->webinar_certificate_bg) }}" alt="BG Webinar" class="h-32 object-contain rounded border border-[#DCE7E1] p-2 bg-gray-50">
                     @else
                         <p class="text-sm text-[#4B5F5A] italic">Belum ada background</p>
                     @endif

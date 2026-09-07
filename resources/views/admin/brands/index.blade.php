@@ -42,7 +42,7 @@
                         <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $brand->name }}</td>
                         <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">
                             @if($brand->logo)
-                                <img src="{{ asset('storage/' . $brand->logo) }}" alt="Logo {{ $brand->name }}" class="h-10 object-contain">
+                                <img src="{{ Storage::url($brand->logo) }}" alt="Logo {{ $brand->name }}" class="h-10 object-contain">
                             @else
                                 <span class="text-xs text-gray-400">Tidak ada logo</span>
                             @endif

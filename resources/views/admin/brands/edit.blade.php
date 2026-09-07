@@ -65,7 +65,7 @@
                 <div>
                     <label class="block mb-1.5 text-sm font-semibold text-[#1B3A34]">Logo Brand</label>
                     @if($brand->logo)
-                        <div class="mb-2"><img src="{{ asset('storage/' . $brand->logo) }}" alt="Logo" class="h-12 object-contain"></div>
+                        <div class="mb-2"><img src="{{ Storage::url($brand->logo) }}" alt="Logo" class="h-12 object-contain"></div>
                     @endif
                     <input type="file" name="logo" accept="image/*"
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-[8px] file:border-0 file:text-sm file:font-semibold file:bg-[#E8F5E9] file:text-[#2D8659] hover:file:bg-[#D4E8D6] transition">
@@ -75,7 +75,7 @@
                 <div>
                     <label class="block mb-1.5 text-sm font-semibold text-[#1B3A34]">Tanda Tangan</label>
                     @if($brand->signature)
-                        <div class="mb-2"><img src="{{ asset('storage/' . $brand->signature) }}" alt="Signature" class="h-12 object-contain bg-gray-50 border p-1 rounded"></div>
+                        <div class="mb-2"><img src="{{ Storage::url($brand->signature) }}" alt="Signature" class="h-12 object-contain bg-gray-50 border p-1 rounded"></div>
                     @endif
                     <input type="file" name="signature" accept="image/*"
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-[8px] file:border-0 file:text-sm file:font-semibold file:bg-[#E8F5E9] file:text-[#2D8659] hover:file:bg-[#D4E8D6] transition">
@@ -84,7 +84,7 @@
                 <div>
                     <label class="block mb-1.5 text-sm font-semibold text-[#1B3A34]">Background Sertifikat Magang</label>
                     @if($brand->internship_certificate_bg)
-                        <div class="mb-2"><img src="{{ asset('storage/' . $brand->internship_certificate_bg) }}" alt="BG Magang" class="h-12 object-contain bg-gray-50 border p-1 rounded"></div>
+                        <div class="mb-2"><img src="{{ Storage::url($brand->internship_certificate_bg) }}" alt="BG Magang" class="h-12 object-contain bg-gray-50 border p-1 rounded"></div>
                     @endif
                     <input type="file" name="internship_certificate_bg" accept="image/*"
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-[8px] file:border-0 file:text-sm file:font-semibold file:bg-[#E8F5E9] file:text-[#2D8659] hover:file:bg-[#D4E8D6] transition">
@@ -92,7 +92,7 @@
                 <div>
                     <label class="block mb-1.5 text-sm font-semibold text-[#1B3A34]">Background Sertifikat Webinar</label>
                     @if($brand->webinar_certificate_bg)
-                        <div class="mb-2"><img src="{{ asset('storage/' . $brand->webinar_certificate_bg) }}" alt="BG Webinar" class="h-12 object-contain bg-gray-50 border p-1 rounded"></div>
+                        <div class="mb-2"><img src="{{ Storage::url($brand->webinar_certificate_bg) }}" alt="BG Webinar" class="h-12 object-contain bg-gray-50 border p-1 rounded"></div>
                     @endif
                     <input type="file" name="webinar_certificate_bg" accept="image/*"
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-[8px] file:border-0 file:text-sm file:font-semibold file:bg-[#E8F5E9] file:text-[#2D8659] hover:file:bg-[#D4E8D6] transition">
