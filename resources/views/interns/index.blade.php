@@ -1470,23 +1470,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['onsite','WFO (Work From Office)'],['hybrid','Hybrid'],['remote','WFH (Work From Home)'],
             ].map(([v,l]) => `<option value="${v}" ${it.internship_arrangement===v?'selected':''}>${l}</option>`).join('');
 
-            const interestOpts = [
-                'project-manager','administration','hr','uiux','programmer',
-                'photographer','videographer','graphic-designer','social-media-specialist',
-                'content-writer','content-planner','marketing-and-sales','public-relation',
-                'digital-marketing','tiktok-creator','welding','customer-service',
-            ].map(v => {
-                const labels = {
-                    'project-manager':'Project Manager','administration':'Administrasi','hr':'HR',
-                    'uiux':'UI/UX','programmer':'Programmer (Front End/Backend)','photographer':'Photographer',
-                    'videographer':'Videographer','graphic-designer':'Desainer Grafis',
-                    'social-media-specialist':'Social Media Specialist','content-writer':'Content Writer',
-                    'content-planner':'Content Planner','marketing-and-sales':'Marketing dan Sales',
-                    'public-relation':'Marcomm / Public Relation','digital-marketing':'Digital Marketing',
-                    'tiktok-creator':'Tiktok Creator','welding':'Las','customer-service':'Customer Service',
-                };
-                return `<option value="${v}" ${it.internship_interest===v?'selected':''}>${labels[v]||v}</option>`;
-            }).join('');
+            const divisions = @json($divisions ?? []);
+            const interestOpts = divisions.map(d => 
+                `<option value="${d.slug}" ${it.internship_interest === d.slug ? 'selected' : ''}>${d.name}</option>`
+            ).join('');
 
             dynamicFieldsHtml = `
                 ${section('Data Pribadi')}

@@ -5,9 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\InternshipRegistration as IR;
+use App\Models\Division;
+use Illuminate\Support\Facades\View;
 
 class InternPageController extends Controller
 {
+    public function __construct()
+    {
+        View::share('divisions', Division::where('is_active', true)->get());
+    }
+
     // Semua pemagang
     public function index()
     {
