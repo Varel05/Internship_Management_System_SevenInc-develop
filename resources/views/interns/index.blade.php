@@ -1266,6 +1266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${detailRow('Alasan Magang', it.internship_reason)}
                 ${detailRow('Status Saat Ini', it.current_status)}
                 ${detailRow('Bisa Bahasa Inggris', it.english_book_ability)}
+                ${detailRow('Nama Pembimbing', it.supervisor_name)}
                 ${detailRow('No. WA Pembimbing', it.supervisor_contact)}
                 ${detailRow('Tgl Mulai', it.start_date)}
                 ${detailRow('Tgl Selesai', it.end_date)}
@@ -1282,6 +1283,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${detailRow('Kegiatan Lain', it.current_activities)}
                 ${detailRow('Butuh Info Kost', it.boarding_info)}
                 ${detailRow('Status Keluarga', it.family_status)}
+                ${detailRow('Nama Wali / Ortu', it.parent_name)}
                 ${detailRow('No. WA Wali / Ortu', it.parent_wa_contact)}
                 ${detailRow('Instagram', it.social_media_instagram)}
                 ${detailRow('Info Magang Dari', it.internship_info_sources)}
@@ -1521,6 +1523,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <textarea name="internship_reason" rows="2"
                         class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] resize-none">${fmtStr(it.internship_reason)==='- '?'':fmtStr(it.internship_reason)}</textarea>
                 </div>
+                ${editField('Nama Pembimbing', 'supervisor_name', it.supervisor_name)}
                 ${editField('No. WA Pembimbing', 'supervisor_contact', it.supervisor_contact)}
 
                 ${section('Keahlian & Alat')}
@@ -1529,6 +1532,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${editField('Bahasa Pemrograman', 'programming_languages', it.programming_languages)}
 
                 ${section('Informasi Tambahan')}
+                ${editField('Nama Wali / Ortu', 'parent_name', it.parent_name)}
                 ${editField('No. WA Wali / Ortu', 'parent_wa_contact', it.parent_wa_contact)}
                 ${editField('Instagram', 'social_media_instagram', it.social_media_instagram)}
                 <div class="sm:col-span-2">
@@ -1587,12 +1591,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'X-CSRF-TOKEN': csrf, 'X-Requested-With': 'XMLHttpRequest' },
                     credentials: 'same-origin'
                 });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (!res.ok) {
+                    if (res.status === 422) {
+                        const errData = await res.json();
+                        let errMsg = 'Validasi gagal: ';
+                        if (errData.errors) {
+                            errMsg += Object.values(errData.errors).map(e => e.join(', ')).join(' | ');
+                        }
+                        throw new Error(errMsg);
+                    }
+                    throw new Error(`HTTP ${res.status}`);
+                }
                 closeModal(appModal);
                 pushToast('Data berhasil disimpan.');
                 loadPage(window.__CURRENT_PAGE || 1);
             } catch (err) {
-                pushToast('Gagal menyimpan: ' + err.message, 'error');
+                pushToast(err.message, 'error');
             }
         });
 

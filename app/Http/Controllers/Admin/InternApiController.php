@@ -325,6 +325,7 @@ class InternApiController extends Controller
                 'current_status' => $this->labelize($this->mapCurrentStatus, $r->current_status),
                 'english_book_ability' => $r->english_book_ability,
                 'supervisor_contact' => $r->supervisor_contact,
+                'supervisor_name' => $r->supervisor_name,
                 'internship_interest' => $this->labelize($this->mapInterest, $r->internship_interest),
                 'internship_interest_other' => $r->internship_interest_other,
                 'design_software' => $r->design_software,
@@ -341,8 +342,9 @@ class InternApiController extends Controller
                 'internship_info_other' => $r->internship_info_other,
                 'current_activities' => $r->current_activities,
                 'boarding_info' => $this->labelize($this->mapYesNo, $r->boarding_info),
-                'family_status' => $this->labelize($this->mapFamilyStatus, $r->family_status), // ⬅ pakai mapFamilyStatus (lihat Patch 2)
+                'family_status' => $this->labelize($this->mapFamilyStatus, $r->family_status),
                 'parent_wa_contact' => $r->parent_wa_contact,
+                'parent_name' => $r->parent_name,
                 'social_media_instagram' => $r->social_media_instagram,
                 'cv_ktp_portofolio_pdf' => $r->cv_ktp_portofolio_pdf ? asset('storage/'.$r->cv_ktp_portofolio_pdf) : null,
                 'portofolio_visual' => $r->portofolio_visual ? asset('storage/'.$r->portofolio_visual) : null,

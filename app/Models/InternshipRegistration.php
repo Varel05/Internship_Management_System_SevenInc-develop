@@ -31,6 +31,9 @@ class InternshipRegistration extends Model
         'division_id', 'brand_id',
         'start_date', 'end_date',
         'internship_status',
+        'supervisor_name', 'supervisor_contact',
+        'parent_name', 'parent_wa_contact',
+        'current_activities', 'social_media_instagram',
     ];
 
     /**
