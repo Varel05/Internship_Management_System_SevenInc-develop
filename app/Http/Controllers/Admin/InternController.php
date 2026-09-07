@@ -511,6 +511,12 @@ class InternController extends Controller
             $oldStatus = $intern->internship_status;
             $intern->fill($validatedData)->save();
             $this->syncPemagangRole($intern);
+            
+            // Buat membercard hanya saat status active atau completed
+            if (in_array($intern->internship_status, [IR::STATUS_ACTIVE, IR::STATUS_COMPLETED])) {
+                $intern->user?->createMemberCard();
+            }
+
             if ($oldStatus !== IR::STATUS_ACCEPTED && $intern->internship_status === IR::STATUS_ACCEPTED) {
                 $this->sendAcceptedEmail($intern);
             }
@@ -580,7 +586,9 @@ class InternController extends Controller
 
         // Simpan brand jika status accepted & brand dikirim
         if ($newStatus === IR::STATUS_ACCEPTED && !empty($validated['brand'])) {
-            $intern->brand = $validated['brand'];
+            $brandName = trim($validated['brand']);
+            $existingBrand = \App\Models\Brand::whereRaw('LOWER(name) = ?', [strtolower($brandName)])->first();
+            $intern->brand_id = $existingBrand ? $existingBrand->id : \App\Models\Brand::create(['name' => $brandName])->id;
         }
 
         // Admin bebas mengubah status apapun tanpa perlu pengecekan status sebelumnya
