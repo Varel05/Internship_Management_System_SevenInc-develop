@@ -126,48 +126,13 @@ class User extends Authenticatable
         $prefix       = $this->getBrandPrefix($brand);
         $code         = "{$prefix}{$angkatan}{$idPadded}";
 
-        // Cari berdasarkan code dulu (idempoten: jangan duplikat)
-        $existing = \App\Models\Download::where('code', $code)->first();
-
-        if ($existing) {
-            // Sudah ada, update data terbaru saja
-            $existing->update([
-                'name'     => $this->name,
-                'angkatan' => $angkatanYear,
-                'instansi' => $intern->institution_name,
-                'brand'    => $brand,
-                'user_id'  => $this->id,
-            ]);
-            return;
-        }
-
-        // Cari record lama tanpa code tapi nama cocok
-        $orphan = \App\Models\Download::whereNull('code')
-            ->where('name', $this->name)
-            ->first();
-
-        if ($orphan) {
-            $orphan->update([
-                'code'     => $code,
-                'angkatan' => $angkatanYear,
-                'instansi' => $intern->institution_name,
-                'brand'    => $brand,
-                'user_id'  => $this->id,
-            ]);
-            return;
-        }
-
-        // Tidak ada record sama sekali → buat baru otomatis
-        \App\Models\Download::create([
-            'code'           => $code,
-            'name'           => $this->name,
-            'user_id'        => $this->id,
-            'angkatan'       => $angkatanYear,
-            'instansi'       => $intern->institution_name,
-            'brand'          => $brand,
-            'model_url'      => null, // admin bisa isi nanti lewat halaman edit membercard
-            'has_downloaded' => false,
-        ]);
+        \App\Models\AlumniMembercard::firstOrCreate(
+            ['intern_id' => $intern->id],
+            [
+                'member_code' => $code,
+                'batch_year'  => $angkatanYear,
+            ]
+        );
     }
 
 

@@ -286,9 +286,11 @@ class InternController extends Controller
         }
 
         return view('interns.index', [
-            'interns' => $interns,
-            'title'   => $title,
-            'scope'   => $scope,
+            'interns'   => $interns,
+            'title'     => $title,
+            'scope'     => $scope,
+            'brands'    => \App\Models\Brand::orderBy('name')->get(),
+            'divisions' => \App\Models\Division::orderBy('name')->get(),
         ]);
     }
 

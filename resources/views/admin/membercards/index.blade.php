@@ -154,19 +154,19 @@
                     <tr class="transition hover:bg-[#F4F8F6]">
                         <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $loop->iteration }}</td>
                         <td class="px-5 py-4">
-                            <p class="font-semibold text-[#1B3A34]">{{ $dl->name }}</p>
+                            <p class="font-semibold text-[#1B3A34]">{{ $dl->intern->fullname ?? '-' }}</p>
                         </td>
                         <td class="px-5 py-4">
                             <code class="rounded-[6px] bg-[#F4F8F6] px-2 py-1 text-[11px] text-[#1B3A34] border border-[#DCE7E1]">
-                                {{ $dl->code ?? '-' }}
+                                {{ $dl->member_code ?? '-' }}
                             </code>
                         </td>
-                        <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $dl->angkatan ?? '-' }}</td>
-                        <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $dl->instansi ?? '-' }}</td>
+                        <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $dl->batch_year ?? '-' }}</td>
+                        <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $dl->intern->institution_name ?? '-' }}</td>
                         <td class="px-5 py-4">
-                            @if($dl->brand)
+                            @if($dl->intern && $dl->intern->brand)
                             <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 border border-amber-200">
-                                {{ $dl->brand }}
+                                {{ $dl->intern->brand }}
                             </span>
                             @else
                             <span class="text-[13px] text-[#4B5F5A]">-</span>
@@ -185,29 +185,29 @@
                         </td>
                         <td class="px-5 py-4">
                             <div class="flex items-center justify-end gap-1.5">
-                                @if($dl->code)
+                                @if($dl->member_code)
                                 {{-- Generate per baris --}}
-                                <form action="{{ route('admin.membercards.generate.one', $dl->code) }}"
+                                <form action="{{ route('admin.membercards.generate.one', $dl->member_code) }}"
                                       method="POST" class="inline">
                                     @csrf
                                     <button type="submit"
                                         title="Generate Membercard"
-                                        onclick="return confirm('Generate ulang membercard untuk {{ addslashes($dl->name) }}?')"
+                                        onclick="return confirm('Generate ulang membercard untuk {{ addslashes($dl->intern->fullname ?? '') }}?')"
                                         class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] bg-white text-[#2D8659] transition hover:border-[#2D8659] hover:bg-[#E8F5E9]">
                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
                                     </button>
                                 </form>
 
-                                <a href="{{ route('admin.membercards.show', $dl->code) }}" title="Detail"
+                                <a href="{{ route('admin.membercards.show', $dl->member_code) }}" title="Detail"
                                     class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] bg-white text-[#4B5F5A] transition hover:border-[#2D8659] hover:text-[#1F5F3F]">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </a>
-                                <a href="{{ route('admin.membercards.edit', $dl->code) }}" title="Edit"
+                                <a href="{{ route('admin.membercards.edit', $dl->member_code) }}" title="Edit"
                                     class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] bg-white text-[#4B5F5A] transition hover:border-amber-400 hover:text-amber-600">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
                                 </a>
                                 <button type="button" title="Hapus"
-                                    onclick="openDeleteModal('{{ route('admin.membercards.destroy', $dl->code) }}', '{{ addslashes($dl->name) }}')"
+                                    onclick="openDeleteModal('{{ route('admin.membercards.destroy', $dl->member_code) }}', '{{ addslashes($dl->intern->fullname ?? '') }}')"
                                     class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-red-200 bg-red-50 text-[#D32F2F] transition hover:bg-red-100">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
                                 </button>

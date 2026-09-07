@@ -27,14 +27,14 @@
             {{-- Header card --}}
             <div class="mb-6 flex items-center gap-4 rounded-[10px] bg-[#F4F8F6] px-4 py-3">
                 @php
-                    $initials = collect(explode(' ', $download->name))->take(2)->map(fn($w)=>strtoupper($w[0]??''))->implode('');
+                    $initials = collect(explode(' ', $download->intern->fullname))->take(2)->map(fn($w)=>strtoupper($w[0]??''))->implode('');
                 @endphp
                 <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#E8F5E9] text-sm font-bold text-[#1F5F3F]">
                     {{ $initials }}
                 </div>
                 <div>
-                    <p class="font-bold text-[#1B3A34]">{{ $download->name }}</p>
-                    <p class="text-[12px] text-[#4B5F5A]">Kode: <code class="font-mono">{{ $download->code ?? '-' }}</code></p>
+                    <p class="font-bold text-[#1B3A34]">{{ $download->intern->fullname }}</p>
+                    <p class="text-[12px] text-[#4B5F5A]">Kode: <code class="font-mono">{{ $download->member_code ?? '-' }}</code></p>
                 </div>
                 @if($download->has_downloaded)
                 <span class="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[#E8F5E9] px-2.5 py-1 text-[11px] font-semibold text-[#388E3C] border border-[#A5D6A7]">
@@ -51,9 +51,9 @@
             <div class="grid grid-cols-2 gap-x-6 gap-y-4 text-[13px]">
                 @php
                     $rows = [
-                        ['Angkatan', $download->angkatan],
-                        ['Instansi', $download->instansi],
-                        ['Brand', $download->brand],
+                        ['Angkatan', $download->batch_year],
+                        ['Instansi', $download->intern->institution_name],
+                        ['Brand', $download->intern->brand],
                         ['Diunduh Pada', $download->downloaded_at ? \Carbon\Carbon::parse($download->downloaded_at)->format('d M Y, H:i') : '-'],
                     ];
                 @endphp
@@ -72,13 +72,13 @@
 
                     {{-- Brand kanan atas --}}
                     <div style="position:absolute;top:16px;right:18px;font-size:13px;font-style:italic;font-weight:bold;color:#c9a84c;letter-spacing:0.5px;text-align:right;">
-                        {{ $download->brand ?? 'magangjogja.com' }}
+                        {{ $download->intern->brand ?? 'magangjogja.com' }}
                     </div>
 
                     {{-- Nama di tengah --}}
                     <div style="position:absolute;top:50%;left:0;right:0;transform:translateY(-65%);text-align:center;padding:0 20px;">
                         <div style="font-size:26px;font-weight:normal;color:#c9a84c;letter-spacing:1px;margin-bottom:10px;">
-                            {{ $download->name }}
+                            {{ $download->intern->fullname }}
                         </div>
                         <div style="width:70%;height:1px;background:#c9a84c;margin:0 auto;"></div>
                     </div>
@@ -88,17 +88,17 @@
                         <div style="display:flex;gap:8px;flex-wrap:wrap;">
                             <div style="background:#d4c06a;border-radius:8px;padding:3px 10px;display:inline-block;">
                                 <span style="font-size:8px;font-weight:bold;color:#1a3a2a;text-transform:uppercase;letter-spacing:0.5px;display:block;line-height:1.3;">ID:</span>
-                                <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $download->code ?? '-' }}</span>
+                                <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $download->member_code ?? '-' }}</span>
                             </div>
                             <div style="background:#d4c06a;border-radius:8px;padding:3px 10px;display:inline-block;">
                                 <span style="font-size:8px;font-weight:bold;color:#1a3a2a;text-transform:uppercase;letter-spacing:0.5px;display:block;line-height:1.3;">Angkatan:</span>
-                                <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $download->angkatan ?? '-' }}</span>
+                                <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $download->batch_year ?? '-' }}</span>
                             </div>
                         </div>
                         <div style="display:flex;gap:8px;">
                             <div style="background:#d4c06a;border-radius:8px;padding:3px 10px;display:inline-block;max-width:280px;">
                                 <span style="font-size:8px;font-weight:bold;color:#1a3a2a;text-transform:uppercase;letter-spacing:0.5px;display:block;line-height:1.3;">Kampus/Sekolah:</span>
-                                <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $download->instansi ?? '-' }}</span>
+                                <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $download->intern->institution_name ?? '-' }}</span>
                             </div>
                         </div>
                     </div>
@@ -109,17 +109,17 @@
             {{-- Actions --}}
             <div class="mt-6 flex items-center gap-3 border-t border-[#DCE7E1] pt-5">
                 {{-- Generate --}}
-                <form action="{{ route('admin.membercards.generate.one', $download->code ?? '-') }}"
+                <form action="{{ route('admin.membercards.generate.one', $download->member_code ?? '-') }}"
                       method="POST">
                     @csrf
                     <button type="submit"
-                        onclick="return confirm('Generate ulang membercard untuk {{ addslashes($download->name) }}? Pastikan status pemagang sudah Selesai.')"
+                        onclick="return confirm('Generate ulang membercard untuk {{ addslashes($download->intern->fullname) }}? Pastikan status pemagang sudah Selesai.')"
                         class="flex items-center gap-2 rounded-[9px] bg-[#2D8659] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1F5F3F]">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
                         Generate Membercard
                     </button>
                 </form>
-                <a href="{{ route('admin.membercards.edit', $download->code ?? '-') }}"
+                <a href="{{ route('admin.membercards.edit', $download->member_code ?? '-') }}"
                     class="flex items-center gap-2 rounded-[9px] border border-[#DCE7E1] bg-white px-4 py-2 text-sm font-semibold text-[#1B3A34] transition hover:bg-[#F4F8F6]">
                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
                     Edit Data

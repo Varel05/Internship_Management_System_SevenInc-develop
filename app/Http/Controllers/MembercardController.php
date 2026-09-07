@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Download;
+use App\Models\AlumniMembercard;
 use App\Models\InternshipRegistration;
 use App\Models\User;
+use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -35,20 +36,18 @@ class MembercardController extends Controller
     {
         $brandFilter = $request->get('brand');
 
-        $query = Download::orderByDesc('created_at');
+        $query = AlumniMembercard::with(['intern.brandRel', 'intern.institution'])->orderByDesc('created_at');
 
         if ($brandFilter) {
-            $query->where('brand', $brandFilter);
+            $query->whereHas('intern.brandRel', function ($q) use ($brandFilter) {
+                $q->where('name', $brandFilter);
+            });
         }
 
         $downloads = $query->get();
 
-        // Daftar brand unik yang sudah ada di tabel downloads
-        $availableBrands = Download::select('brand')
-            ->whereNotNull('brand')
-            ->distinct()
-            ->orderBy('brand')
-            ->pluck('brand');
+        // Daftar brand unik (dari master brand)
+        $availableBrands = Brand::orderBy('name')->pluck('name');
 
         return view('admin.membercards.index', compact('downloads', 'availableBrands', 'brandFilter'));
     }
@@ -56,17 +55,11 @@ class MembercardController extends Controller
     public function logDownload(Request $request)
     {
         $data = $request->validate([
-            'model_url' => 'required|string',
-            'name' => 'required|string',
             'id' => 'required|string', // this is the code
-            'angkatan' => 'nullable|string',
-            'instansi' => 'nullable|string',
-            'brand' => 'nullable|string',
-            'filename' => 'nullable|string',
         ]);
 
         // Find existing record ONLY
-        $download = Download::where('code', $data['id'])->first();
+        $download = AlumniMembercard::where('member_code', $data['id'])->first();
 
         // If not found, DO NOT create a new record
         if (!$download) {
@@ -90,46 +83,41 @@ class MembercardController extends Controller
 
     public function show($code)
     {
-        $download = Download::where('code', $code)->firstOrFail();
+        $download = AlumniMembercard::with(['intern.brandRel', 'intern.institution'])->where('member_code', $code)->firstOrFail();
         return view('admin.membercards.show', compact('download'));
     }
 
     public function edit($code)
     {
-        $download = Download::where('code', $code)->firstOrFail();
+        $download = AlumniMembercard::with(['intern.brandRel', 'intern.institution'])->where('member_code', $code)->firstOrFail();
         return view('admin.membercards.edit', compact('download'));
     }
 
     public function update(Request $request, $code)
     {
-        $download = Download::where('code', $code)->firstOrFail();
+        $download = AlumniMembercard::with('intern')->where('member_code', $code)->firstOrFail();
 
+        // Karena data nama, instansi, brand sekarang milik InternshipRegistration, 
+        // kita tidak perlu mengupdate di AlumniMembercard (kecuali batch_year / code).
+        // Kita bisa asumsikan edit code manual jika diperlukan, atau sekadar menyimpan.
+        
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'angkatan' => 'nullable|string|max:10',
-            'instansi' => 'nullable|string|max:255',
-            'brand'    => 'nullable|string|max:100',
+            'member_code' => 'required|string|max:100',
+            'batch_year'  => 'nullable|string|max:10',
         ]);
 
-        // Update code jika brand berubah
-        if (!empty($validated['brand']) && $validated['brand'] !== $download->brand) {
-            $prefix    = (new User)->getBrandPrefix($validated['brand']);
-            $oldPrefix = (new User)->getBrandPrefix($download->brand ?? '');
-            $numericPart = substr($download->code, strlen($oldPrefix));
-            $validated['code'] = $prefix . $numericPart;
-        } else {
-            $validated['code'] = $download->code;
-        }
+        $download->update([
+            'member_code' => $validated['member_code'],
+            'batch_year'  => $validated['batch_year'] ?? $download->batch_year,
+        ]);
 
-        $download->update($validated);
-
-        return redirect()->route('admin.membercards.show', $validated['code'])
+        return redirect()->route('admin.membercards.show', $download->member_code)
             ->with('success', 'Data membercard berhasil diperbarui.');
     }
 
     public function destroy($code)
     {
-        Download::where('code', $code)->delete();
+        AlumniMembercard::where('member_code', $code)->delete();
         return redirect()->route('admin.membercards.index')
             ->with('success', 'Membercard deleted successfully.');
     }
@@ -138,24 +126,21 @@ class MembercardController extends Controller
 
     /**
      * Generate membercard untuk satu pemagang berdasarkan code.
-     * Hanya bisa untuk pemagang dengan status 'completed'.
+     * Hanya bisa untuk pemagang dengan status 'completed' atau 'active'.
      */
     public function generateOne(Request $request, $code)
     {
-        $download = Download::where('code', $code)->firstOrFail();
-
-        // Cek user dan status magang
-        $user = User::find($download->user_id);
+        $download = AlumniMembercard::with('intern')->where('member_code', $code)->firstOrFail();
+        
+        $user = User::find($download->intern->user_id);
         if (!$user) {
             return back()->with('error', "User tidak ditemukan untuk membercard kode {$code}.");
         }
 
-        $registration = InternshipRegistration::where('user_id', $user->id)
-            ->latest('id')
-            ->first();
+        $registration = $download->intern;
 
-        if (!$registration || $registration->internship_status !== InternshipRegistration::STATUS_COMPLETED) {
-            return back()->with('error', "Membercard hanya bisa digenerate untuk pemagang yang sudah selesai. Status {$user->name}: " . ($registration?->internship_status ?? 'tidak ada data'));
+        if (!$registration || !in_array($registration->internship_status, [InternshipRegistration::STATUS_COMPLETED, InternshipRegistration::STATUS_ACTIVE])) {
+            return back()->with('error', "Membercard hanya bisa digenerate untuk pemagang yang aktif atau selesai.");
         }
 
         // Re-generate (refresh data terbaru ke record download)
@@ -178,11 +163,13 @@ class MembercardController extends Controller
 
         // Ambil semua registrasi dengan status completed
         $query = InternshipRegistration::where('internship_status', InternshipRegistration::STATUS_COMPLETED)
-            ->with('user');
+            ->with('user', 'brandRel');
 
         // Filter brand jika dipilih
         if ($brandFilter) {
-            $query->where('brand', $brandFilter);
+            $query->whereHas('brandRel', function ($q) use ($brandFilter) {
+                $q->where('name', $brandFilter);
+            });
         }
 
         $registrations = $query->get();

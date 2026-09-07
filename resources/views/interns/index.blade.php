@@ -89,23 +89,9 @@
                     <select id="brandSelect"
                         class="w-full rounded-[9px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] focus:ring-1 focus:ring-[#2D8659]">
                         <option value="">— Pilih Brand —</option>
-                        <option value="Magangjogja">Magangjogja</option>
-                        <option value="Areakerja">Areakerja</option>
-                        <option value="Republikweb">Republikweb</option>
-                        <option value="Titipsini">Titipsini</option>
-                        <option value="Ambilpaket">Ambilpaket</option>
-                        <option value="Bikinkepo">Bikinkepo</option>
-                        <option value="Bimbelcerdas.com">Bimbelcerdas.com</option>
-                        <option value="Latihankerja.com">Latihankerja.com</option>
-                        <option value="Lowkerjateng.com">Lowkerjateng.com</option>
-                        <option value="Lowkerjogja.com">Lowkerjogja.com</option>
-                        <option value="Pijatjogja.com">Pijatjogja.com</option>
-                        <option value="Sayabantu.com">Sayabantu.com</option>
-                        <option value="Titikvisual">Titikvisual</option>
-                        <option value="Tuantanah">Tuantanah</option>
-                        <option value="Tukanglas.org">Tukanglas.org</option>
-                        <option value="Adakamar.id">Adakamar.id</option>
-                        <option value="Seven Inc">Seven Inc</option>
+                        @foreach($brands ?? [] as $brand)
+                            <option value="{{ $brand->name }}">{{ $brand->name }}</option>
+                        @endforeach
                     </select>
                     <p id="brandSelectError" class="mt-1 hidden text-[11.5px] text-red-600">Silakan pilih brand terlebih dahulu.</p>
                 </div>
