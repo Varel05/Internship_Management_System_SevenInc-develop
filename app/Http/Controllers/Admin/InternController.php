@@ -404,6 +404,51 @@ class InternController extends Controller
             }
         }
 
+        // Helper untuk mencari atau membuat relasi (case-insensitive)
+        $getRelationId = function($modelClass, $name) {
+            if (empty($name)) return null;
+            $name = trim($name);
+            $existing = $modelClass::whereRaw('LOWER(name) = ?', [strtolower($name)])->first();
+            if ($existing) return $existing->id;
+            return $modelClass::create(['name' => $name])->id;
+        };
+
+        if (array_key_exists('current_city', $validatedData)) {
+            if (!empty($validatedData['current_city'])) {
+                $validatedData['city_id'] = $getRelationId(\App\Models\City::class, $validatedData['current_city']);
+            }
+            unset($validatedData['current_city']);
+        }
+        if (array_key_exists('institution_name', $validatedData)) {
+            if (!empty($validatedData['institution_name'])) {
+                $validatedData['institution_id'] = $getRelationId(\App\Models\Institution::class, $validatedData['institution_name']);
+            }
+            unset($validatedData['institution_name']);
+        }
+        if (array_key_exists('study_program', $validatedData)) {
+            if (!empty($validatedData['study_program'])) {
+                $validatedData['study_program_id'] = $getRelationId(\App\Models\StudyProgram::class, $validatedData['study_program']);
+            }
+            unset($validatedData['study_program']);
+        }
+        if (array_key_exists('faculty', $validatedData)) {
+            if (!empty($validatedData['faculty'])) {
+                $validatedData['faculty_id'] = $getRelationId(\App\Models\Faculty::class, $validatedData['faculty']);
+            }
+            unset($validatedData['faculty']);
+        }
+
+        if (array_key_exists('email', $validatedData)) {
+            if (!empty($validatedData['email']) && $intern->user) {
+                // Check jika email sudah dipakai user lain
+                $emailExists = \App\Models\User::where('email', $validatedData['email'])->where('id', '!=', $intern->user_id)->exists();
+                if (!$emailExists) {
+                    $intern->user->update(['email' => $validatedData['email']]);
+                }
+            }
+            unset($validatedData['email']);
+        }
+
         // Jangan timpa internship_status lewat update biasa jika tidak dikirim
         if (isset($validatedData['internship_status']) && $validatedData['internship_status'] !== $intern->internship_status) {
             $oldStatus = $intern->internship_status;

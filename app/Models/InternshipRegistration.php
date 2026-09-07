@@ -56,6 +56,14 @@ class InternshipRegistration extends Model
         'draft_saved_at' => 'datetime',
     ];
 
+    protected $appends = [
+        'email', 'current_city', 'institution_name', 'study_program', 'faculty'
+    ];
+
+    protected $with = [
+        'user', 'city', 'institution', 'studyProgramRel', 'facultyRel'
+    ];
+
     /* ============================================================
      |  Normalisasi tanggal → string 'Y-m-d' (untuk penyimpanan)
      * ============================================================ */
@@ -213,6 +221,51 @@ class InternshipRegistration extends Model
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(\App\Models\City::class, 'city_id');
+    }
+
+    public function institution()
+    {
+        return $this->belongsTo(\App\Models\Institution::class, 'institution_id');
+    }
+
+    public function studyProgramRel()
+    {
+        return $this->belongsTo(\App\Models\StudyProgram::class, 'study_program_id');
+    }
+
+    public function facultyRel()
+    {
+        return $this->belongsTo(\App\Models\Faculty::class, 'faculty_id');
+    }
+
+    public function getEmailAttribute()
+    {
+        return $this->user ? $this->user->email : null;
+    }
+
+    public function getCurrentCityAttribute()
+    {
+        return $this->city ? $this->city->name : null;
+    }
+
+    public function getInstitutionNameAttribute()
+    {
+        return $this->institution ? $this->institution->name : null;
+    }
+
+    public function getStudyProgramAttribute()
+    {
+        return $this->studyProgramRel ? $this->studyProgramRel->name : null;
+    }
+
+    public function getFacultyAttribute()
+    {
+        return $this->facultyRel ? $this->facultyRel->name : null;
     }
 
     public function dailyReports()
