@@ -1276,7 +1276,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${detailRow('Software Video', it.video_software)}
                 ${detailRow('Bahasa Pemrograman', it.programming_languages)}
                 ${detailRow('Materi Digital Marketing', it.digital_marketing_type)}
-                ${detailRow('Punya Laptop', it.laptop_equipment)}
                 ${detailRow('Alat yang Dimiliki', it.owned_tools)}
 
                 ${sectionHtml('Informasi Tambahan')}
@@ -1392,11 +1391,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">${f.label}${reqMark}</label>
                         <textarea name="${f.field_key}" rows="2" class="${inputClass} resize-none">${v}</textarea>
                     </div>`;
-                case 'date':
+                case 'date': {
+                    const rawDateVal = it[f.field_key + '_raw'] !== undefined ? it[f.field_key + '_raw'] : rawVal;
+                    const dateV = (fmtStr(rawDateVal) === '-') ? '' : fmtStr(rawDateVal);
                     return `<div class="${spanClass}">
                         <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">${f.label}${reqMark}</label>
-                        <input type="date" name="${f.field_key}" value="${v}" class="${inputClass}">
+                        <input type="date" name="${f.field_key}" value="${dateV}" class="${inputClass}">
                     </div>`;
+                }
                 default:
                     return `<div class="${spanClass}">
                         <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">${f.label}${reqMark}</label>
@@ -1480,7 +1482,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dynamicFieldsHtml = `
                 ${section('Data Pribadi')}
                 ${editField('Nama Lengkap', 'fullname', it.fullname)}
-                ${editField('Tahun Lahir', 'born_date', it.born_date)}
+                ${editField('Tahun Lahir (Atau Tanggal)', 'born_date', it.born_date_raw, 'date')}
                 ${editField('NIM / NIS', 'student_id', it.student_id)}
                 <div>
                     <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Jenis Kelamin</label>
@@ -1516,8 +1518,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <option value="">-- Pilih --</option>${interestOpts}
                     </select>
                 </div>
-                ${editField('Tgl Mulai', 'start_date', it.start_date)}
-                ${editField('Tgl Selesai', 'end_date', it.end_date)}
+                ${editField('Tgl Mulai', 'start_date', it.start_date_raw, 'date')}
+                ${editField('Tgl Selesai', 'end_date', it.end_date_raw, 'date')}
                 <div class="sm:col-span-2">
                     <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Alasan Magang</label>
                     <textarea name="internship_reason" rows="2"
@@ -1530,6 +1532,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${editField('Software Desain', 'design_software', it.design_software)}
                 ${editField('Software Video', 'video_software', it.video_software)}
                 ${editField('Bahasa Pemrograman', 'programming_languages', it.programming_languages)}
+                ${editField('Digital Marketing', 'digital_marketing_type', it.digital_marketing_type)}
+                ${editField('Alat yang Dimiliki', 'owned_tools', it.owned_tools)}
 
                 ${section('Informasi Tambahan')}
                 ${editField('Nama Wali / Ortu', 'parent_name', it.parent_name)}

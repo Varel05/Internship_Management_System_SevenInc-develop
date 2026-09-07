@@ -201,7 +201,7 @@ class InternApiController extends Controller
             'created_at',
         ];
 
-        $q = IR::query();
+        $q = IR::with(['skills', 'tools']);
 
         // Scope status
         if ($scope !== 'all') {
@@ -310,6 +310,7 @@ class InternApiController extends Controller
                 'id'            => $r->id,
                 'fullname'      => $r->fullname,
                 'born_date'     => $this->formatIndoDateOut($r->born_date),
+                'born_date_raw' => $r->born_date,
                 'student_id'    => preg_replace('/^(NIM|NIS)\s*/i', '', (string) $r->student_id),
                 'email'         => $r->email,
                 'internship_status' => $r->internship_status,
@@ -328,16 +329,18 @@ class InternApiController extends Controller
                 'supervisor_name' => $r->supervisor_name,
                 'internship_interest' => $this->labelize($this->mapInterest, $r->internship_interest),
                 'internship_interest_other' => $r->internship_interest_other,
-                'design_software' => $r->design_software,
-                'video_software' => $r->video_software,
-                'programming_languages' => $r->programming_languages,
-                'digital_marketing_type' => $r->digital_marketing_type,
+                'design_software' => $r->skills->where('skill_category', 'design')->pluck('skill_name')->implode(', '),
+                'video_software' => $r->skills->where('skill_category', 'video')->pluck('skill_name')->implode(', '),
+                'programming_languages' => $r->skills->where('skill_category', 'programming')->pluck('skill_name')->implode(', '),
+                'digital_marketing_type' => $r->skills->where('skill_category', 'digital_marketing')->pluck('skill_name')->implode(', '),
                 'digital_marketing_type_other' => $r->digital_marketing_type_other,
                 'laptop_equipment' => $this->labelize($this->mapLaptop, $r->laptop_equipment),
-                'owned_tools' => $this->labelizeList($this->mapTools, $r->owned_tools),
+                'owned_tools' => $r->tools->pluck('tool_name')->implode(', '),
                 'owned_tools_other' => $r->owned_tools_other,
                 'start_date' => $this->formatIndoDateOut($r->start_date),
+                'start_date_raw' => $r->start_date,
                 'end_date' => $this->formatIndoDateOut($r->end_date),
+                'end_date_raw' => $r->end_date,
                 'internship_info_sources' => $r->internship_info_sources,
                 'internship_info_other' => $r->internship_info_other,
                 'current_activities' => $r->current_activities,

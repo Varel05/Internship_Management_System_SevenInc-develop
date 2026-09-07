@@ -225,6 +225,16 @@ class InternshipRegistration extends Model
         return $this->belongsTo(\App\Models\Institution::class, 'institution_id');
     }
 
+    public function skills()
+    {
+        return $this->hasMany(\App\Models\InternSkill::class, 'internship_registration_id');
+    }
+
+    public function tools()
+    {
+        return $this->hasMany(\App\Models\InternTool::class, 'internship_registration_id');
+    }
+
     public function studyProgramRel()
     {
         return $this->belongsTo(\App\Models\StudyProgram::class, 'study_program_id');

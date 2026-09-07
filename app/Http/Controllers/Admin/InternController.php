@@ -466,6 +466,46 @@ class InternController extends Controller
             unset($validatedData['email']);
         }
 
+        // Sync Skills
+        $skillFields = [
+            'design_software' => 'design',
+            'video_software' => 'video',
+            'programming_languages' => 'programming',
+            'digital_marketing_type' => 'digital_marketing',
+        ];
+        
+        $intern->skills()->delete();
+        foreach ($skillFields as $field => $category) {
+            if (array_key_exists($field, $validatedData)) {
+                $val = trim($validatedData[$field]);
+                if (!empty($val) && strtolower($val) !== 'tidak ada' && strtolower($val) !== '-') {
+                    $items = array_filter(array_map('trim', explode(',', $val)));
+                    foreach ($items as $item) {
+                        $intern->skills()->create([
+                            'skill_category' => $category,
+                            'skill_name' => $item
+                        ]);
+                    }
+                }
+                unset($validatedData[$field]);
+            }
+        }
+
+        // Sync Tools
+        if (array_key_exists('owned_tools', $validatedData)) {
+            $intern->tools()->delete();
+            $val = trim($validatedData['owned_tools']);
+            if (!empty($val) && strtolower($val) !== 'tidak ada' && strtolower($val) !== '-') {
+                $items = array_filter(array_map('trim', explode(',', $val)));
+                foreach ($items as $item) {
+                    $intern->tools()->create([
+                        'tool_name' => $item
+                    ]);
+                }
+            }
+            unset($validatedData['owned_tools']);
+        }
+
         // Jangan timpa internship_status lewat update biasa jika tidak dikirim
         if (isset($validatedData['internship_status']) && $validatedData['internship_status'] !== $intern->internship_status) {
             $oldStatus = $intern->internship_status;
