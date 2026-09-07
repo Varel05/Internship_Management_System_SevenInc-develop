@@ -1458,16 +1458,16 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // Fallback hardcoded
             const genderOpts = [
-                ['male','Laki-laki'],['female','Perempuan'],
+                ['Laki-laki','Laki-laki'],['Perempuan','Perempuan'],
             ].map(([v,l]) => `<option value="${v}" ${it.gender===v?'selected':''}>${l}</option>`).join('');
 
             const typeOpts = [
-                ['mandiri','Magang Mandiri'],['campus','Magang Kampus / Reguler'],
-                ['pkl','PKL'],['kampus-merdeka','Kampus Merdeka'],
+                ['Magang Mandiri','Magang Mandiri'],['Magang Kampus','Magang Kampus / Reguler'],
+                ['PKL','PKL'],['Kampus Merdeka','Kampus Merdeka'],
             ].map(([v,l]) => `<option value="${v}" ${it.internship_type===v?'selected':''}>${l}</option>`).join('');
 
             const arrangementOpts = [
-                ['onsite','WFO (Work From Office)'],['hybrid','Hybrid'],['remote','WFH (Work From Home)'],
+                ['Onsite','WFO (Work From Office)'],['Hibrida','Hybrid'],['Remote','WFH (Work From Home)'],
             ].map(([v,l]) => `<option value="${v}" ${it.internship_arrangement===v?'selected':''}>${l}</option>`).join('');
 
             const divisions = @json($divisions ?? []);
