@@ -230,4 +230,9 @@ class InternshipRegistration extends Model
         return $this->hasMany(\App\Models\PendingTask::class, 'intern_id');
     }
 
+    public function feedback()
+    {
+        return $this->hasOne(\App\Models\Feedback::class, 'intern_id');
+    }
+
 }

@@ -15,13 +15,15 @@ class Feedback extends Model
      */
     protected $table = 'feedback'; // sesuaikan dengan nama tabelmu
 
-    /**
-     * Kolom yang bisa diisi massal (fillable)
-     */
     protected $fillable = [
-        'name',
+        'intern_id',
         'feedback',
     ];
+
+    public function internshipRegistration()
+    {
+        return $this->belongsTo(InternshipRegistration::class, 'intern_id');
+    }
 
     /**
      * Kolom bertipe tanggal agar otomatis jadi instance Carbon

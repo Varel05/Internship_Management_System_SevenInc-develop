@@ -11,8 +11,8 @@ class FeedbackController extends Controller
     public function index()
     {
         $feedbacks = DB::table('feedback')
-            ->join('users', 'feedback.user_id', '=', 'users.id')
-            ->select('feedback.id', 'feedback.feedback', 'users.name', 'feedback.created_at')
+            ->join('internship_registrations', 'feedback.intern_id', '=', 'internship_registrations.id')
+            ->select('feedback.id', 'feedback.feedback', 'internship_registrations.fullname as name', 'feedback.created_at')
             ->orderByDesc('feedback.created_at')
             ->get()
             ->map(function ($row) {
@@ -67,13 +67,13 @@ class FeedbackController extends Controller
             return back()->with('error', 'Feedback hanya bisa dikirim setelah masa magang selesai.');
         }
 
-        // Cek apakah sudah pernah submit — 1 akun 1 kali
-        if (DB::table('feedback')->where('user_id', $user->id)->exists()) {
-            return back()->with('error', 'Kamu sudah pernah mengirim feedback. Setiap akun hanya bisa mengirim 1 kali.');
+        // Cek apakah sudah pernah submit — 1 internship registration 1 kali
+        if (DB::table('feedback')->where('intern_id', $reg->id)->exists()) {
+            return back()->with('error', 'Kamu sudah pernah mengirim feedback untuk magang ini. Setiap periode magang hanya bisa mengirim 1 kali.');
         }
 
         DB::table('feedback')->insert([
-            'user_id'    => $user->id,
+            'intern_id'  => $reg->id,
             'feedback'   => $request->feedback,
             'created_at' => now(),
             'updated_at' => now(),
