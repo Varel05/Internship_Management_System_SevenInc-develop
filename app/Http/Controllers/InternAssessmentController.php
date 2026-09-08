@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\InternAssessment;
-use App\Models\AssessmentSignatorySetting;
+use App\Models\Brand;
 use App\Models\InternshipRegistration as IR;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -337,18 +337,17 @@ class InternAssessmentController extends Controller
                 'has_assessment'      => InternAssessment::where('intern_id', $r->id)->exists(),
             ]);
 
-        // Kembalikan juga setting penandatangan yang sudah tersimpan untuk brand ini
-        $signatory = AssessmentSignatorySetting::where('brand', $brand)->first();
+        $signatory = Brand::where('name', $brand)->first();
 
         return response()->json([
             'interns'   => $interns,
             'signatory' => $signatory ? [
-                'company_name'         => $signatory->company_name,
+                'company_name'         => $signatory->name,
                 'company_address'      => $signatory->company_address,
-                'signature_name'       => $signatory->signature_name,
-                'signature_position'   => $signatory->signature_position,
-                'signature_image_path' => $signatory->signature_image_path,
-                'company_logo_path'    => $signatory->company_logo_path,
+                'signature_name'       => $signatory->signatory_name,
+                'signature_position'   => $signatory->signatory_position,
+                'signature_image_path' => $signatory->signature,
+                'company_logo_path'    => $signatory->logo,
             ] : null,
         ]);
     }
@@ -357,10 +356,44 @@ class InternAssessmentController extends Controller
     // INDEX
     // =========================================================================
 
-    public function index()
+    public function index(Request $request)
     {
-        $data = InternAssessment::latest()->get();
-        return view('admin.interns.index_assessment', compact('data'));
+        $query = IR::with(['assessment', 'brandRel'])
+            ->whereIn('internship_status', [IR::STATUS_ACTIVE, IR::STATUS_COMPLETED]);
+
+        if ($request->filled('search')) {
+            $search = strtolower($request->search);
+            $query->where(function($q) use ($search) {
+                $q->whereRaw('LOWER(fullname) LIKE ?', ["%{$search}%"])
+                  ->orWhereHas('institution', function($q2) use ($search) {
+                      $q2->whereRaw('LOWER(name) LIKE ?', ["%{$search}%"]);
+                  });
+            });
+        }
+        if ($request->filled('brand')) {
+            $query->whereHas('brandRel', function($q) use ($request) {
+                $q->where('name', $request->brand);
+            });
+        }
+        if ($request->filled('status_penilaian')) {
+            if ($request->status_penilaian == 'sudah') {
+                $query->has('assessment');
+            } else {
+                $query->doesntHave('assessment');
+            }
+        }
+        if ($request->filled('divisi')) {
+            $query->whereHas('division', function($q) use ($request) {
+                $q->where('name', $request->divisi);
+            });
+        }
+
+        $data = $query->latest('id')->paginate(20);
+
+        $brands = \App\Models\Brand::pluck('name');
+        $divisions = $this->getDivisionOptions();
+        
+        return view('admin.interns.index_assessment', compact('data', 'brands', 'divisions'));
     }
 
     // =========================================================================
@@ -369,61 +402,57 @@ class InternAssessmentController extends Controller
 
     public function create(Request $request)
     {
-        $divisions = $this->getDivisionOptions();
-
-        // Ambil semua brand yang punya pemagang completed
-        $brands = \App\Models\Brand::join('internship_registrations', 'brands.id', '=', 'internship_registrations.brand_id')
-            ->where('internship_registrations.internship_status', IR::STATUS_COMPLETED)
-            ->select('brands.name')
-            ->distinct()
-            ->orderBy('brands.name')
-            ->pluck('name')
-            ->values();
-
-        // Koleksi logo & tanda tangan
-        $logos = collect(
-            Storage::disk('public')->exists('images/logos')
-                ? Storage::disk('public')->files('images/logos')
-                : []
-        )->filter(fn($f) => preg_match('/\.(png|jpe?g|gif)$/i', $f))->values()->toArray();
-
-        $signatures = collect(
-            Storage::disk('public')->exists('images/signature')
-                ? Storage::disk('public')->files('images/signature')
-                : []
-        )->filter(fn($f) => preg_match('/\.(png|jpe?g|gif)$/i', $f))->values()->toArray();
-
-        // Kalau ada intern_id di URL, kita langsung skip ke mode single
-        $selectedIntern  = null;
-        $selectedBrand   = null;
-        $signatory       = null;
-        $aspects         = $this->getDefaultAspects()['Content Writer'];
-        $division        = 'Content Writer';
-
-        if ($request->filled('intern_id')) {
-            $selectedIntern = IR::where('internship_status', IR::STATUS_COMPLETED)
-                ->find((int) $request->get('intern_id'));
-
-            if ($selectedIntern) {
-                $selectedBrand = $selectedIntern->brand;
-                $signatory     = $selectedBrand
-                    ? AssessmentSignatorySetting::where('brand', $selectedBrand)->first()
-                    : null;
-
-                // Map interest → division
-                $mapped = $this->mapInterestToDivision($selectedIntern->internship_interest ?? '');
-                if ($mapped) {
-                    $division = $mapped;
-                    $aspects  = $this->getDefaultAspects()[$division] ?? $this->getDefaultAspects()['Content Writer'];
-                }
-            }
+        $internIds = $request->input('intern_ids', []);
+        
+        if (empty($internIds)) {
+            return redirect()->route('interns.assessment.index')->with('error', 'Pilih minimal satu pemagang untuk dinilai.');
         }
 
-        return view('admin.interns.create_assessment', compact(
-            'brands', 'divisions', 'logos', 'signatures',
-            'selectedIntern', 'selectedBrand', 'signatory',
-            'aspects', 'division'
-        ));
+        // Fetch interns
+        $interns = IR::with('brandRel')
+            ->whereIn('id', $internIds)
+            ->whereIn('internship_status', [IR::STATUS_ACTIVE, IR::STATUS_COMPLETED])
+            ->get();
+
+        if ($interns->isEmpty()) {
+            return redirect()->route('interns.assessment.index')->with('error', 'Pemagang tidak ditemukan atau status tidak valid.');
+        }
+
+        $defaultAspects = $this->getDefaultAspects();
+        $wizardData = [];
+
+        foreach ($interns as $intern) {
+            $division = $this->mapInterestToDivision($intern->internship_interest ?? '');
+            if (!$division || !isset($defaultAspects[$division])) {
+                $division = 'Content Writer';
+            }
+
+            // Find signatory for brand
+            $brandModel = $intern->brandRel;
+            $brandName = $brandModel?->name ?? $intern->brand;
+            
+            $wizardData[] = [
+                'intern_id' => $intern->id,
+                'fullname' => $intern->fullname,
+                'nim_nis' => $intern->student_id ?? $intern->nim_nis ?? '-',
+                'study_program' => $intern->study_program ?? '-',
+                'brand' => $brandName ?? '-',
+                'division' => $intern->internship_interest ?? '-',
+                'aspects' => $defaultAspects[$division],
+                'signatory' => $brandModel ? [
+                    'company_name' => $brandModel->name,
+                    'company_address' => $brandModel->company_address,
+                    'signatory_name' => $brandModel->signatory_name,
+                    'signatory_position' => $brandModel->signatory_position,
+                    'company_logo_path' => $brandModel->logo,
+                    'signature_image_path' => $brandModel->signature,
+                ] : null
+            ];
+        }
+
+        return view('admin.interns.wizard_assessment', [
+            'wizardData' => json_encode($wizardData)
+        ]);
     }
 
     // =========================================================================
@@ -490,62 +519,52 @@ class InternAssessmentController extends Controller
     public function storeBulk(Request $request)
     {
         $request->validate([
-            'brand'          => 'required|string',
-            'interns'        => 'required|array|min:1',
-            'interns.*.intern_id'          => 'required|integer|exists:internship_registrations,id',
-            'interns.*.aspek'              => 'required|array',
-            'interns.*.nilai'              => 'required|array',
-            // Penandatangan (sama untuk semua dalam brand)
-            'company_name'       => 'nullable|string|max:255',
-            'signatory_name'     => 'nullable|string|max:255',
-            'signatory_position' => 'nullable|string|max:255',
-            'company_logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'signature_image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'save_signatory'     => 'nullable|boolean',
+            'assessments' => 'required|array',
+            'assessments.*.intern_id' => 'required|integer|exists:internship_registrations,id',
+            'assessments.*.aspek' => 'required|array',
+            'assessments.*.nilai' => 'required|array',
+            'assessments.*.company_name' => 'nullable|string',
+            'assessments.*.company_address' => 'nullable|string',
+            'assessments.*.signatory_name' => 'nullable|string',
+            'assessments.*.signatory_position' => 'nullable|string',
+            'assessments.*.company_logo_path' => 'nullable|string',
+            'assessments.*.signature_image_path' => 'nullable|string',
         ]);
 
-        // Resolve logo & tanda tangan (shared untuk semua pemagang dalam 1 brand)
-        [$logoPath, $sigPath] = $this->resolveLogoAndSignature($request, null, null);
-
-        $brand       = $request->input('brand');
-        $companyName = $request->input('company_name', $brand);
-        $sigName     = $request->input('signatory_name');
-        $sigPos      = $request->input('signatory_position');
-
-        $saved  = 0;
+        $saved = 0;
         $errors = [];
 
-        foreach ($request->input('interns') as $idx => $item) {
+        foreach ($request->input('assessments') as $idx => $item) {
             try {
                 [$data, $avg] = $this->buildAspekData($item['aspek'] ?? [], $item['nilai'] ?? []);
 
-                $assessment = InternAssessment::create([
-                    'intern_id'             => $item['intern_id'],
-                    'company_name'          => $companyName,
-                    'signatory_name'        => $sigName,
-                    'signatory_position'    => $sigPos,
-                    'company_logo_path'     => $logoPath,
-                    'signature_image_path'  => $sigPath,
-                    'aspek_penilaian'       => json_encode($data),
-                    'rata_rata'             => $avg,
-                ]);
-
-                // Tulis ke document_downloads
-                $intern = IR::find($item['intern_id']);
-                if ($intern?->user_id) {
-                    /* DocumentDownload log removed */
-                }
+                InternAssessment::updateOrCreate(
+                    ['intern_id' => $item['intern_id']],
+                    [
+                        'company_name'          => $item['company_name'] ?? null,
+                        'company_address'       => $item['company_address'] ?? null,
+                        'signatory_name'        => $item['signatory_name'] ?? null,
+                        'signatory_position'    => $item['signatory_position'] ?? null,
+                        'company_logo_path'     => $item['company_logo_path'] ?? null,
+                        'signature_image_path'  => $item['signature_image_path'] ?? null,
+                        'aspek_penilaian'       => $data,
+                        'rata_rata'             => $avg,
+                    ]
+                );
 
                 $saved++;
             } catch (\Throwable $e) {
-                $errors[] = ($item['fullname'] ?? "Pemagang #{$idx}") . ': ' . $e->getMessage();
+                $errors[] = "Pemagang ID {$item['intern_id']}: " . $e->getMessage();
                 \Log::error('Bulk assessment store gagal', ['idx' => $idx, 'err' => $e->getMessage()]);
             }
         }
 
-        // Simpan setting penandatangan per brand
-        if ($request->input('save_signatory')) {
-            $this->saveSignatorySetting($request, $brand, $logoPath, $sigPath);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "✅ {$saved} penilaian berhasil disimpan.",
+                'errors' => $errors
+            ]);
         }
 
         $msg = "✅ {$saved} penilaian berhasil disimpan.";
@@ -577,22 +596,24 @@ class InternAssessmentController extends Controller
         ]);
 
         $brand    = $request->input('brand');
-        $existing = AssessmentSignatorySetting::where('brand', $brand)->first() ?? new AssessmentSignatorySetting(['brand' => $brand]);
+        $existing = Brand::where('name', $brand)->first();
+        
+        if (!$existing) {
+            return response()->json(['success' => false, 'message' => 'Brand tidak ditemukan.'], 404);
+        }
 
         [$logoPath, $sigPath] = $this->resolveLogoAndSignature(
             $request,
-            $existing->company_logo_path,
-            $existing->signature_image_path
+            $existing->logo,
+            $existing->signature
         );
 
         $existing->fill([
-            'brand'                => $brand,
-            'company_name'         => $request->input('company_name', $existing->company_name),
             'company_address'      => $request->input('company_address', $existing->company_address),
-            'signature_name'       => $request->input('signature_name', $existing->signature_name),
-            'signature_position'   => $request->input('signature_position', $existing->signature_position),
-            'company_logo_path'    => $logoPath,
-            'signature_image_path' => $sigPath,
+            'signatory_name'       => $request->input('signature_name', $existing->signatory_name),
+            'signatory_position'   => $request->input('signature_position', $existing->signatory_position),
+            'logo'                 => $logoPath ?? $existing->logo,
+            'signature'            => $sigPath ?? $existing->signature,
         ])->save();
 
         return response()->json(['success' => true, 'message' => 'Setting penandatangan berhasil disimpan.']);
@@ -608,8 +629,8 @@ class InternAssessmentController extends Controller
         $divisions   = $this->getDivisionOptions();
         $defaultAspects = $this->getDefaultAspects();
 
-        $aspekPenilaian = json_decode($assessment->aspek_penilaian, true);
-        if (!is_array($aspekPenilaian)) {
+        $aspekPenilaian = is_array($assessment->aspek_penilaian) ? $assessment->aspek_penilaian : json_decode($assessment->aspek_penilaian, true);
+        if (!is_array($aspekPenilaian) || empty($aspekPenilaian)) {
             $division = $this->mapInterestToDivision($assessment->intern->internship_interest ?? '');
             $aspekPenilaian = $defaultAspects[$division] ?? $defaultAspects['Content Writer'];
         }
@@ -621,7 +642,7 @@ class InternAssessmentController extends Controller
 
         $interns = IR::whereIn('internship_status', [IR::STATUS_ACTIVE, IR::STATUS_COMPLETED])
             ->orderBy('fullname', 'asc')
-            ->get(['id', 'fullname', 'student_id', 'study_program']);
+            ->get();
 
         return view('admin.interns.edit_assessment', [
             'assessment'     => $assessment,
@@ -639,6 +660,7 @@ class InternAssessmentController extends Controller
 
         $validated = $request->validate([
             'company_name'       => 'nullable|string|max:255',
+            'company_address'    => 'nullable|string|max:1000',
             'signatory_name'     => 'nullable|string|max:255',
             'signatory_position' => 'nullable|string|max:255',
             'company_logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -657,11 +679,12 @@ class InternAssessmentController extends Controller
 
         $assessment->update([
             'company_name'          => $validated['company_name'] ?? null,
+            'company_address'       => $validated['company_address'] ?? null,
             'signatory_name'        => $validated['signatory_name'] ?? null,
             'signatory_position'    => $validated['signatory_position'] ?? null,
             'company_logo_path'     => $logoPath,
             'signature_image_path'  => $sigPath,
-            'aspek_penilaian'       => json_encode($data),
+            'aspek_penilaian'       => $data,
             'rata_rata'             => $avg,
         ]);
 
@@ -707,6 +730,10 @@ class InternAssessmentController extends Controller
     {
         $assessment = InternAssessment::findOrFail($id);
 
+        if ($assessment->intern->internship_status !== IR::STATUS_COMPLETED) {
+            return redirect()->back()->with('error', 'Dokumen hanya bisa dilihat setelah status pemagang selesai.');
+        }
+
         $logoFile = public_path('storage/' . ($assessment->company_logo_path ?? 'images/logos/logo_seveninc.png'));
         $logoSrc  = file_exists($logoFile)
             ? asset('storage/' . ($assessment->company_logo_path ?? 'images/logos/logo_seveninc.png'))
@@ -728,6 +755,10 @@ class InternAssessmentController extends Controller
     public function downloadPDF($id)
     {
         $assessment = InternAssessment::findOrFail($id);
+
+        if ($assessment->intern->internship_status !== IR::STATUS_COMPLETED) {
+            return redirect()->back()->with('error', 'Dokumen hanya bisa diunduh setelah status pemagang selesai.');
+        }
 
         $logoFile     = public_path('storage/' . ($assessment->company_logo_path ?? 'images/logos/logo_seveninc.png'));
         $fallbackLogo = public_path('storage/images/logos/logo_seveninc.png');
@@ -787,18 +818,17 @@ class InternAssessmentController extends Controller
 
     private function saveSignatorySetting(Request $request, string $brand, ?string $logoPath, ?string $sigPath): void
     {
-        $existing = AssessmentSignatorySetting::where('brand', $brand)->first()
-            ?? new AssessmentSignatorySetting(['brand' => $brand]);
-
-        $existing->fill([
-            'brand'                => $brand,
-            'company_name'         => $request->input('company_name', $brand),
-            'company_address'      => $request->input('company_address', $existing->company_address),
-            'signature_name'       => $request->input('signature_name', $existing->signature_name),
-            'signature_position'   => $request->input('signature_position', $existing->signature_position),
-            'company_logo_path'    => $logoPath ?? $existing->company_logo_path,
-            'signature_image_path' => $sigPath  ?? $existing->signature_image_path,
-        ])->save();
+        $existing = Brand::where('name', $brand)->first();
+        
+        if ($existing) {
+            $existing->fill([
+                'company_address'      => $request->input('company_address', $existing->company_address),
+                'signatory_name'       => $request->input('signature_name', $existing->signatory_name),
+                'signatory_position'   => $request->input('signature_position', $existing->signatory_position),
+                'logo'                 => $logoPath ?? $existing->logo,
+                'signature'            => $sigPath  ?? $existing->signature,
+            ])->save();
+        }
     }
 }
 

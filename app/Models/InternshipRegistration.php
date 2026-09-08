@@ -342,4 +342,8 @@ class InternshipRegistration extends Model
         return $this->hasOne(\App\Models\Feedback::class, 'intern_id');
     }
 
+    public function assessment()
+    {
+        return $this->hasOne(\App\Models\InternAssessment::class, 'intern_id');
+    }
 }

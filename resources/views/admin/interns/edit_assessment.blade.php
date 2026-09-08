@@ -53,52 +53,44 @@
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                 <div class="relative sm:col-span-2">
-                    <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Cari / Ubah Nama Pemagang</label>
-                    <div class="flex items-center gap-2 rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2">
-                        <svg class="h-4 w-4 shrink-0 text-[#4B5F5A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input type="text" id="searchIntern"
-                            value="{{ old('fullname', $assessment->fullname) }}"
-                            autocomplete="off" onkeyup="filterInternList()"
-                            class="w-full border-0 bg-transparent text-[13px] text-[#1B3A34] outline-none placeholder:text-[#4B5F5A]">
-                    </div>
-                    <input type="hidden" name="fullname" id="fullname_hidden" value="{{ old('fullname', $assessment->fullname) }}">
-                    <div id="internDropdown"
-                        class="absolute z-20 hidden mt-1 max-h-56 w-full overflow-y-auto rounded-[10px] border border-[#DCE7E1] bg-white shadow-lg">
-                        @foreach($interns as $intern)
-                        <div class="intern-option cursor-pointer px-4 py-2.5 text-[13px] text-[#1B3A34] hover:bg-[#F4F8F6]"
-                            data-name="{{ $intern->fullname }}"
-                            data-nim="{{ $intern->student_id }}"
-                            data-prodi="{{ $intern->study_program }}">
-                            {{ $intern->fullname }}
-                            <span class="text-[11px] text-[#4B5F5A]">— {{ $intern->study_program }}</span>
-                        </div>
-                        @endforeach
-                    </div>
+                    <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Nama Pemagang</label>
+                    <input type="text" id="searchIntern" readonly
+                        value="{{ old('fullname', $assessment->intern->fullname ?? '') }}"
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80">
+                    <input type="hidden" name="fullname" id="fullname_hidden" value="{{ old('fullname', $assessment->intern->fullname ?? '') }}">
                 </div>
 
                 <div>
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">NIM / NIS</label>
-                    <input type="text" id="nimField" name="nim_or_nis"
-                        value="{{ old('nim_or_nis', $assessment->nim_or_nis) }}"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                    <input type="text" id="nimField" name="nim_or_nis" readonly
+                        value="{{ old('nim_or_nis', $assessment->intern->student_id ?? $assessment->intern->nim_nis ?? '') }}"
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80">
                 </div>
 
                 <div>
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Program Studi</label>
-                    <input type="text" id="prodiField" name="study_program"
-                        value="{{ old('study_program', $assessment->study_program) }}"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                    <input type="text" id="prodiField" name="study_program" readonly
+                        value="{{ old('study_program', $assessment->intern->study_program ?? '') }}"
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80">
                 </div>
 
                 <div>
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Divisi / Kompetensi Keahlian</label>
-                    <select name="div" id="divisionSelect"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                    <select name="div" id="divisionSelect" disabled
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80">
                         <option value="">-- Pilih Divisi --</option>
                         @foreach($divisions as $div)
-                        <option value="{{ $div }}" {{ old('div', $assessment->div) === $div ? 'selected' : '' }}>{{ $div }}</option>
+                        <option value="{{ $div }}" {{ old('div', $assessment->intern->internship_interest ?? '') === $div ? 'selected' : '' }}>{{ $div }}</option>
                         @endforeach
                     </select>
+                    <input type="hidden" name="div" value="{{ old('div', $assessment->intern->internship_interest ?? '') }}">
+                </div>
+
+                <div>
+                    <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Brand</label>
+                    <input type="text" readonly
+                        value="{{ old('brand', $assessment->intern->brandRel?->name ?? $assessment->intern->brand ?? '-') }}"
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80">
                 </div>
             </div>
         </div>
@@ -108,59 +100,55 @@
             <p class="mb-4 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2D8659]">Data Perusahaan & Penandatangan</p>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
-                <div>
+                <div class="sm:col-span-2">
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Nama Perusahaan</label>
-                    <input type="text" name="company_name"
+                    <input type="text" name="company_name" readonly
                         value="{{ old('company_name', $assessment->company_name) }}"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-                </div>
-
-                <div>
-                    <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Nama Penandatangan</label>
-                    <input type="text" name="signature_name"
-                        value="{{ old('signature_name', $assessment->signature_name) }}"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80">
                 </div>
 
                 <div class="sm:col-span-2">
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Alamat Perusahaan</label>
-                    <textarea name="company_address" rows="2"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition resize-none">{{ old('company_address', $assessment->company_address) }}</textarea>
+                    <textarea name="company_address" rows="2" readonly
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80 resize-none">{{ old('company_address', $assessment->company_address) }}</textarea>
                 </div>
 
-                <div>
+                <div class="sm:col-span-1">
+                    <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Nama Penandatangan</label>
+                    <input type="text" name="signature_name" readonly
+                        value="{{ old('signature_name', $assessment->signatory_name) }}"
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80">
+                </div>
+
+                <div class="sm:col-span-1">
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Jabatan Penandatangan</label>
-                    <input type="text" name="signature_position"
-                        value="{{ old('signature_position', $assessment->signature_position) }}"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                    <input type="text" name="signature_position" readonly
+                        value="{{ old('signature_position', $assessment->signatory_position) }}"
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none cursor-not-allowed opacity-80">
                 </div>
 
-                <div>
+                <div class="sm:col-span-1">
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Logo Perusahaan</label>
-                    <select name="company_logo_select"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-                        <option value="">-- Pilih Logo --</option>
-                        @foreach($logos as $logo)
-                        <option value="{{ $logo }}" {{ old('company_logo_select', $assessment->company_logo_path) === $logo ? 'selected' : '' }}>{{ basename($logo) }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-[11px] text-[#4B5F5A]">Atau upload baru:</p>
-                    <input type="file" name="company_logo" accept="image/*"
-                        class="mt-1 block w-full text-[12.5px] text-[#4B5F5A]">
+                    <div class="flex items-center justify-center rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] p-3 h-[100px] opacity-80">
+                        @if($assessment->company_logo_path)
+                            <img src="{{ Storage::url($assessment->company_logo_path) }}" alt="Logo" class="max-h-full max-w-full object-contain">
+                        @else
+                            <span class="text-[12px] text-[#4B5F5A] italic">Belum ada logo</span>
+                        @endif
+                    </div>
+                    <input type="hidden" name="company_logo_select" value="{{ old('company_logo_select', $assessment->company_logo_path) }}">
                 </div>
 
-                <div>
+                <div class="sm:col-span-1">
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Tanda Tangan</label>
-                    <select name="signature_image_select"
-                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-                        <option value="">-- Pilih Tanda Tangan --</option>
-                        @foreach($signatures as $sig)
-                        <option value="{{ $sig }}" {{ old('signature_image_select', $assessment->signature_image_path) === $sig ? 'selected' : '' }}>{{ basename($sig) }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-[11px] text-[#4B5F5A]">Atau upload baru:</p>
-                    <input type="file" name="signature_image" accept="image/*"
-                        class="mt-1 block w-full text-[12.5px] text-[#4B5F5A]">
+                    <div class="flex items-center justify-center rounded-[8px] border border-[#DCE7E1] bg-[#E8F5E9] p-3 h-[100px] opacity-80">
+                        @if($assessment->signature_image_path)
+                            <img src="{{ Storage::url($assessment->signature_image_path) }}" alt="Tanda Tangan" class="max-h-full max-w-full object-contain">
+                        @else
+                            <span class="text-[12px] text-[#4B5F5A] italic">Belum ada tanda tangan</span>
+                        @endif
+                    </div>
+                    <input type="hidden" name="signature_image_select" value="{{ old('signature_image_select', $assessment->signature_image_path) }}">
                 </div>
             </div>
         </div>

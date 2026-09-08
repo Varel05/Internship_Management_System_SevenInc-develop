@@ -9,12 +9,15 @@ class InternAssessment extends Model
 {
     use HasFactory;
 
+    const UPDATED_AT = null;
+
     // Menambahkan properti $fillable untuk semua kolom yang bisa diisi
     protected $fillable = [
         'intern_id',
         'aspek_penilaian',
         'rata_rata',
         'company_name',
+        'company_address',
         'company_logo_path',
         'signatory_name',
         'signatory_position',

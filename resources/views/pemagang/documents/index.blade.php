@@ -66,6 +66,11 @@
         <span class="flex items-center justify-center gap-1.5 w-full py-2 text-xs text-amber-700 bg-amber-50 rounded-lg border border-dashed border-amber-300">
           <i class="fas fa-clock"></i> Menunggu admin
         </span>
+      @elseif($key === 'surat_penilaian' && !$isCompleted)
+        {{-- Status belum selesai, khusus surat penilaian --}}
+        <span class="flex items-center justify-center w-full py-2 text-xs text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200" title="Dokumen ini hanya bisa diunduh setelah status magang Anda selesai">
+          <i class="fas fa-lock mr-1"></i> Terkunci (Belum Selesai)
+        </span>
       @else
         <span class="flex items-center justify-center w-full py-2 text-xs text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
           Belum tersedia
