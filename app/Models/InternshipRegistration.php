@@ -34,6 +34,7 @@ class InternshipRegistration extends Model
         'supervisor_name', 'supervisor_contact',
         'parent_name', 'parent_wa_contact',
         'current_activities', 'social_media_instagram',
+        'profile_photo',
     ];
 
     /**

@@ -33,24 +33,29 @@ class SettingsController extends Controller
         // Nama lengkap TIDAK boleh diubah melalui pengaturan
         $user->email = $validated['email'];
         
+        $updateReg = false;
+        
         if ($user->internshipRegistration) {
-            $user->internshipRegistration->phone_number = $validated['phone_number'] ?? $user->internshipRegistration->phone_number;
-            $user->internshipRegistration->save();
-        } else {
-            $user->phone_number = $validated['phone_number'] ?? $user->phone_number;
+            if (isset($validated['phone_number'])) {
+                $user->internshipRegistration->phone_number = $validated['phone_number'];
+                $updateReg = true;
+            }
+            if ($request->hasFile('profile_picture')) {
+                if ($user->internshipRegistration->profile_photo) {
+                    Storage::disk('public')->delete($user->internshipRegistration->profile_photo);
+                }
+                $user->internshipRegistration->profile_photo = $request->file('profile_picture')
+                    ->store('uploads', 'public');
+                $updateReg = true;
+            }
+            
+            if ($updateReg) {
+                $user->internshipRegistration->save();
+            }
         }
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
-        }
-
-        if ($request->hasFile('profile_picture')) {
-            // Hapus foto lama
-            if ($user->profile_picture) {
-                Storage::disk('public')->delete($user->profile_picture);
-            }
-            $user->profile_picture = $request->file('profile_picture')
-                ->store('images/profile-pictures', 'public');
         }
 
         $user->save();

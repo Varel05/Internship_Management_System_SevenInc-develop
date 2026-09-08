@@ -167,6 +167,7 @@
                 {{-- Preview data pemagang --}}
                 <div id="genInternPreview" class="rounded-[10px] bg-[#F4F8F6] px-4 py-3">
                     <div class="flex items-center gap-3">
+                        <img id="genInternAvatarImg" class="hidden h-10 w-10 shrink-0 rounded-full object-cover border border-gray-200">
                         <div id="genInternAvatar" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E8F5E9] text-sm font-bold text-[#1F5F3F]">—</div>
                         <div>
                             <p id="genInternName" class="font-semibold text-[#1B3A34]">—</p>
@@ -970,7 +971,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Isi preview pemagang
         const ini = initials(data.fullname);
-        document.getElementById('genInternAvatar').textContent = ini;
+        const avatarImg = document.getElementById('genInternAvatarImg');
+        const avatarFallback = document.getElementById('genInternAvatar');
+
+        if (data.profile_photo || (data.user && data.user.profile_picture)) {
+            const photoPath = data.profile_photo || data.user.profile_picture;
+            avatarImg.src = '/storage/' + photoPath;
+            avatarImg.classList.remove('hidden');
+            avatarFallback.classList.add('hidden');
+        } else {
+            avatarFallback.textContent = ini;
+            avatarFallback.classList.remove('hidden');
+            avatarImg.classList.add('hidden');
+        }
         document.getElementById('genInternName').textContent   = data.fullname || '-';
         document.getElementById('genInternMeta').textContent   = data.email || '-';
         document.getElementById('genInternInstitution').textContent = data.institution_name || '-';
@@ -1189,7 +1202,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 video_software:      'Keahlian & Alat',
                 programming_languages:'Keahlian & Alat',
                 digital_marketing_type:'Keahlian & Alat',
-                laptop_equipment:    'Keahlian & Alat',
                 owned_tools:         'Keahlian & Alat',
             };
 
@@ -1438,7 +1450,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 video_software:      'Keahlian & Alat',
                 programming_languages:'Keahlian & Alat',
                 digital_marketing_type:'Keahlian & Alat',
-                laptop_equipment:    'Keahlian & Alat',
+                owned_tools:         'Keahlian & Alat',
                 owned_tools:         'Keahlian & Alat',
             };
 
@@ -1552,8 +1564,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${editField('Software Video', 'video_software', it.video_software)}
                 ${editField('Bahasa Pemrograman', 'programming_languages', it.programming_languages)}
                 ${editField('Digital Marketing', 'digital_marketing_type', it.digital_marketing_type)}
-                ${editField('Peralatan Laptop', 'laptop_equipment', it.laptop_equipment)}
-                ${editField('Alat Tambahan yang Dimiliki', 'owned_tools', it.owned_tools)}
+                ${editField('Peralatan (Laptop, Kamera, dll)', 'owned_tools', it.owned_tools)}
 
                 ${section('Informasi Tambahan')}
                 <div>

@@ -386,7 +386,6 @@ class InternController extends Controller
             'video_software'         => 'nullable|string|max:255',
             'programming_languages'  => 'nullable|string|max:255',
             'digital_marketing_type' => 'nullable|string|max:255',
-            'laptop_equipment'       => 'nullable|string|max:50',
             'owned_tools'            => 'nullable|string|max:255',
             // Informasi Tambahan
             'current_activities'     => 'nullable|string',
@@ -508,13 +507,6 @@ class InternController extends Controller
                 $allTools = array_merge($allTools, array_filter(array_map('trim', explode(',', $val))));
             }
             unset($validatedData['owned_tools']);
-        }
-        if (array_key_exists('laptop_equipment', $validatedData)) {
-            $val = trim($validatedData['laptop_equipment']);
-            if (!empty($val) && strtolower($val) !== 'tidak ada' && strtolower($val) !== '-') {
-                $allTools[] = $val;
-            }
-            unset($validatedData['laptop_equipment']);
         }
         foreach (array_unique($allTools) as $item) {
             $intern->tools()->create([

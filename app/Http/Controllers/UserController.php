@@ -324,15 +324,9 @@ class UserController extends Controller
             return redirect()->route('user.profile')->with('error', 'User tidak ditemukan.');
         }
 
-        // Update name, email, dan phone_number jika ada
-        if (!empty($validated['name'])) {
-            $user->name = $validated['name'];
-        }
+        // Update email
         if (!empty($validated['email'])) {
             $user->email = $validated['email'];
-        }
-        if (!empty($validated['phone_number'])) {
-            $user->phone_number = $validated['phone_number'];
         }
 
         // Jika ada password baru, update password
@@ -340,19 +334,37 @@ class UserController extends Controller
             $user->password = Hash::make($validated['password']);
         }
 
-        // Cek apakah ada gambar profil yang diunggah
-        if ($request->hasFile('profile_picture')) {
-            // Hapus gambar lama jika ada
-            if ($user->profile_picture) {
-                Storage::disk('public')->delete($user->profile_picture);
-            }
-            // Simpan gambar profil di folder public/images/profile-pictures/
-            $imagePath = $request->file('profile_picture')->store('images/profile-pictures', 'public');
-            $user->profile_picture = $imagePath;
-        }
-
-        // Simpan semua perubahan data user
+        // Simpan perubahan dasar user
         $user->save();
+
+        // Update name, phone_number, dan profile_picture di internship_registrations
+        $registration = \App\Models\InternshipRegistration::where('user_id', $user->id)->latest('id')->first();
+        if ($registration) {
+            $updateReg = false;
+            
+            if (!empty($validated['name'])) {
+                $registration->fullname = $validated['name'];
+                $updateReg = true;
+            }
+            
+            if (!empty($validated['phone_number'])) {
+                $registration->phone_number = $validated['phone_number'];
+                $updateReg = true;
+            }
+
+            if ($request->hasFile('profile_picture')) {
+                if ($registration->profile_photo) {
+                    Storage::disk('public')->delete($registration->profile_photo);
+                }
+                $imagePath = $request->file('profile_picture')->store('uploads', 'public');
+                $registration->profile_photo = $imagePath;
+                $updateReg = true;
+            }
+
+            if ($updateReg) {
+                $registration->save();
+            }
+        }
 
         return redirect()->route('user.profile')->with('success', 'Akun berhasil diperbarui!');
     }

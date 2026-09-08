@@ -300,16 +300,11 @@
       </div>
 
       {{-- Peralatan --}}
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 gap-4">
         <div>
-          <label class="{{ $label }}">Peralatan Laptop</label>
-          <input type="text" name="laptop_equipment" placeholder="Asus ROG, Macbook"
-            class="{{ $input }}" value="{{ $old('laptop_equipment') }}">
-        </div>
-        <div>
-          <label class="{{ $label }}">Alat Tambahan yang Dimiliki</label>
-          <input type="text" name="owned_tools" placeholder="Kamera, Tripod"
-            class="{{ $input }}" value="{{ $old('owned_tools') }}">
+          <label class="{{ $label }}">Peralatan (Laptop, Kamera, Tripod, dll)</label>
+          <input type="text" name="owned_tools" placeholder="Asus ROG, Kamera, Tripod"
+            class="{{ $input }}" value="{{ $old('owned_tools') ?: $old('laptop_equipment') }}">
         </div>
       </div>
 
@@ -337,7 +332,18 @@
           @endif
         </div>
       </div>
-      <p class="text-xs text-gray-400 -mt-3">Maks. 2MB per file, format PDF saja</p>
+      <div class="mt-4">
+        <label class="{{ $label }}">Foto Profil (JPG/PNG) <span class="text-red-500">*</span></label>
+        <input type="file" name="profile_photo" accept=".jpg,.jpeg,.png"
+          class="{{ $input }} file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:text-white cursor-pointer"
+          style="--file-bg: #1a5c38;">
+        @if($reg?->profile_photo)
+          <p class="text-xs text-gray-400 mt-1">
+            File sebelumnya: <a href="{{ asset('storage/' . $reg->profile_photo) }}" target="_blank" class="text-blue-600 hover:underline">{{ basename($reg->profile_photo) }}</a>
+          </p>
+        @endif
+      </div>
+      <p class="text-xs text-gray-400 -mt-2">Maks. 5MB per file, format PDF/JPG/PNG sesuai ketentuan field</p>
 
       {{-- Hidden fields dengan nilai default yang tidak tampil di form --}}
       <input type="hidden" name="supervisor_contact" value="-">

@@ -125,7 +125,7 @@ class RegistrationController extends Controller
         $infoSourcesArr = $request->input('internship_info_sources', []);
 
         // Upload file
-        foreach (['cv_ktp_portofolio_pdf', 'portofolio_visual'] as $fileField) {
+        foreach (['cv_ktp_portofolio_pdf', 'portofolio_visual', 'profile_photo'] as $fileField) {
             if ($request->hasFile($fileField)) {
                 $validated[$fileField] = $this->storeFile($request->file($fileField), 'uploads');
             }
@@ -228,7 +228,7 @@ class RegistrationController extends Controller
                 $user->role = 'pemagang';
                 $user->save();
             }
-                        IR::create($validated);
+            IR::create($validated);
         }
 
         // Get the latest registration to sync relations
@@ -251,10 +251,8 @@ class RegistrationController extends Controller
 
             // Sync Tools
             $intern->tools()->delete();
-            $mergedTools = collect(array_merge(
-                array_map('trim', explode(',', $validated['laptop_equipment'] ?? '')),
-                array_map('trim', explode(',', $validated['owned_tools'] ?? ''))
-            ))->filter(fn($val) => !empty($val) && $val !== '-')->unique();
+            $mergedTools = collect(explode(',', $validated['owned_tools'] ?? ''))
+                ->map('trim')->filter(fn($val) => !empty($val) && $val !== '-')->unique();
             foreach ($mergedTools as $t) {
                 $intern->tools()->create(['tool_name' => $t]);
             }
@@ -313,12 +311,12 @@ class RegistrationController extends Controller
             'end_date'           => 'nullable|string|max:255',
             'cv_ktp_portofolio_pdf' => 'nullable|file|mimes:pdf|max:10240',
             'portofolio_visual'  => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+            'profile_photo'      => 'nullable|file|mimes:jpg,jpeg,png|max:5120',
             // fields lainnya opsional
             'design_software'    => 'nullable|string|max:255',
             'video_software'     => 'nullable|string|max:255',
             'programming_languages' => 'nullable|string|max:255',
-                        'digital_marketing_type' => 'nullable|string|max:255',
-            'laptop_equipment'   => 'nullable|string|max:255',
+            'digital_marketing_type' => 'nullable|string|max:255',
             'owned_tools'        => 'nullable|string|max:255',
             'parent_name'        => 'nullable|string|max:255',
             'family_status'      => 'nullable|string|max:50',

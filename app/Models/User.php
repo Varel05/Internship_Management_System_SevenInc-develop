@@ -24,16 +24,11 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
         'email',
         'password',
         'role',
         'is_online',
         'is_banned',
-        'banned_at',
-        'ban_reason',
-        'phone_number',
-        'profile_picture',
     ];
 
     /**
@@ -159,4 +154,23 @@ class User extends Authenticatable
         };
     }
 
+    public function registration(): HasOne
+    {
+        return $this->hasOne(InternshipRegistration::class, 'user_id')->latestOfMany();
+    }
+
+    public function getNameAttribute()
+    {
+        return $this->registration ? $this->registration->fullname : null;
+    }
+
+    public function getProfilePictureAttribute()
+    {
+        return $this->registration ? $this->registration->profile_photo : null;
+    }
+
+    public function getPhoneNumberAttribute()
+    {
+        return $this->registration ? $this->registration->phone_number : null;
+    }
 }
