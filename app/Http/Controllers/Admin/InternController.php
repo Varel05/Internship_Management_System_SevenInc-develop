@@ -627,8 +627,9 @@ class InternController extends Controller
             $intern->user?->createMemberCard();
         }
 
-        // Kirim email notifikasi jika berubah ke accepted
+        // Jika berubah menjadi diterima, generate LOA via Background Job
         if ($oldStatus !== IR::STATUS_ACCEPTED && $intern->internship_status === IR::STATUS_ACCEPTED) {
+            \App\Jobs\GenerateLoaJob::dispatch($intern->id, $intern->brand_id);
             $this->sendAcceptedEmail($intern);
         }
 
