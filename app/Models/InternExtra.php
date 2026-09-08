@@ -27,7 +27,7 @@ class InternExtra extends Model
         'job_info_granted_at'     => 'datetime',
     ];
 
-    public function intern()
+    public function registration()
     {
         return $this->belongsTo(InternshipRegistration::class, 'intern_id');
     }

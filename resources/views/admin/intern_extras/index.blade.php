@@ -70,7 +70,7 @@
       </thead>
       <tbody class="divide-y divide-[#DCE7E1]">
         @forelse($interns as $intern)
-        @php $extra = \App\Models\InternExtra::where('internship_registration_id', $intern->id)->first(); @endphp
+        @php $extra = \App\Models\InternExtra::where('intern_id', $intern->id)->first(); @endphp
         <tr class="hover:bg-[#F4F8F6] transition">
           <td class="px-5 py-4">
             <p class="font-semibold text-[#1B3A34] text-sm">{{ $intern->fullname }}</p>
