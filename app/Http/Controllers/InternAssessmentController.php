@@ -316,9 +316,12 @@ class InternAssessmentController extends Controller
 
         $interns = IR::query()
             ->where('internship_status', IR::STATUS_COMPLETED)
-            ->where('brand', $brand)
+            ->whereHas('brandRel', function ($q) use ($brand) {
+                $q->where('name', $brand);
+            })
+            ->with('brandRel')
             ->select('id', 'fullname', 'student_id', 'study_program', 'institution_name',
-                     'start_date', 'end_date', 'internship_interest', 'brand')
+                     'start_date', 'end_date', 'internship_interest', 'brand_id')
             ->latest('id')
             ->get()
             ->map(fn ($r) => [
@@ -369,13 +372,12 @@ class InternAssessmentController extends Controller
         $divisions = $this->getDivisionOptions();
 
         // Ambil semua brand yang punya pemagang completed
-        $brands = IR::query()
-            ->where('internship_status', IR::STATUS_COMPLETED)
-            ->whereNotNull('brand')
-            ->where('brand', '!=', '')
+        $brands = \App\Models\Brand::join('internship_registrations', 'brands.id', '=', 'internship_registrations.brand_id')
+            ->where('internship_registrations.internship_status', IR::STATUS_COMPLETED)
+            ->select('brands.name')
             ->distinct()
-            ->orderBy('brand')
-            ->pluck('brand')
+            ->orderBy('brands.name')
+            ->pluck('name')
             ->values();
 
         // Koleksi logo & tanda tangan
