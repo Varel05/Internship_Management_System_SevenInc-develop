@@ -1,6 +1,5 @@
 @php
   use Carbon\Carbon;
-  $font = "font-family: 'Times New Roman', serif;";
   $interns = $rows ?? [];
 @endphp
 
@@ -8,259 +7,279 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Letter of Acceptance (LOA)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Georgia:wght@400;700&display=swap" rel="stylesheet">
+  <title>Surat Keterangan Ijin Magang</title>
   <style>
     /* ===== A4 & Margin ===== */
     @page {
       size: A4 portrait;
-      margin: 0;
+      margin: 10mm 15mm;
     }
 
     body {
-      font-family: 'Times New Roman', serif; /* Changed font-family to Times New Roman */
-      font-size: 12px;
-      color: #2d3748;
-      line-height: 1.5;
+      font-family: 'Times New Roman', serif;
+      font-size: 11pt;
+      color: #000;
+      line-height: 1.3;
       margin: 0;
       padding: 0;
-      background-color: #f9fafb;
-      padding-top: 10mm; /* Added top padding to ensure content starts correctly */
-      padding-bottom: 10mm; /* Bottom padding to avoid content cutoff */
+      background-color: #ffffff;
     }
 
     .wrap {
       width: 100%;
-      max-width: 19cm; /* Ensure proportional in A4 */
       margin: 0 auto;
-      background-color: #ffffff;
-      padding: 40px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
     }
 
-    .head {
-      margin-bottom: 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 10px;
+    /* HEADER */
+    table.header-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      margin-bottom: 5px;
     }
-
-    .head img {
-      width: 50px;
+    table.header-table td {
+      border: none;
+      padding: 0;
+      vertical-align: middle;
+    }
+    .header-logo {
+      width: 120px;
+    }
+    .header-logo img {
+      width: 100px;
       height: auto;
-      border-radius: 8px;
     }
-
-    .head .brand, .head .name {
-      display: inline-block;
-      vertical-align: top;
-      margin-left: 15px;
-    }
-
-    .head .name h2 {
-      font-size: 26px;
-      font-weight: 700;
-      color: #000000;
-      margin: 0;
-      text-transform: uppercase;
-    }
-
-    .head .name p {
-      font-size: 14px;
-      color: #4a5568;
-      margin: 5px 0;
-    }
-
-    h1.title {
+    .header-text-container {
       text-align: center;
-      font-size: 24px;
-      margin: 30px 0;
-      color: #065f46;
-      font-weight: 700;
-      text-transform: uppercase;
+    }
+    .header-text-container h1 {
+      margin: 0;
+      font-size: 16pt;
+      font-weight: bold;
+      color: #000;
+    }
+    .header-text-container p {
+      margin: 4px 0 0 0;
+      font-size: 10pt;
+      color: #000;
+      line-height: 1.2;
     }
 
+    .header-line {
+      border-top: 3px solid #000;
+      border-bottom: 1px solid #000;
+      height: 2px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+
+    /* TITLE */
+    .title-surat {
+      text-align: center;
+      font-size: 12pt;
+      font-weight: bold;
+      text-decoration: underline;
+      margin-bottom: 15px;
+    }
+
+    /* META */
+    table.meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      margin-bottom: 15px;
+      font-size: 11pt;
+    }
+    table.meta-table td {
+      border: none;
+      padding: 2px 0;
+      vertical-align: top;
+    }
+    .meta-label {
+      width: 80px;
+    }
+    .meta-colon {
+      width: 15px;
+    }
+
+    /* KEPADA */
+    .kepada-block {
+      margin-bottom: 15px;
+      font-weight: bold;
+      line-height: 1.4;
+    }
+
+    /* CONTENT */
     .content p {
       text-align: justify;
-      font-size: 14px;
-      margin: 15px 0;
-      color: #2d3748;
-      line-height: 1.7;
+      margin: 10px 0;
+      line-height: 1.5;
     }
 
-    table {
+    /* TABLE SISWA */
+    table.siswa-table {
       width: 100%;
-      margin-top: 20px;
       border-collapse: collapse;
-      border-radius: 8px;
-      overflow: hidden;
+      margin: 15px 0;
+      font-size: 11pt;
     }
-
-    table, th, td {
-      border: 1px solid #e2e8f0;
-    }
-
-    th, td {
-      padding: 14px;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    th {
-      background-color: #edf2f7;
-      font-weight: 600;
-    }
-
-    td {
-      background-color: #ffffff;
-    }
-
-    /* Signature alignment */
-    .signature {
-      margin-top: 0;
-      text-align: left; /* Align the signature to the left */
-      margin-left: 0;
-    }
-
-    .signature-name {
-      text-align: right;
-      font-weight: bold;
-      font-size: 16px;
-      padding-top: -20px;
-      color: #2d3748;
-    }
-
-    .signature-position {
-      text-align: right;
-      font-size: 14px;
-      color: #4a5568;
-    }
-
-    .signature-img {
-      margin-top: 0px;
-      width: 150px; /* Adjust the size of the signature image */
-      height: auto;
-    }
-
-    .footer {
-      font-size: 10px;
+    table.siswa-table th, table.siswa-table td {
+      border: 1px solid #000;
+      padding: 6px;
       text-align: center;
+      vertical-align: middle;
+    }
+    table.siswa-table th {
+      background-color: #00FFFF; /* Cyan header as per image */
+      font-weight: bold;
+    }
+
+    /* SIGNATURE */
+    .signature-wrapper {
+      width: 100%;
       margin-top: 30px;
-      color: #aaa;
+    }
+    .signature-box {
+      width: 300px;
+      float: right;
+      text-align: center;
+    }
+    .signature-box p {
+      margin: 2px 0;
+      line-height: 1.2;
+    }
+    .signature-img-container {
+      position: relative;
+      height: 80px;
+      margin: 10px 0;
+    }
+    .signature-img-container img {
+      max-height: 80px;
+      max-width: 200px;
+    }
+    .signatory-name {
+      font-weight: bold;
+      text-decoration: underline;
     }
 
-    .header-text {
-      font-size: 16px;
-      font-style: italic;
-      color: #065f46;
-      margin-top: 15px;
-    }
-
-    .footer-text {
-      font-size: 12px;
-      color: #4a5568;
-      margin-top: 25px;
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="head">
-      <div class="brand">
-        <img src="{{ $logoData ?? asset('storage/images/logos/logo_seveninc.png') }}" alt="Logo">
-      </div>
-      <div class="name">
-        <h2>Letter of Acceptance (LOA)</h2>
-        @if(!empty($loaSettings?->header_text))
-          <p class="header-text">{{ $loaSettings->header_text }}</p>
-        @endif
-        <p>{{ \Carbon\Carbon::now()->format('d F Y') }}</p>
-      </div>
+    
+    <!-- HEADER -->
+    <table class="header-table">
+      <tr>
+        <td class="header-logo">
+          <img src="{{ $logoData ?? asset('storage/images/logos/logo_seveninc.png') }}" alt="Logo">
+        </td>
+        <td class="header-text-container">
+          <h1>{{ $loaSettings->company_name ?? 'SEVEN INC.' }}</h1>
+          <p>
+            Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe,<br>
+            Banguntapan, Bantul, Yogyakarta<br>
+            Kode Pos: 55198 | Telp: 0274-4534571
+          </p>
+        </td>
+      </tr>
+    </table>
+    <div class="header-line"></div>
+
+    <!-- TITLE -->
+    <div class="title-surat">SURAT KETERANGAN IJIN MAGANG</div>
+
+    <!-- META -->
+    <table class="meta-table">
+      <tr>
+        <td class="meta-label">Nomor</td>
+        <td class="meta-colon">:</td>
+        <td>{{ $intern->loa_number ?? ('19/S1-Magang/HRD/SEVEN/'.\Carbon\Carbon::now()->format('VI/Y')) }}</td>
+      </tr>
+      <tr>
+        <td class="meta-label">Lamp.</td>
+        <td class="meta-colon">:</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td class="meta-label">Hal</td>
+        <td class="meta-colon">:</td>
+        <td>Konfirmasi Izin Kerja Praktik/Magang</td>
+      </tr>
+    </table>
+
+    <!-- KEPADA -->
+    <div class="kepada-block">
+      Kepada Yth.<br>
+      Bapak/Ibu Kepala Prodi {{ $intern->study_program ?? 'Program Studi' }}<br>
+      {{ $intern->institution_name ?? 'Universitas / Instansi' }}
     </div>
 
+    <!-- CONTENT -->
     <div class="content">
-      <p>{{ $openingGreeting ?? 'Dengan ini kami mengonfirmasi bahwa Anda telah diterima untuk mengikuti program magang di perusahaan kami. 
-        Berikut adalah detail magang Anda:' }}</p>
+      <p>
+        Menanggapi permohonan izin melakukan Kerja Praktik/ Magang mahasiswa/i jurusan {{ $intern->study_program ?? 'Program Studi' }} dengan nama berikut ini :
+      </p>
 
-      <!-- Table to display dynamic data of students -->
-      <table>
+      <table class="siswa-table">
         <thead>
           <tr>
-            <th>No</th>
-            <th>Nama Siswa</th>
-            <th>NIM/NIS</th>
-            <th>Jurusan</th>
-            <th>Instansi</th>
-            <th>Periode Magang</th>
-            <th>Kontak</th>
+            <th style="width: 5%;">No</th>
+            <th style="width: 25%;">Nama</th>
+            <th style="width: 15%;">NIM</th>
+            <th style="width: 25%;">Program Studi</th>
+            <th style="width: 30%;">Divisi</th>
           </tr>
         </thead>
         <tbody>
           @foreach($interns as $index => $row)
             <tr>
-              <td>{{ $index + 1 }}</td>
+              <td>{{ $index + 1 }}.</td>
               <td>{{ $row['nama_siswa'] ?? 'Nama Tidak Diketahui' }}</td>
-              <td>{{ $row['nim_nis'] ?? 'NIM/NIS Tidak Diketahui' }}</td>
-              <td>{{ $row['jurusan'] ?? 'Jurusan Tidak Diketahui' }}</td>
-              <td>{{ $row['instansi'] ?? 'Instansi Tidak Diketahui' }}</td>
-              <td>{{ $row['periode'] ?? 'Periode Tidak Diketahui' }}</td>
-              <td>{{ $row['kontak'] ?? 'Kontak Tidak Diketahui' }}</td>
+              <td>{{ $row['nim_nis'] ?? '-' }}</td>
+              <td>{{ $row['jurusan'] ?? '-' }}</td>
+              <td>{{ $intern->internship_interest ?? '-' }}</td>
             </tr>
           @endforeach
         </tbody>
       </table>
 
-      <p>{{ $closingGreeting ?? 'Harap konfirmasi kehadiran Anda melalui email atau telepon yang tertera di bawah ini.' }}</p>
+      @php
+        $start = \Carbon\Carbon::parse($intern->start_date);
+        $end = \Carbon\Carbon::parse($intern->end_date);
+        $diffMonths = $start->diffInMonths($end);
+        if ($diffMonths == 0) $diffMonths = 1;
+        
+        $startStr = $start->translatedFormat('d F Y');
+        $endStr = $end->translatedFormat('d F Y');
+      @endphp
 
-      <p>Terima kasih atas perhatian Anda.</p>
-      <p>Hormat kami,</p>
+      <p>
+        Dengan surat ini, kami IZINKAN mahasiswa/i tersebut melaksanakan Kerja Praktik/ Magang di perusahaan / instansi {{ $loaSettings->company_name ?? 'SEVEN INC' }} mulai dari <strong>{{ $startStr }} - {{ $endStr }} ({{ $diffMonths }} bulan)</strong> secara <strong>Work From Office (WFO)</strong>.
+      </p>
 
-      <!-- Tanda tangan gambar -->
-      <div class="signature">
-        <img src="{{ $stampData ?? asset('storage/images/signature/ttd_arisetiahusbana.png') }}" alt="Tanda Tangan" class="signature-img">
-      </div>
-
-      <!-- Tanda tangan -->
-      <div class="signature">
-        <p class="signature-name">{{ $loaSettings->signatory_name ?? 'Ari Setia Husbana' }}</p>
-        <p class="signature-position">{{ $loaSettings->signatory_position ?? 'HRD' }}</p>
-      </div>
-
-      <!-- Static company data -->
-      <p>{{ $loaSettings->company_name ?? 'Seven Inc.' }}</p>
-      <p>{{ $loaSettings->company_contact_email ?? 'Kontak Perusahaan: (Email / Telepon)' }}</p>
-
-      @if(!empty($loaSettings?->footer_text))
-        <div class="footer-text">{{ $loaSettings->footer_text }}</div>
-      @endif
+      <p>
+        Atas perhatian dan kerjasamanya kami ucapkan terimakasih.
+      </p>
     </div>
+
+    <!-- SIGNATURE -->
+    <div class="signature-wrapper clearfix">
+      <div class="signature-box">
+        <p>Yogyakarta, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+        <p>Hormat kami,</p>
+        <div class="signature-img-container">
+          <img src="{{ $stampData ?? asset('storage/images/signature/ttd_arisetiahusbana.png') }}" alt="Tanda Tangan">
+        </div>
+        <p class="signatory-name">{{ $loaSettings->signatory_name ?? 'Ari Setia Husbana' }}</p>
+        <p>{{ $loaSettings->signatory_position ?? 'HRD' }} {{ $loaSettings->company_name ?? 'SEVEN INC.' }}</p>
+      </div>
+    </div>
+
   </div>
-  <script> 
-    window.addEventListener('message', (event) => {
-      if (event.data.type === 'updateLOA') {
-          updateLOA(event.data.rows);
-      }
-    }); 
-    function updateLOA(rows) {
-      const tableBody = document.querySelector('tbody');
-      tableBody.innerHTML = '';
-      // Clear previous table rows
-      rows.forEach((row, index) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-        <td>${index + 1}</td> 
-        <td>${row.nama_siswa}</td> 
-        <td>${row.nim_nis}</td> 
-        <td>${row.jurusan}</td> 
-        <td>${row.instansi}</td> 
-        <td>${row.periode}</td> 
-        <td>${row.kontak}</td>`;
-        tableBody.appendChild(tr);
-      });
-    }
-  </script>
 </body>
 </html>
