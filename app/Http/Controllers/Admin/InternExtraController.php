@@ -21,12 +21,12 @@ class InternExtraController extends Controller
     public function index(Request $request)
     {
         // Ambil semua brand dari pemagang completed
-        $brands = IR::where('internship_status', IR::STATUS_COMPLETED)
-            ->whereNotNull('brand')
-            ->where('brand', '!=', '')
+        $brands = \App\Models\Brand::join('internship_registrations', 'brands.id', '=', 'internship_registrations.brand_id')
+            ->where('internship_registrations.internship_status', IR::STATUS_COMPLETED)
+            ->select('brands.name')
             ->distinct()
-            ->orderBy('brand')
-            ->pluck('brand')
+            ->orderBy('brands.name')
+            ->pluck('name')
             ->values();
 
         $selectedBrand = $request->get('brand');
@@ -36,7 +36,9 @@ class InternExtraController extends Controller
             ->orderByDesc('updated_at');
 
         if ($selectedBrand) {
-            $query->where('brand', $selectedBrand);
+            $query->whereHas('brandRel', function ($q) use ($selectedBrand) {
+                $q->where('name', $selectedBrand);
+            });
         }
 
         $interns = $query->paginate(20)->appends($request->only('brand'));
@@ -89,8 +91,8 @@ class InternExtraController extends Controller
 
         // Jika mode all_brand, simpan ke semua pemagang brand yang sama
         $allBrandMode = $request->input('mode') === 'all_brand';
-        $targets = ($allBrandMode && !empty($intern->brand))
-            ? IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand', $intern->brand)->get()
+        $targets = ($allBrandMode && !empty($intern->brand_id))
+            ? IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand_id', $intern->brand_id)->get()
             : collect([$intern]);
 
         foreach ($targets as $target) {
@@ -235,8 +237,8 @@ class InternExtraController extends Controller
         $config->save();
 
         // Tentukan daftar target
-        $targets = ($allBrandMode && !empty($intern->brand))
-            ? IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand', $intern->brand)->get()
+        $targets = ($allBrandMode && !empty($intern->brand_id))
+            ? IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand_id', $intern->brand_id)->get()
             : collect([$intern]);
 
         if ($targets->isEmpty()) {
