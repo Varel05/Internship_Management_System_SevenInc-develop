@@ -6,7 +6,7 @@
 @section('content')
 
 @php
-  $name     = auth()->user()->name ?? 'Pemagang';
+  $name     = auth()->user()->internshipRegistration->fullname ?? auth()->user()->name ?? 'Pemagang';
   $firstName = explode(' ', $name)[0];
   $reg      = $registration;
   $divisi   = $reg?->internship_interest ?? null;

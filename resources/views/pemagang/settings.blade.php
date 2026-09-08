@@ -62,7 +62,7 @@
             Nama Lengkap
           </label>
           <div class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-500 select-none">
-            {{ $user->name }}
+            {{ $user->internshipRegistration->fullname ?? $user->name }}
           </div>
           <p class="mt-1 text-xs text-gray-400">Nama lengkap tidak dapat diubah. Hubungi admin jika ada kesalahan.</p>
         </div>
@@ -80,7 +80,7 @@
           <div>
             <label class="block mb-1.5 text-sm font-medium text-gray-700">No. HP</label>
             <input type="text" name="phone_number"
-              value="{{ old('phone_number', $user->phone_number) }}"
+              value="{{ old('phone_number', $user->internshipRegistration->phone_number ?? $user->phone_number) }}"
               placeholder="08xxxxxxxxxx"
               class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
           </div>

@@ -31,8 +31,14 @@ class SettingsController extends Controller
         ]);
 
         // Nama lengkap TIDAK boleh diubah melalui pengaturan
-        $user->email        = $validated['email'];
-        $user->phone_number = $validated['phone_number'] ?? $user->phone_number;
+        $user->email = $validated['email'];
+        
+        if ($user->internshipRegistration) {
+            $user->internshipRegistration->phone_number = $validated['phone_number'] ?? $user->internshipRegistration->phone_number;
+            $user->internshipRegistration->save();
+        } else {
+            $user->phone_number = $validated['phone_number'] ?? $user->phone_number;
+        }
 
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);

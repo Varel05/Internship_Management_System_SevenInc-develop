@@ -183,11 +183,11 @@
               @if($authUser->profile_picture && \Illuminate\Support\Facades\Storage::disk('public')->exists($authUser->profile_picture))
                 <img src="{{ asset('storage/' . $authUser->profile_picture) }}" alt="foto" class="w-full h-full object-cover">
               @else
-                {{ strtoupper(substr($authUser->name ?? 'U', 0, 2)) }}
+                {{ strtoupper(substr($authUser->internshipRegistration->fullname ?? $authUser->name ?? 'U', 0, 2)) }}
               @endif
             </div>
             <div class="text-right hidden sm:block">
-              <div class="text-sm font-medium text-gray-700 leading-tight">{{ auth()->user()->name }}</div>
+              <div class="text-sm font-medium text-gray-700 leading-tight">{{ auth()->user()->internshipRegistration->fullname ?? auth()->user()->name }}</div>
               <div class="text-xs text-gray-400 leading-tight">
                 @php
                   $reg = auth()->user()->internshipRegistration;
