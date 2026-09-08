@@ -91,20 +91,20 @@
       </div>
       <div class="flex-1">
         <p class="text-sm font-semibold text-gray-800 mb-1">
-          {{ $wc->webinar?->title ?? 'Sertifikat Webinar' }}
+          {{ $wc->attendance?->webinar?->title ?? 'Sertifikat Webinar' }}
         </p>
         <p class="text-xs text-gray-500 mb-1">
-          @if($wc->webinar?->event_date)
+          @if($wc->attendance?->webinar?->event_date)
             <i class="fas fa-calendar-alt mr-1 text-green-600"></i>
-            {{ $wc->webinar->event_date->format('d M Y') }}
+            {{ $wc->attendance->webinar->event_date->format('d M Y') }}
           @endif
         </p>
         <p class="text-xs text-gray-400">
-          Disetujui: {{ $wc->reviewed_at?->format('d M Y') ?? '—' }}
+          Disetujui: {{ $wc->attendance?->reviewed_at?->format('d M Y') ?? '—' }}
         </p>
       </div>
       <div class="mt-4">
-        <a href="{{ route('pemagang.documents.sertifikat_webinar', $wc->certificate_id) }}"
+        <a href="{{ route('pemagang.documents.sertifikat_webinar', $wc->id) }}"
            class="flex items-center justify-center gap-2 w-full py-2 text-sm font-medium text-white rounded-lg"
            style="background-color:#1a5c38;">
           <i class="fas fa-download text-xs"></i> Unduh Sertifikat

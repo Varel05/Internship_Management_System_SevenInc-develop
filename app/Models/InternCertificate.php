@@ -5,30 +5,31 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class InternAssessment extends Model
+class InternCertificate extends Model
 {
     use HasFactory;
 
-    // Menambahkan properti $fillable untuk semua kolom yang bisa diisi
+    protected $table = 'intern_certificates';
+    public $timestamps = false;
+
     protected $fillable = [
         'intern_id',
-        'aspek_penilaian',
-        'rata_rata',
+        'certificate_number',
         'company_name',
+        'background_image_path',
         'company_logo_path',
         'signatory_name',
         'signatory_position',
         'signature_image_path',
+        'created_at',
     ];
 
     protected $casts = [
-        'aspek_penilaian' => 'array',
-        'rata_rata' => 'float',
+        'created_at' => 'datetime',
     ];
 
     public function intern()
     {
         return $this->belongsTo(InternshipRegistration::class, 'intern_id');
     }
-
 }

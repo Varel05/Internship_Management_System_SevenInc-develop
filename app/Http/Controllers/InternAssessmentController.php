@@ -431,15 +431,10 @@ class InternAssessmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'intern_id'           => 'nullable|integer|exists:internship_registrations,id',
-            'fullname'            => 'required|string|max:255',
-            'nim_or_nis'          => 'nullable|string|max:50',
-            'study_program'       => 'nullable|string|max:255',
-            'div'                 => 'nullable|string|max:255',
+            'intern_id'           => 'required|integer|exists:internship_registrations,id',
             'company_name'        => 'nullable|string|max:255',
-            'company_address'     => 'nullable|string|max:1000',
-            'signature_name'      => 'nullable|string|max:255',
-            'signature_position'  => 'nullable|string|max:255',
+            'signatory_name'      => 'nullable|string|max:255',
+            'signatory_position'  => 'nullable|string|max:255',
             'company_logo'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'signature_image'     => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'aspek'               => 'required|array',
@@ -454,15 +449,10 @@ class InternAssessmentController extends Controller
         [$data, $avg] = $this->buildAspekData($validated['aspek'], $validated['nilai']);
 
         $assessment = InternAssessment::create([
-            'intern_id'             => $request->input('intern_id'),
-            'fullname'              => $validated['fullname'],
-            'nim_or_nis'            => $validated['nim_or_nis'] ?? null,
-            'study_program'         => $validated['study_program'] ?? null,
-            'div'                   => $validated['div'] ?? 'Content Writer',
+            'intern_id'             => $validated['intern_id'],
             'company_name'          => $validated['company_name'] ?? null,
-            'company_address'       => $validated['company_address'] ?? null,
-            'signature_name'        => $validated['signature_name'] ?? null,
-            'signature_position'    => $validated['signature_position'] ?? null,
+            'signatory_name'        => $validated['signatory_name'] ?? null,
+            'signatory_position'    => $validated['signatory_position'] ?? null,
             'company_logo_path'     => $logoPath,
             'signature_image_path'  => $sigPath,
             'aspek_penilaian'       => json_encode($data),
@@ -478,15 +468,7 @@ class InternAssessmentController extends Controller
         if ($assessment->intern_id) {
             $intern = IR::find($assessment->intern_id);
             if ($intern?->user_id) {
-                \App\Models\DocumentDownload::create([
-                    'user_id'                    => $intern->user_id,
-                    'internship_registration_id' => $intern->id,
-                    'doc_type'                   => \App\Models\DocumentDownload::TYPE_PENILAIAN,
-                    'file_path'                  => null,
-                    'file_url'                   => route('interns.assessment.pdf', $assessment->id),
-                    'downloaded_at'              => now(),
-                    'status'                     => 'success',
-                ]);
+                /* DocumentDownload log removed */
             }
         }
 
@@ -509,17 +491,12 @@ class InternAssessmentController extends Controller
             'brand'          => 'required|string',
             'interns'        => 'required|array|min:1',
             'interns.*.intern_id'          => 'required|integer|exists:internship_registrations,id',
-            'interns.*.fullname'           => 'required|string|max:255',
-            'interns.*.nim_or_nis'         => 'nullable|string|max:50',
-            'interns.*.study_program'      => 'nullable|string|max:255',
-            'interns.*.div'                => 'nullable|string|max:255',
             'interns.*.aspek'              => 'required|array',
             'interns.*.nilai'              => 'required|array',
             // Penandatangan (sama untuk semua dalam brand)
             'company_name'       => 'nullable|string|max:255',
-            'company_address'    => 'nullable|string|max:1000',
-            'signature_name'     => 'nullable|string|max:255',
-            'signature_position' => 'nullable|string|max:255',
+            'signatory_name'     => 'nullable|string|max:255',
+            'signatory_position' => 'nullable|string|max:255',
             'company_logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'signature_image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'save_signatory'     => 'nullable|boolean',
@@ -530,9 +507,8 @@ class InternAssessmentController extends Controller
 
         $brand       = $request->input('brand');
         $companyName = $request->input('company_name', $brand);
-        $companyAddr = $request->input('company_address');
-        $sigName     = $request->input('signature_name');
-        $sigPos      = $request->input('signature_position');
+        $sigName     = $request->input('signatory_name');
+        $sigPos      = $request->input('signatory_position');
 
         $saved  = 0;
         $errors = [];
@@ -543,14 +519,9 @@ class InternAssessmentController extends Controller
 
                 $assessment = InternAssessment::create([
                     'intern_id'             => $item['intern_id'],
-                    'fullname'              => $item['fullname'],
-                    'nim_or_nis'            => $item['nim_or_nis'] ?? null,
-                    'study_program'         => $item['study_program'] ?? null,
-                    'div'                   => $item['div'] ?? 'Content Writer',
                     'company_name'          => $companyName,
-                    'company_address'       => $companyAddr,
-                    'signature_name'        => $sigName,
-                    'signature_position'    => $sigPos,
+                    'signatory_name'        => $sigName,
+                    'signatory_position'    => $sigPos,
                     'company_logo_path'     => $logoPath,
                     'signature_image_path'  => $sigPath,
                     'aspek_penilaian'       => json_encode($data),
@@ -560,15 +531,7 @@ class InternAssessmentController extends Controller
                 // Tulis ke document_downloads
                 $intern = IR::find($item['intern_id']);
                 if ($intern?->user_id) {
-                    \App\Models\DocumentDownload::create([
-                        'user_id'                    => $intern->user_id,
-                        'internship_registration_id' => $intern->id,
-                        'doc_type'                   => \App\Models\DocumentDownload::TYPE_PENILAIAN,
-                        'file_path'                  => null,
-                        'file_url'                   => route('interns.assessment.pdf', $assessment->id),
-                        'downloaded_at'              => now(),
-                        'status'                     => 'success',
-                    ]);
+                    /* DocumentDownload log removed */
                 }
 
                 $saved++;
@@ -645,7 +608,8 @@ class InternAssessmentController extends Controller
 
         $aspekPenilaian = json_decode($assessment->aspek_penilaian, true);
         if (!is_array($aspekPenilaian)) {
-            $aspekPenilaian = $defaultAspects[$assessment->div] ?? $defaultAspects['Content Writer'];
+            $division = $this->mapInterestToDivision($assessment->intern->internship_interest ?? '');
+            $aspekPenilaian = $defaultAspects[$division] ?? $defaultAspects['Content Writer'];
         }
 
         $logos = collect(Storage::disk('public')->files('images/logos'))
@@ -672,14 +636,9 @@ class InternAssessmentController extends Controller
         $assessment = InternAssessment::findOrFail($id);
 
         $validated = $request->validate([
-            'fullname'           => 'required|string|max:255',
-            'nim_or_nis'         => 'nullable|string|max:50',
-            'study_program'      => 'nullable|string|max:255',
-            'div'                => 'nullable|string|max:255',
             'company_name'       => 'nullable|string|max:255',
-            'company_address'    => 'nullable|string|max:1000',
-            'signature_name'     => 'nullable|string|max:255',
-            'signature_position' => 'nullable|string|max:255',
+            'signatory_name'     => 'nullable|string|max:255',
+            'signatory_position' => 'nullable|string|max:255',
             'company_logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'signature_image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'aspek'              => 'required|array',
@@ -695,14 +654,9 @@ class InternAssessmentController extends Controller
         [$data, $avg] = $this->buildAspekData($validated['aspek'], $validated['nilai']);
 
         $assessment->update([
-            'fullname'              => $validated['fullname'],
-            'nim_or_nis'            => $validated['nim_or_nis'] ?? null,
-            'study_program'         => $validated['study_program'] ?? null,
-            'div'                   => $validated['div'] ?? 'Content Writer',
             'company_name'          => $validated['company_name'] ?? null,
-            'company_address'       => $validated['company_address'] ?? null,
-            'signature_name'        => $validated['signature_name'] ?? null,
-            'signature_position'    => $validated['signature_position'] ?? null,
+            'signatory_name'        => $validated['signatory_name'] ?? null,
+            'signatory_position'    => $validated['signatory_position'] ?? null,
             'company_logo_path'     => $logoPath,
             'signature_image_path'  => $sigPath,
             'aspek_penilaian'       => json_encode($data),
@@ -785,7 +739,7 @@ class InternAssessmentController extends Controller
         $logoSrc   = $logoSrc   ?: $empty;
         $sigSrc    = $sigSrc    ?: $empty;
 
-        $assessmentSlug = Str::slug($assessment->fullname, '-');
+        $assessmentSlug = Str::slug($assessment->intern->fullname ?? 'assessment', '-');
         $filename       = "intern-assessment-{$assessmentSlug}.pdf";
 
         $htmlContent = view('admin.interns.pdf_assessment', [
@@ -845,3 +799,4 @@ class InternAssessmentController extends Controller
         ])->save();
     }
 }
+

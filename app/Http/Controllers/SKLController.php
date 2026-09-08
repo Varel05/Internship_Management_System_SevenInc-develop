@@ -35,13 +35,6 @@ class SKLController extends Controller
         $brands = IR::query()
             ->where('internship_status', IR::STATUS_COMPLETED)
             ->whereNotNull('brand')
-            ->where('brand', '!=', '')
-            ->whereNotIn('id', function ($q) {
-                $q->select('internship_registration_id')
-                  ->from('document_downloads')
-                  ->where('doc_type', DocumentDownload::TYPE_SKL)
-                  ->whereNotNull('internship_registration_id');
-            })
             ->distinct()
             ->pluck('brand')
             ->sort()
@@ -62,16 +55,11 @@ class SKLController extends Controller
             return response()->json(['interns' => []]);
         }
 
-        // ID pemagang yang sudah punya SKL
-        $alreadyHasSKL = DocumentDownload::where('doc_type', DocumentDownload::TYPE_SKL)
-            ->whereNotNull('internship_registration_id')
-            ->pluck('internship_registration_id')
-            ->toArray();
-
+        $alreadyHasSKL = []; // Disable filter since table is removed
+        
         $interns = IR::query()
             ->where('internship_status', IR::STATUS_COMPLETED)
             ->where('brand', $brand)
-            ->whereNotIn('id', $alreadyHasSKL)
             ->select('id', 'fullname', 'student_id', 'study_program', 'institution_name', 'start_date', 'end_date', 'internship_interest')
             ->latest('id')
             ->get()
@@ -203,17 +191,7 @@ class SKLController extends Controller
                     ->timeout(180)
                     ->savePdf($fullPath);
 
-                DocumentDownload::create([
-                    'user_id'                    => $intern->user_id,
-                    'internship_registration_id' => $intern->id,
-                    'doc_type'                   => DocumentDownload::TYPE_SKL,
-                    'file_path'                  => $relPath,
-                    'file_url'                   => asset('storage/' . $relPath),
-                    'downloaded_at'              => now(),
-                    'ip_address'                 => $request->ip(),
-                    'user_agent'                 => $request->userAgent(),
-                    'status'                     => 'success',
-                ]);
+                // DocumentDownload removed due to database changes
 
                 $generatedFiles[$intern->id] = [
                     'fullname' => $participantName,
@@ -561,18 +539,7 @@ class SKLController extends Controller
             ->timeout(180)
             ->savePdf($fullPath);
 
-        // Log download
-        DocumentDownload::create([
-            'user_id'                    => $intern->user_id,
-            'internship_registration_id' => $intern->id,
-            'doc_type'                   => DocumentDownload::TYPE_SKL,
-            'file_path'                  => $relPath,
-            'file_url'                   => asset('storage/' . $relPath),
-            'downloaded_at'              => now(),
-            'ip_address'                 => $request->ip(),
-            'user_agent'                 => $request->userAgent(),
-            'status'                     => 'success',
-        ]);
+        // DocumentDownload removed due to database changes
 
         return response()->download($fullPath, $fileName, ['Content-Type' => 'application/pdf'])
             ->deleteFileAfterSend(false);
@@ -602,36 +569,17 @@ class SKLController extends Controller
             abort(403, 'SKL hanya dapat diunduh setelah status magang completed.');
         }
 
-        // Cari SKL yang sudah di-generate admin di document_downloads
-        $record = DocumentDownload::where('user_id', $targetUser->id)
-            ->where('doc_type', DocumentDownload::TYPE_SKL)
-            ->whereNotNull('file_path')
-            ->where('status', 'success')
-            ->latest('downloaded_at')
-            ->first();
-
-        // Fallback: cari berdasarkan internship_registration_id juga
-        if (!$record) {
-            $record = DocumentDownload::where('internship_registration_id', $ir->id)
-                ->where('doc_type', DocumentDownload::TYPE_SKL)
-                ->whereNotNull('file_path')
-                ->where('status', 'success')
-                ->latest('downloaded_at')
-                ->first();
-        }
-
-        if (!$record) {
+        // Cari SKL yang sudah di-generate admin di file system (storage)
+        $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $ir->fullname ?? $targetUser->name);
+        $files = glob(storage_path("app/public/documents/skl/SKL_{$safeName}_*.pdf"));
+        
+        if (empty($files)) {
             return back()->with('error', 'SKL belum tersedia. Hubungi admin untuk mendapatkan SKL Anda.');
         }
 
-        // Resolve path file
-        $fullPath = storage_path('app/public/' . $record->file_path);
-
-        if (!file_exists($fullPath)) {
-            return back()->with('error', 'File SKL tidak ditemukan. Hubungi admin.');
-        }
-
-        $fileName = basename($record->file_path);
+        // Ambil file terbaru
+        $fullPath = end($files);
+        $fileName = basename($fullPath);
 
         // Beri nama file yang lebih bersih untuk user
         $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $ir->fullname ?? $targetUser->name);

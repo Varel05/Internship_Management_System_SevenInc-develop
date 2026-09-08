@@ -69,7 +69,7 @@ class RekomendasiController extends Controller
                 'start_date'       => $r->start_date ?? '',
                 'end_date'         => $r->end_date ?? '',
                 'internship_interest' => $r->internship_interest ?? '',
-                'has_rekomendasi'  => InternExtra::where('internship_registration_id', $r->id)
+                'has_rekomendasi'  => InternExtra::where('intern_id', $r->id)
                     ->whereNotNull('rekomendasi_path')
                     ->exists(),
             ]);
@@ -275,14 +275,14 @@ class RekomendasiController extends Controller
                 }
 
                 // Update InternExtra
-                $extra = InternExtra::firstOrNew(['internship_registration_id' => $intern->id]);
+                $extra = InternExtra::firstOrNew(['intern_id' => $intern->id]);
 
                 // Hapus file lama jika ada
                 if ($extra->rekomendasi_path && file_exists(storage_path('app/public/' . $extra->rekomendasi_path))) {
                     @unlink(storage_path('app/public/' . $extra->rekomendasi_path));
                 }
 
-                $extra->internship_registration_id = $intern->id;
+                $extra->intern_id = $intern->id;
                 $extra->rekomendasi_path           = $relPath;
                 $extra->rekomendasi_url            = asset('storage/' . $relPath);
                 $extra->rekomendasi_granted_at     = now();
@@ -525,13 +525,13 @@ class RekomendasiController extends Controller
             }
 
             // Update InternExtra
-            $extra = InternExtra::firstOrNew(['internship_registration_id' => $intern->id]);
+            $extra = InternExtra::firstOrNew(['intern_id' => $intern->id]);
 
             if ($extra->rekomendasi_path && file_exists(storage_path('app/public/' . $extra->rekomendasi_path))) {
                 @unlink(storage_path('app/public/' . $extra->rekomendasi_path));
             }
 
-            $extra->internship_registration_id = $intern->id;
+            $extra->intern_id = $intern->id;
             $extra->rekomendasi_path           = $relPath;
             $extra->rekomendasi_url            = asset('storage/' . $relPath);
             $extra->rekomendasi_granted_at     = now();

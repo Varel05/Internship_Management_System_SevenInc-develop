@@ -32,14 +32,12 @@ class Webinar extends Model
         'certificate_brand',
         'certificate_description',
         'allowed_brands',
-        'is_active',
         'created_by',
     ];
 
     protected $casts = [
         'event_date'     => 'datetime',
         'event_end_date' => 'datetime',
-        'is_active'      => 'boolean',
         'allowed_brands' => 'array',    // null = semua brand boleh ikut
     ];
 

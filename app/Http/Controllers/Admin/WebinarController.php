@@ -208,19 +208,7 @@ class WebinarController extends Controller
 
             if ($cert) {
                 // Simpan ke document_downloads agar muncul di Dokumen Saya pemagang
-                DocumentDownload::firstOrCreate(
-                    [
-                        'user_id'  => $attendance->user_id,
-                        'doc_type' => DocumentDownload::TYPE_SERTIFIKAT_WEBINAR,
-                        // Gunakan file_url sebagai unique key per sertifikat
-                        'file_url' => route('admin.certificate.pdf', $cert->id),
-                    ],
-                    [
-                        'file_path'     => null,
-                        'downloaded_at' => now(),
-                        'status'        => 'success',
-                    ]
-                );
+                /* DocumentDownload log removed */
                 $generated++;
             }
         }
@@ -256,14 +244,7 @@ class WebinarController extends Controller
 
             // Simpan ke document_downloads supaya muncul di Dokumen Saya pemagang
             if ($cert) {
-                DocumentDownload::create([
-                    'user_id'       => $attendance->user_id,
-                    'doc_type'      => DocumentDownload::TYPE_SERTIFIKAT_WEBINAR,
-                    'file_path'     => null,
-                    'file_url'      => route('admin.certificate.pdf', $cert->id),
-                    'downloaded_at' => now(),
-                    'status'        => 'success',
-                ]);
+                /* DocumentDownload log removed */
             }
         } catch (\Exception $e) {
             \Log::error("Approve webinar attendance #{$attendance->id} gagal: " . $e->getMessage());
@@ -319,14 +300,7 @@ class WebinarController extends Controller
                 ]);
 
                 if ($cert) {
-                    DocumentDownload::create([
-                        'user_id'       => $attendance->user_id,
-                        'doc_type'      => DocumentDownload::TYPE_SERTIFIKAT_WEBINAR,
-                        'file_path'     => null,
-                        'file_url'      => route('admin.certificate.pdf', $cert->id),
-                        'downloaded_at' => now(),
-                        'status'        => 'success',
-                    ]);
+                    /* DocumentDownload log removed */
                 }
 
                 $success++;
@@ -501,3 +475,4 @@ class WebinarController extends Controller
         return Webinar::brandList();
     }
 }
+

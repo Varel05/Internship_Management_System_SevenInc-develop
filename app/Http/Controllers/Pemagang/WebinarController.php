@@ -34,8 +34,7 @@ class WebinarController extends Controller
         // internship_registrations bisa menyimpan nama lengkap ATAU kode, tangani keduanya
         $internBrand = $this->normalizeBrandCode($internBrandRaw);
 
-        $webinars = Webinar::where('is_active', true)
-            ->latest('event_date')
+        $webinars = Webinar::latest('event_date')
             ->get()
             ->filter(function ($webinar) use ($internBrand) {
                 // allowed_brands null = semua brand boleh ikut
@@ -85,9 +84,7 @@ class WebinarController extends Controller
      */
     public function show(Webinar $webinar)
     {
-        if (!$webinar->is_active) {
-            abort(404);
-        }
+        // Removed is_active check
 
         $user       = auth()->user();
         $attendance = $webinar->attendanceOf($user->id);

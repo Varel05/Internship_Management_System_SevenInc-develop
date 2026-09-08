@@ -9,7 +9,7 @@ class InternExtra extends Model
     protected $table = 'intern_extras';
 
     protected $fillable = [
-        'internship_registration_id',
+        'intern_id',
         'rekomendasi_path',
         'rekomendasi_url',
         'rekomendasi_granted_at',
@@ -27,8 +27,8 @@ class InternExtra extends Model
         'job_info_granted_at'     => 'datetime',
     ];
 
-    public function registration()
+    public function intern()
     {
-        return $this->belongsTo(InternshipRegistration::class, 'internship_registration_id');
+        return $this->belongsTo(InternshipRegistration::class, 'intern_id');
     }
 }

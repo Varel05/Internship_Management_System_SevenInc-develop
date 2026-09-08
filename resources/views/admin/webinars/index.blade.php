@@ -30,7 +30,7 @@
           <th class="px-5 py-3 text-center text-xs font-bold uppercase text-white">Tanggal</th>
           <th class="px-5 py-3 text-center text-xs font-bold uppercase text-white">Pending</th>
           <th class="px-5 py-3 text-center text-xs font-bold uppercase text-white">Approved</th>
-          <th class="px-5 py-3 text-center text-xs font-bold uppercase text-white">Status</th>
+
           <th class="px-5 py-3 text-right text-xs font-bold uppercase text-white">Aksi</th>
         </tr>
       </thead>
@@ -63,13 +63,7 @@
             <span class="text-sm font-semibold text-green-700">{{ $webinar->approved_attendances_count }}</span>
             <span class="text-xs text-gray-400"> / {{ $webinar->attendances_count }}</span>
           </td>
-          <td class="px-5 py-4 text-center">
-            @if($webinar->is_active)
-              <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">Aktif</span>
-            @else
-              <span class="px-2 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-semibold">Draft</span>
-            @endif
-          </td>
+
           <td class="px-5 py-4">
             <div class="flex items-center justify-end gap-2">
 
@@ -94,7 +88,7 @@
         </tr>
         @empty
         <tr>
-          <td colspan="6" class="px-5 py-12 text-center text-sm text-[#4B5F5A]">
+          <td colspan="5" class="px-5 py-12 text-center text-sm text-[#4B5F5A]">
             Belum ada webinar. <a href="{{ route('admin.webinars.create') }}" class="text-[#2D8659] font-semibold">Buat sekarang</a>.
           </td>
         </tr>

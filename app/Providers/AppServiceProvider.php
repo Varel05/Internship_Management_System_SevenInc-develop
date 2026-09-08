@@ -69,8 +69,7 @@ class AppServiceProvider extends ServiceProvider
                 // ── Notifikasi webinar baru ──
                 // Hanya tampilkan kalau sudah submit form (bukan draft)
                 if ($registration && !$registration->is_draft) {
-                    $newWebinarCount = Webinar::where('is_active', true)
-                        ->whereDoesntHave('attendances', fn($q) => $q->where('user_id', $user->id))
+                    $newWebinarCount = Webinar::whereDoesntHave('attendances', fn($q) => $q->where('user_id', $user->id))
                         ->where('created_at', '>=', now()->subDays(7))
                         ->count();
 

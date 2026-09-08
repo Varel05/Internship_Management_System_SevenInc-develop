@@ -8,7 +8,9 @@ use App\Models\DocumentDownload;
 use App\Models\InternAssessment;
 use App\Models\InternExtra;
 use App\Models\WebinarAttendance;
-use App\Models\Certificate;
+use App\Models\InternLoa;
+use App\Models\InternCertificate;
+use App\Models\WebinarCertificate;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
@@ -41,46 +43,32 @@ class DocumentController extends Controller
 
         // --- Cek apakah masing-masing dokumen sudah di-generate admin ---
 
-        // SKL: cek di document_downloads
-        $sklDownload = $registration
-            ? DocumentDownload::where('user_id', $user->id)
-                ->where('doc_type', DocumentDownload::TYPE_SKL)
-                ->whereNotNull('file_path')
-                ->latest('downloaded_at')
-                ->first()
-            : null;
+        // SKL: cari di folder storage/app/public/documents/skl/
+        $sklDownload = null;
+        if ($registration && $isCompleted) {
+            $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $registration->fullname);
+            $files = glob(storage_path("app/public/documents/skl/SKL_{$safeName}_*.pdf"));
+            if (!empty($files)) {
+                $sklDownload = (object) ['file_path' => 'documents/skl/' . basename(end($files))];
+            }
+        }
 
-        // LOA: cek di document_downloads
-        $loaDownload = $registration
-            ? DocumentDownload::where(function($q) use ($user, $registration) {
-                $q->where('user_id', $user->id)
-                  ->orWhere('internship_registration_id', $registration->id);
-              })
-                ->where('doc_type', DocumentDownload::TYPE_LOA)
-                ->whereNotNull('file_path')
-                ->latest('downloaded_at')
-                ->first()
-            : null;
+        // LOA: cek di tabel intern_loas
+        $loaRecord = null;
+        if ($registration) {
+            $loaRecord = InternLoa::where('intern_id', $registration->id)->latest('id')->first();
+        }
 
-        // Sertifikat: cek di tabel certificates berdasarkan nama pemagang
+        // Sertifikat: cek di tabel intern_certificates berdasarkan intern_id
         $sertifikatRecord = null;
         if ($isCompleted && $registration) {
-            $sertifikatRecord = Certificate::whereRaw('LOWER(TRIM(name)) = ?', [
-                    strtolower(trim($registration->fullname))
-                ])->latest()->first();
-
-            // Fallback LIKE
-            if (!$sertifikatRecord) {
-                $sertifikatRecord = Certificate::where('name', 'LIKE', '%' . trim($registration->fullname) . '%')
-                    ->latest()->first();
-            }
+            $sertifikatRecord = InternCertificate::where('intern_id', $registration->id)->latest('id')->first();
         }
 
         // Surat Penilaian: cek di intern_assessments
         $assessmentRecord = null;
         if ($isCompleted && $registration) {
-            $assessmentRecord = InternAssessment::where('intern_id', $registration->id)->latest()->first()
-                ?? InternAssessment::where('fullname', $registration->fullname)->latest()->first();
+            $assessmentRecord = InternAssessment::where('intern_id', $registration->id)->latest()->first();
         }
 
         // Membercard: cek di tabel alumni_membercards
@@ -94,8 +82,8 @@ class DocumentController extends Controller
                 'label'       => 'LOA (Letter of Acceptance)',
                 'description' => 'Surat penerimaan magang dari perusahaan',
                 'icon'        => 'fa-file-signature',
-                'available'   => $isAccepted && $loaDownload !== null,
-                'pending'     => $isAccepted && $loaDownload === null,
+                'available'   => $isAccepted && $loaRecord !== null,
+                'pending'     => $isAccepted && $loaRecord === null,
                 'route'       => null, // pakai form POST di view karena butuh intern_id
                 'intern_id'   => $registration?->id,
                 'date'        => null,
@@ -146,25 +134,18 @@ class DocumentController extends Controller
             ],
         ];
 
-        // Sertifikat Webinar — ambil langsung dari webinar_attendances yang approved
-        // setiap approved attendance = 1 sertifikat webinar
-        $webinarCerts = WebinarAttendance::with('webinar')
-            ->where('user_id', $user->id)
-            ->where('status', WebinarAttendance::STATUS_APPROVED)
-            ->whereNotNull('certificate_id')
-            ->latest('reviewed_at')
-            ->get();
+        // Sertifikat Webinar — ambil dari webinar_certificates via relasi attendance
+        $webinarCerts = WebinarCertificate::whereHas('attendance', function ($q) use ($user) {
+            $q->where('user_id', $user->id)
+              ->where('status', WebinarAttendance::STATUS_APPROVED);
+        })->with(['attendance.webinar'])->latest('id')->get();
 
-        // Riwayat download — filter berdasarkan registrasi pemagang ini
-        $downloadHistory = DocumentDownload::where('user_id', $user->id)
-            ->when($registration, fn($q) => $q->orWhere('internship_registration_id', $registration->id))
-            ->latest('downloaded_at')
-            ->take(10)
-            ->get();
+        // Riwayat download dihapus karena tabel document_downloads dihapus
+        $downloadHistory = collect([]);
 
         // Extras — surat rekomendasi, alumni group, job info
         $extras = $registration
-            ? InternExtra::where('internship_registration_id', $registration->id)->first()
+            ? InternExtra::where('intern_id', $registration->id)->first()
             : null;
 
         return view('pemagang.documents.index', compact(
@@ -279,19 +260,8 @@ class DocumentController extends Controller
             abort(403, 'Sertifikat hanya tersedia setelah magang selesai.');
         }
 
-        // Cari sertifikat berdasarkan nama pemagang — case-insensitive & trim
-        $certificate = \App\Models\Certificate::whereRaw('LOWER(TRIM(name)) = ?', [
-                strtolower(trim($registration->fullname))
-            ])
-            ->latest()
-            ->first();
-
-        // Fallback: cari dengan LIKE kalau exact tidak ketemu
-        if (!$certificate) {
-            $certificate = \App\Models\Certificate::where('name', 'LIKE', '%' . trim($registration->fullname) . '%')
-                ->latest()
-                ->first();
-        }
+        // Cari sertifikat berdasarkan intern_id
+        $certificate = InternCertificate::where('intern_id', $registration->id)->latest('id')->first();
 
         if (!$certificate) {
             return back()->with('error', 'Sertifikat belum tersedia. Hubungi admin.');
@@ -299,14 +269,14 @@ class DocumentController extends Controller
 
         // Delegate ke CertificateController
         return app(\App\Http\Controllers\CertificateController::class)
-            ->downloadPdf($certificate);
+            ->downloadInternPdf($certificate);
     }
 
     /**
      * Download Sertifikat Webinar milik pemagang yang login.
      * Validasi bahwa attendance ini benar-benar milik user yang sedang login.
      */
-    public function downloadSertifikatWebinar(\App\Models\Certificate $certificate)
+    public function downloadSertifikatWebinar(WebinarCertificate $certificate)
     {
         $user = auth()->user();
 
@@ -322,7 +292,7 @@ class DocumentController extends Controller
 
         // Delegate ke CertificateController
         return app(\App\Http\Controllers\CertificateController::class)
-            ->downloadPdf($certificate);
+            ->downloadWebinarPdf($certificate);
     }
 
     /**
@@ -338,7 +308,7 @@ class DocumentController extends Controller
             abort(403, 'Surat rekomendasi hanya tersedia setelah magang selesai.');
         }
 
-        $extra = \App\Models\InternExtra::where('internship_registration_id', $registration->id)->first();
+        $extra = \App\Models\InternExtra::where('intern_id', $registration->id)->first();
 
         if (!$extra || !$extra->rekomendasi_path) {
             return back()->with('error', 'Surat rekomendasi belum tersedia. Hubungi admin.');
@@ -367,17 +337,11 @@ class DocumentController extends Controller
             abort(403, 'Surat penilaian hanya tersedia setelah magang selesai.');
         }
 
-        // Cari assessment berdasarkan intern_id dulu, fallback ke nama pemagang
-        $assessment = InternAssessment::where('intern_id', $registration->id)->latest()->first()
-            ?? InternAssessment::where('fullname', $registration->fullname)->latest()->first();
+        // Cari assessment berdasarkan intern_id
+        $assessment = InternAssessment::where('intern_id', $registration->id)->latest()->first();
 
         if (!$assessment) {
             return back()->with('error', 'Surat penilaian belum tersedia. Hubungi admin.');
-        }
-
-        // Jika ditemukan lewat nama tapi intern_id belum diisi, update sekaligus
-        if (!$assessment->intern_id) {
-            $assessment->update(['intern_id' => $registration->id]);
         }
 
         // Delegate ke InternAssessmentController

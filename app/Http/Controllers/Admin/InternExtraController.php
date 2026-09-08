@@ -50,7 +50,7 @@ class InternExtraController extends Controller
     public function edit(IR $intern)
     {
         $extra = InternExtra::firstOrNew([
-            'internship_registration_id' => $intern->id,
+            'intern_id' => $intern->id,
         ]);
 
         // Load konfigurasi rekomendasi — override nama perusahaan dengan brand pemagang jika ada
@@ -95,7 +95,7 @@ class InternExtraController extends Controller
 
         foreach ($targets as $target) {
             $extra = InternExtra::firstOrNew([
-                'internship_registration_id' => $target->id,
+                'intern_id' => $target->id,
             ]);
 
             // Alumni group
@@ -329,14 +329,14 @@ class InternExtraController extends Controller
                 }
 
                 // ── 2. Simpan semua ke InternExtra ──
-                $extra = InternExtra::firstOrNew(['internship_registration_id' => $target->id]);
+                $extra = InternExtra::firstOrNew(['intern_id' => $target->id]);
 
                 // Hapus file PDF lama
                 if ($extra->rekomendasi_path && file_exists(storage_path('app/public/' . $extra->rekomendasi_path))) {
                     @unlink(storage_path('app/public/' . $extra->rekomendasi_path));
                 }
 
-                $extra->internship_registration_id = $target->id;
+                $extra->intern_id = $target->id;
                 $extra->rekomendasi_path           = $relPath;
                 $extra->rekomendasi_url            = asset('storage/' . $relPath);
                 $extra->rekomendasi_granted_at     = now();
@@ -386,7 +386,7 @@ class InternExtraController extends Controller
      */
     public function destroyRekomendasi(IR $intern)
     {
-        $extra = InternExtra::where('internship_registration_id', $intern->id)->first();
+        $extra = InternExtra::where('intern_id', $intern->id)->first();
         if ($extra?->rekomendasi_path) {
             Storage::disk('public')->delete($extra->rekomendasi_path);
             $extra->update([

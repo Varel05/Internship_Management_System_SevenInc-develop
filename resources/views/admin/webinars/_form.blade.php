@@ -116,14 +116,7 @@
       </div>
     </div>
 
-    <div class="flex items-center gap-3">
-      <input type="checkbox" name="is_active" value="1" id="is_active"
-             style="accent-color:#2D8659;width:16px;height:16px;"
-             @checked(old('is_active', $webinar?->is_active ?? true))>
-      <label for="is_active" class="text-sm text-[#1B3A34] cursor-pointer">
-        Publikasikan sekarang (pemagang dari brand yang dipilih akan melihat webinar ini)
-      </label>
-    </div>
+
   </div>
 </div>
 
