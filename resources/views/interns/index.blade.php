@@ -744,10 +744,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     openBrandModal(id, name);
                     return; // jangan refresh tombol dulu — dilakukan setelah konfirmasi
                 }
-
-                // Untuk status lain, langsung refresh tombol di baris
-                const row = this.closest('tr[data-row-id]');
-                if (row) refreshGenerateButtons(row, id, to);
             };
         });
     }
@@ -1828,9 +1824,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyBadge(res.badge, res.to);
                 pending.delete(res.id);
 
+                const row = res.select.closest('tr[data-row-id]');
+                if (row) refreshGenerateButtons(row, res.id, res.to);
+
                 // Jika status baru tidak ada di scope mode ini → hilangkan baris
                 if (!allowedInCurrentMode.includes(res.to)) {
-                    const row = res.select.closest('tr[data-row-id]');
                     if (row) {
                         row.style.transition = 'opacity 0.5s';
                         row.style.opacity = '0';
