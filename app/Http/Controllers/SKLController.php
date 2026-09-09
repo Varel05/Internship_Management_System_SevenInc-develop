@@ -127,7 +127,7 @@ class SKLController extends Controller
         $logoData  = $this->resolveBase64Image($request, 'logo',  $config->logo_path,  'images/logos/logo_seveninc.png');
         $stampData = $this->resolveBase64Image($request, 'stamp', $config->stamp_path, 'images/signature/ttd_arisetiahusbana.png');
 
-        $fullDir = storage_path('app/public/documents/skl');
+        $fullDir = public_path('storage/documents/skl');
         if (!is_dir($fullDir)) {
             mkdir($fullDir, 0777, true);
         }
@@ -178,8 +178,8 @@ class SKLController extends Controller
                 $html     = view('user.skl', $data)->render();
                 $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $participantName);
                 $fileName = "SKL_{$safeName}_" . now()->format('Ymd_His') . ".pdf";
-                $relPath  = "documents/skl/{$fileName}";
-                $fullPath = storage_path("app/public/{$relPath}");
+                $relPath  = "storage/documents/skl/{$fileName}";
+                $fullPath = public_path($relPath);
 
                 Browsershot::html($html)
                     ->setOption('no-sandbox', true)
@@ -521,9 +521,9 @@ class SKLController extends Controller
 
         $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $participantName);
         $fileName = "SKL_{$safeName}_" . now()->format('Ymd_His') . ".pdf";
-        $relPath  = "documents/skl/{$fileName}";
-        $fullDir  = storage_path('app/public/documents/skl');
-        $fullPath = storage_path("app/public/{$relPath}");
+        $relPath  = "storage/documents/skl/{$fileName}";
+        $fullDir  = public_path('storage/documents/skl');
+        $fullPath = public_path($relPath);
 
         if (!is_dir($fullDir)) {
             mkdir($fullDir, 0777, true);
@@ -569,20 +569,20 @@ class SKLController extends Controller
             abort(403, 'SKL hanya dapat diunduh setelah status magang completed.');
         }
 
-        // Cari SKL yang sudah di-generate admin di file system (storage)
-        $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $ir->fullname ?? $targetUser->name);
-        $files = glob(storage_path("app/public/documents/skl/SKL_{$safeName}_*.pdf"));
-        
-        if (empty($files)) {
+        // Cari rekam SKL di database
+        $sklRecord = \App\Models\SklDocument::where('intern_id', $ir->id)->latest()->first();
+        if (!$sklRecord) {
             return back()->with('error', 'SKL belum tersedia. Hubungi admin untuk mendapatkan SKL Anda.');
         }
 
-        // Ambil file terbaru
-        $fullPath = end($files);
-        $fileName = basename($fullPath);
-
-        // Beri nama file yang lebih bersih untuk user
         $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $ir->fullname ?? $targetUser->name);
+        $fileName = "SKL_{$safeName}.pdf";
+        $fullPath = public_path("storage/documents/skl/{$fileName}");
+        
+        if (!file_exists($fullPath)) {
+            return back()->with('error', 'File fisik SKL tidak ditemukan. Hubungi admin.');
+        }
+
         $downloadName = "SKL_{$safeName}.pdf";
 
         return response()->download($fullPath, $downloadName, ['Content-Type' => 'application/pdf']);

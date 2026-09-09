@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Form Penilaian Magang - {{ $assessment->fullname }}</title>
+  <title>Form Penilaian Magang - {{ $assessment->intern->fullname ?? '-' }}</title>
   <style>
     @page { size: A4; margin: 60px; }
 
@@ -136,10 +136,10 @@
 
         <div class="info">
             Dengan ini pihak <b>{{ $assessment->company_name ?? 'SEVEN INC.' }}</b> memberikan penilaian selama pelaksanaan magang kepada:<br>
-            <span class="label">Nama</span>: {{ $assessment->fullname }}<br>
-            <span class="label">NIM/NIS</span>: {{ $assessment->nim_or_nis }}<br>
-            <span class="label">Program Studi</span>: {{ $assessment->study_program }}<br>
-            <span class="label">Divisi/Keahlian</span>: {{ $assessment->div }}
+            <span class="label">Nama</span>: {{ $assessment->intern->fullname ?? '-' }}<br>
+            <span class="label">NIM/NIS</span>: {{ $assessment->intern->student_id ?? $assessment->intern->nim_nis ?? '-' }}<br>
+            <span class="label">Program Studi</span>: {{ $assessment->intern->study_program ?? '-' }}<br>
+            <span class="label">Divisi/Keahlian</span>: {{ $assessment->intern->internship_interest ?? '-' }}
         </div>
 
         {{-- TABEL ASPEK PENILAIAN --}}
@@ -179,12 +179,12 @@
             <div class="signature-inner">
                 <p class="signature-text">
                     Yogyakarta, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
-                    {{ $assessment->signature_position ?? 'Direktur SEVEN INC' }}
+                    {{ $assessment->signatory_position ?? 'Direktur SEVEN INC' }}
                 </p>
 
                 <div class="signature-image-block">
                     <img class="ttd" src="{{ $sigSrc }}" alt="Tanda Tangan">  <!-- Tanda tangan -->
-                    <span class="name">{{ $assessment->signature_name ?? 'Rekario Danny Sanjaya, S.Kom' }}</span>
+                    <span class="name">{{ $assessment->signatory_name ?? 'Rekario Danny Sanjaya, S.Kom' }}</span>
                 </div>
 
                 {{-- WATERMARK yang ikut resize --}}

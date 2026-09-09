@@ -546,6 +546,9 @@ class InternController extends Controller
             if ($oldStatus !== IR::STATUS_ACCEPTED && $intern->internship_status === IR::STATUS_ACCEPTED) {
                 $this->sendAcceptedEmail($intern);
             }
+            
+            // Trigger SKL generation if completed
+            $this->checkAndGenerateSkl($intern, $oldStatus);
         } else {
             unset($validatedData['internship_status']);
             $intern->fill($validatedData)->save();
@@ -593,6 +596,47 @@ class InternController extends Controller
         // Status waiting/pending: jangan ubah role
     }
 
+    private function checkAndGenerateSkl(IR $intern, $oldStatus)
+    {
+        if ($oldStatus !== IR::STATUS_COMPLETED && $intern->internship_status === IR::STATUS_COMPLETED) {
+            $brandData = null;
+            if ($intern->brand_id) {
+                $brandData = \App\Models\Brand::find($intern->brand_id);
+            } elseif ($intern->brand) {
+                $brandData = \App\Models\Brand::whereRaw('LOWER(name) = ?', [strtolower(trim($intern->brand))])->first();
+            }
+
+            $companyName    = $brandData->name ?? $intern->brand ?? 'Seven Inc';
+            $signatoryName  = $brandData->signatory_name ?? 'Ari Setia Husbana';
+            $signatoryTitle = $brandData->signatory_position ?? 'HRD';
+            
+            $running       = str_pad((string) $intern->id, 4, '0', STR_PAD_LEFT);
+            $year          = $intern->end_date ? Carbon::parse($intern->end_date)->format('Y') : now()->format('Y');
+            $sklNumber     = 'SKL/' . $year . '/' . $running;
+
+            $sklDoc = \App\Models\SklDocument::updateOrCreate(
+                ['intern_id' => $intern->id],
+                [
+                    'skl_number' => $sklNumber,
+                    'company_name' => $companyName,
+                    'company_logo_path' => $brandData?->logo ?? 'images/logos/logo_seveninc.png',
+                    'signatory_name' => $signatoryName,
+                    'signatory_position' => $signatoryTitle,
+                    'signature_image_path' => $brandData?->signature ?? 'images/signature/ttd_arisetiahusbana.png',
+                ]
+            );
+            if ($sklDoc) {
+                \App\Jobs\GenerateSklJob::dispatch($intern->id);
+            }
+
+            // Generate Surat Penilaian jika data penilaian sudah ada
+            $assessment = \App\Models\InternAssessment::where('intern_id', $intern->id)->first();
+            if ($assessment) {
+                \App\Jobs\GenerateAssessmentJob::dispatch($intern->id);
+            }
+        }
+    }
+
     public function updateStatus(Request $request, $id)
     {
         // Menemukan data berdasarkan ID yang diberikan
@@ -635,6 +679,9 @@ class InternController extends Controller
             \App\Jobs\GenerateLoaJob::dispatch($intern->id, $intern->brand_id);
             $this->sendAcceptedEmail($intern);
         }
+
+        // Jika berubah menjadi selesai, generate SKL via Background Job
+        $this->checkAndGenerateSkl($intern, $oldStatus);
 
         // Return JSON untuk AJAX (fetch), redirect untuk request biasa
         if ($request->wantsJson() || $request->ajax()) {
@@ -690,6 +737,8 @@ class InternController extends Controller
                         $mailList[] = ['to' => $to, 'name' => $intern->fullname];
                     }
                 }
+                
+                $this->checkAndGenerateSkl($intern, $old);
 
                 $affected++;
             }

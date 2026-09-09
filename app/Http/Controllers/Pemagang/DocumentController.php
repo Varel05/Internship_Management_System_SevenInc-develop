@@ -43,13 +43,16 @@ class DocumentController extends Controller
 
         // --- Cek apakah masing-masing dokumen sudah di-generate admin ---
 
-        // SKL: cari di folder storage/app/public/documents/skl/
+        // SKL: cek di tabel skl_documents
         $sklDownload = null;
         if ($registration && $isCompleted) {
-            $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $registration->fullname);
-            $files = glob(storage_path("app/public/documents/skl/SKL_{$safeName}_*.pdf"));
-            if (!empty($files)) {
-                $sklDownload = (object) ['file_path' => 'documents/skl/' . basename(end($files))];
+            $sklRecord = \App\Models\SklDocument::where('intern_id', $registration->id)->latest()->first();
+            if ($sklRecord) {
+                $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $registration->fullname);
+                $filePath = "storage/documents/skl/SKL_{$safeName}.pdf";
+                if (file_exists(public_path($filePath))) {
+                    $sklDownload = (object) ['file_path' => $filePath];
+                }
             }
         }
 
