@@ -275,7 +275,10 @@ class InternController extends Controller
             $query->where(function ($qq) use ($s) {
                 $qq->where('fullname', 'like', "%{$s}%")
                 ->orWhere('email', 'like', "%{$s}%")
-                ->orWhere('student_id', 'like', "%{$s}%");
+                ->orWhere('student_id', 'like', "%{$s}%")
+                ->orWhereHas('institution', function ($q) use ($s) {
+                    $q->where('name', 'like', "%{$s}%");
+                });
             });
 
             // Ambil semua data yang sesuai dengan pencarian

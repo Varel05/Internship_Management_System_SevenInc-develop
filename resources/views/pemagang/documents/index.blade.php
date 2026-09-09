@@ -5,7 +5,10 @@
 
 @section('content')
 
-@php $status = $registration?->internship_status; @endphp
+@php 
+  $status = $registration?->internship_status; 
+  $isCompleted = $status === 'completed';
+@endphp
 
 <h2 class="text-lg font-semibold text-gray-800 mb-1">Dokumen Saya</h2>
 <p class="text-sm text-gray-500 mb-6">Unduh surat dan berkas yang berkaitan dengan magang Anda</p>
@@ -138,7 +141,7 @@
 @endif
 
 {{-- ===== EKSKLUSIF (Surat Rekomendasi, Grup Alumni, Info Kerja) ===== --}}
-@php $isCompleted = $registration?->internship_status === 'completed'; @endphp
+
 
 <div class="mt-8">
   <h3 class="text-sm font-semibold text-gray-700 mb-1">Akses Eksklusif</h3>
