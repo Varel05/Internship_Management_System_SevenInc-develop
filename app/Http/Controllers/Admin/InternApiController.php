@@ -185,19 +185,13 @@ class InternApiController extends Controller
 
         // Kolom yang ikut di-search (sinkron dengan kolom di Blade)
         $searchable = [
-            'fullname','born_date','student_id','email','gender','phone_number',
-            'institution_name','study_program','faculty','current_city',
+            'fullname','born_date','student_id','gender','phone_number',
             'internship_reason','internship_type','internship_arrangement',
             'current_status','internship_status',
-            'english_book_ability','supervisor_contact',
-            'internship_interest','internship_interest_other',
-            'design_software','video_software','programming_languages',
-            'digital_marketing_type','digital_marketing_type_other',
-            'laptop_equipment','owned_tools','owned_tools_other',
+            'english_book_ability','supervisor_contact','supervisor_name',
             'start_date','end_date',
-            'internship_info_sources','internship_info_other',
             'current_activities','boarding_info','family_status',
-            'parent_wa_contact','social_media_instagram',
+            'parent_wa_contact','parent_name','social_media_instagram',
             'created_at',
         ];
 
@@ -236,6 +230,32 @@ class InternApiController extends Controller
                             }
                             $inner->orWhere($col, 'like', "%{$token}%");
                         }
+
+                        // Search in relations
+                        $inner->orWhereHas('user', function ($uq) use ($token) {
+                            $uq->where('email', 'like', "%{$token}%");
+                        });
+                        $inner->orWhereHas('institution', function ($iq) use ($token) {
+                            $iq->where('name', 'like', "%{$token}%");
+                        });
+                        $inner->orWhereHas('studyProgramRel', function ($sq) use ($token) {
+                            $sq->where('name', 'like', "%{$token}%");
+                        });
+                        $inner->orWhereHas('facultyRel', function ($fq) use ($token) {
+                            $fq->where('name', 'like', "%{$token}%");
+                        });
+                        $inner->orWhereHas('city', function ($cq) use ($token) {
+                            $cq->where('name', 'like', "%{$token}%");
+                        });
+                        $inner->orWhereHas('division', function ($dq) use ($token) {
+                            $dq->where('name', 'like', "%{$token}%");
+                        });
+                        $inner->orWhereHas('skills', function ($skq) use ($token) {
+                            $skq->where('skill_name', 'like', "%{$token}%");
+                        });
+                        $inner->orWhereHas('tools', function ($tq) use ($token) {
+                            $tq->where('tool_name', 'like', "%{$token}%");
+                        });
                     });
                 }
             });
@@ -487,7 +507,9 @@ class InternApiController extends Controller
         if ($q !== '') {
             $builder->where(function ($w) use ($q) {
                 $w->where('fullname', 'like', "%{$q}%")
-                ->orWhere('email', 'like', "%{$q}%")
+                ->orWhereHas('user', function ($uq) use ($q) {
+                    $uq->where('email', 'like', "%{$q}%");
+                })
                 ->orWhere('phone_number', 'like', "%{$q}%")
                 ->orWhere('student_id', 'like', "%{$q}%");
             });
