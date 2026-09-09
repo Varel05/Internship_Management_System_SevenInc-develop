@@ -34,11 +34,11 @@
         [
             'label' => 'Dokumen & Sertifikat',
             'items' => [
-                ['label' => 'Sertifikat',          'route' => 'admin.certificate.index',     'icon' => 'award'],
-                ['label' => 'Member Card',          'route' => 'admin.membercards.index',     'icon' => 'award'],
+                ['label' => 'Data LOA',             'route' => 'admin.documents.loas',        'icon' => 'file'],
                 ['label' => 'Surat Penilaian',      'route' => 'interns.assessment.index',    'icon' => 'file'],
                 ['label' => 'Data SKL',             'route' => 'admin.documents.skls',        'icon' => 'file'],
-                ['label' => 'Data LOA',             'route' => 'admin.documents.loas',        'icon' => 'file'],
+                ['label' => 'Sertifikat',          'route' => 'admin.certificate.index',     'icon' => 'award'],
+                ['label' => 'Member Card',          'route' => 'admin.membercards.index',     'icon' => 'award'],
                 ['label' => 'Informasi Alumni',     'route' => 'admin.intern_extras.index',   'icon' => 'users'],
             ],
         ],
