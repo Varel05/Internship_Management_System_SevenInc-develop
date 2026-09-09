@@ -152,11 +152,11 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach(json_decode($assessment->aspek_penilaian, true) as $index => $item)
+                @foreach((is_string($assessment->aspek_penilaian) ? json_decode($assessment->aspek_penilaian, true) : $assessment->aspek_penilaian) ?? [] as $index => $item)
                 <tr>
                     <td style="border: 1px solid #000; text-align: center; padding: 6px;">{{ $index + 1 }}</td>
-                    <td style="border: 1px solid #000; padding: 6px;">{{ $item['aspek'] }}</td>
-                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">{{ $item['nilai'] }}</td>
+                    <td style="border: 1px solid #000; padding: 6px;">{{ $item['aspek'] ?? '-' }}</td>
+                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">{{ $item['nilai'] ?? '-' }}</td>
                 </tr>
                 @endforeach
                 <tr>
