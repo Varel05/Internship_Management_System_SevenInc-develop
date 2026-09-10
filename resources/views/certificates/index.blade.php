@@ -38,48 +38,6 @@
     </div>
 </div>
 
-{{-- Modal upload aset --}}
-<div id="uploadModal" class="fixed inset-0 z-[100] hidden">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onclick="closeUploadModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="w-full max-w-lg rounded-[16px] bg-white shadow-xl overflow-hidden">
-            <div class="flex items-center justify-between border-b border-[#DCE7E1] px-5 py-4">
-                <h3 id="uploadModalTitle" class="text-[15px] font-bold text-[#1B3A34]">Upload File</h3>
-                <button onclick="closeUploadModal()" class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F4F8F6] text-[#4B5F5A] hover:bg-[#DCE7E1]">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            <div class="p-5">
-                <form id="uploadForm" method="POST" enctype="multipart/form-data" class="space-y-4">
-                    @csrf
-                    <div>
-                        <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
-                            Pilih File Gambar
-                            <span id="uploadPrefix" class="ml-1 text-[11px] font-normal text-[#4B5F5A]"></span>
-                        </label>
-                        <input type="file" name="file" accept=".png,.jpg,.jpeg,.webp" required
-                            onchange="previewUpload(event)"
-                            class="block w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659]">
-                        <p id="uploadHint" class="mt-1 text-[11px] text-[#4B5F5A]"></p>
-                    </div>
-                    <div id="uploadPreviewWrap" class="hidden">
-                        <img id="uploadPreview" class="max-h-40 w-full rounded-[8px] object-contain border border-[#DCE7E1]" alt="Preview">
-                    </div>
-                    <div class="flex justify-end gap-3 border-t border-[#DCE7E1] pt-4">
-                        <button type="button" onclick="closeUploadModal()"
-                            class="rounded-[9px] border border-[#DCE7E1] bg-white px-4 py-2 text-sm font-semibold text-[#1B3A34] hover:bg-[#F4F8F6]">
-                            Batal
-                        </button>
-                        <button type="submit"
-                            class="rounded-[9px] bg-[#2D8659] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1F5F3F]">
-                            Upload
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="min-h-screen bg-[#F4F8F6] p-4 sm:p-6 lg:p-7">
 
@@ -91,30 +49,6 @@
             <p class="mt-1 text-sm text-[#4B5F5A]">
                 Total <strong class="text-[#1B3A34]">{{ $certificates->count() }}</strong> sertifikat tersimpan
             </p>
-        </div>
-        <div class="flex flex-wrap gap-2">
-            {{-- Tombol utama: buka modal pilih jenis sertifikat --}}
-            <button type="button" onclick="openCertTypeModal()"
-                class="flex items-center gap-2 rounded-[9px] bg-[#2D8659] px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-[#1F5F3F]">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                + Buat Sertifikat
-            </button>
-            {{-- Upload aset --}}
-            <button type="button" onclick="openUploadModal('bg')"
-                class="flex items-center gap-2 rounded-[9px] border border-[#DCE7E1] bg-white px-3 py-2 text-[13px] font-semibold text-[#4B5F5A] transition hover:border-[#2D8659] hover:text-[#1F5F3F]">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                Background
-            </button>
-            <button type="button" onclick="openUploadModal('logo')"
-                class="flex items-center gap-2 rounded-[9px] border border-[#DCE7E1] bg-white px-3 py-2 text-[13px] font-semibold text-[#4B5F5A] transition hover:border-[#2D8659] hover:text-[#1F5F3F]">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                Logo
-            </button>
-            <button type="button" onclick="openUploadModal('ttd')"
-                class="flex items-center gap-2 rounded-[9px] border border-[#DCE7E1] bg-white px-3 py-2 text-[13px] font-semibold text-[#4B5F5A] transition hover:border-[#2D8659] hover:text-[#1F5F3F]">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                Tanda Tangan
-            </button>
         </div>
     </div>
 
@@ -207,17 +141,13 @@
                         </td>
                         <td class="px-5 py-4">
                             <div class="flex items-center justify-end gap-1.5">
-                                <a href="{{ route('admin.certificate.show', $cert->id) }}" title="Preview"
+                                @php
+                                    $nameSlug = \Illuminate\Support\Str::slug($cert->name ?? 'cert', '-');
+                                    $filename = "Sertifikat-{$nameSlug}.pdf";
+                                @endphp
+                                <a href="{{ asset('storage/documents/certificates/' . $filename) }}" target="_blank" title="Lihat Sertifikat"
                                     class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] bg-white text-[#4B5F5A] transition hover:border-[#2D8659] hover:text-[#1F5F3F]">
                                     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </a>
-                                <a href="{{ route('admin.certificate.pdf', $cert->id) }}" title="Download PDF"
-                                    class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] bg-white text-[#4B5F5A] transition hover:border-[#2D8659] hover:text-[#1F5F3F]">
-                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                </a>
-                                <a href="{{ route('admin.certificate.edit', $cert->id) }}" title="Edit"
-                                    class="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#DCE7E1] bg-white text-[#4B5F5A] transition hover:border-amber-400 hover:text-amber-600">
-                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
                                 </a>
                                 <button type="button" title="Hapus"
                                     onclick="openDeleteModal('{{ route('admin.certificate.destroy', $cert->id) }}', '{{ addslashes($cert->name) }}')"
@@ -240,72 +170,7 @@
     </div>
 </div>
 
-{{-- ===== Modal Pilih Jenis Sertifikat ===== --}}
-<div id="certTypeModal" class="fixed inset-0 z-[120] hidden">
-    <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onclick="closeCertTypeModal()"></div>
-    <div class="absolute inset-0 flex items-center justify-center p-4">
-        <div class="w-full max-w-lg rounded-[20px] bg-white shadow-2xl overflow-hidden">
-            {{-- Header --}}
-            <div class="flex items-center justify-between border-b border-[#DCE7E1] px-6 py-5">
-                <div>
-                    <h3 class="text-[16px] font-extrabold text-[#1B3A34]">Buat Sertifikat</h3>
-                    <p class="mt-0.5 text-[12.5px] text-[#4B5F5A]">Pilih jenis sertifikat yang ingin dibuat</p>
-                </div>
-                <button onclick="closeCertTypeModal()" class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F4F8F6] text-[#4B5F5A] hover:bg-[#DCE7E1]">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            {{-- Pilihan --}}
-            <div class="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
-                {{-- Sertifikat Selesai Magang --}}
-                <a href="{{ route('admin.certificate.create') }}"
-                    class="group flex flex-col items-center gap-3 rounded-[14px] border-2 border-[#DCE7E1] p-6 text-center transition hover:border-[#2D8659] hover:bg-[#F4F8F6]">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-full bg-[#E8F5E9] transition group-hover:bg-[#C8E6C9]">
-                        <svg class="h-7 w-7 text-[#2D8659]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-[14px] font-bold text-[#1B3A34]">Sertifikat Selesai Magang</p>
-                        <p class="mt-1 text-[12px] text-[#4B5F5A] leading-relaxed">Untuk pemagang yang sudah menyelesaikan program magang. Bulk berdasarkan brand.</p>
-                    </div>
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-[#2D8659] px-3 py-1 text-[11px] font-semibold text-white">
-                        Pilih Brand & Buat Massal
-                    </span>
-                </a>
-
-                {{-- Sertifikat Webinar --}}
-                <a href="{{ route('admin.certificate.webinar.create') }}"
-                    class="group flex flex-col items-center gap-3 rounded-[14px] border-2 border-[#DCE7E1] p-6 text-center transition hover:border-[#6366F1] hover:bg-[#EEF2FF]">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-full bg-[#EEF2FF] transition group-hover:bg-[#E0E7FF]">
-                        <svg class="h-7 w-7 text-[#6366F1]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-[14px] font-bold text-[#1B3A34]">Sertifikat Webinar</p>
-                        <p class="mt-1 text-[12px] text-[#4B5F5A] leading-relaxed">Untuk pemagang aktif yang telah mengikuti webinar. Terintegrasi dengan data kehadiran webinar.</p>
-                    </div>
-                    <span class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-[#6366F1] px-3 py-1 text-[11px] font-semibold text-white">
-                        Buat Sertifikat Webinar
-                    </span>
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
-// ── Modal Pilih Jenis Sertifikat ──────────────────────────────────────────────
-function openCertTypeModal() {
-    document.getElementById('certTypeModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-function closeCertTypeModal() {
-    document.getElementById('certTypeModal').classList.add('hidden');
-    document.body.style.overflow = '';
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCertTypeModal(); });
 
 // ── Filter tabel ────────────────────────────────────────────────────────────
 function filterTable() {
@@ -340,33 +205,7 @@ function closeDeleteModal() {
 }
 document.getElementById('deleteModal').querySelector('.absolute.inset-0').addEventListener('click', closeDeleteModal);
 
-// ── Modal upload ──────────────────────────────────────────────────────────────
-const uploadConfig = {
-    bg:   { title: 'Upload Background', hint: 'Nama file akan diawali bg_ (contoh: bg_nama.png). Maks 2 MB.', action: '{{ route("admin.uploads.backgrounds.store") }}' },
-    logo: { title: 'Upload Logo',        hint: 'Nama file akan diawali logo_ (contoh: logo_nama.png). Maks 2 MB.', action: '{{ route("admin.uploads.logos.store") }}' },
-    ttd:  { title: 'Upload Tanda Tangan',hint: 'Nama file akan diawali ttd_ (contoh: ttd_nama.png). Maks 2 MB.',  action: '{{ route("admin.uploads.signatures.store") }}' },
-};
-function openUploadModal(type) {
-    const cfg = uploadConfig[type];
-    document.getElementById('uploadModalTitle').textContent = cfg.title;
-    document.getElementById('uploadHint').textContent = cfg.hint;
-    document.getElementById('uploadForm').action = cfg.action;
-    document.getElementById('uploadPreviewWrap').classList.add('hidden');
-    document.getElementById('uploadModal').classList.remove('hidden');
-}
-function closeUploadModal() {
-    document.getElementById('uploadModal').classList.add('hidden');
-}
-function previewUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-        document.getElementById('uploadPreview').src = ev.target.result;
-        document.getElementById('uploadPreviewWrap').classList.remove('hidden');
-    };
-    reader.readAsDataURL(file);
-}
+
 </script>
 
 @endsection
