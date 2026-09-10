@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File as FileFacade;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use App\Models\InternCertificate;
 
 use Spatie\Browsershot\Browsershot;
 use Carbon\Carbon;
@@ -637,6 +638,99 @@ class InternController extends Controller
         }
     }
 
+    private function checkAndGenerateCertificate(IR $intern, $oldStatus)
+    {
+        if ($oldStatus !== IR::STATUS_COMPLETED && $intern->internship_status === IR::STATUS_COMPLETED) {
+            $existingCert = InternCertificate::where('intern_id', $intern->id)->first();
+            if ($existingCert) {
+                return; // Already has certificate
+            }
+
+            $end = $intern->end_date ? Carbon::parse($intern->end_date) : now();
+            $brandData = \App\Models\Brand::where('code', $intern->brand)->first();
+            if (!$brandData && $intern->brand_id) {
+                $brandData = \App\Models\Brand::find($intern->brand_id);
+            }
+
+            $divisionCode = $this->divisionFromInterest((string)$intern->internship_interest) ?? 'ADM';
+
+            $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+            $romanMonth = $roman[$end->month];
+
+            // Find max seq for this month/year by parsing the actual certificate_number
+            $last = InternCertificate::where('certificate_number', 'LIKE', "%/{$romanMonth}/{$end->year}")
+                ->orderByDesc('id')->first();
+            
+            $seq = 1;
+            if ($last && preg_match('/^(\d{3})\/SERT\//', $last->certificate_number, $m)) {
+                $seq = (int)$m[1] + 1;
+            }
+
+            $seqStr = str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
+            
+            $companyCode = $this->companyCode($brandData?->name ?? 'Seven Inc');
+            $brandCode = strtoupper($intern->brand ?? 'SI');
+            $serial = "{$seqStr}/SERT/{$divisionCode}/{$companyCode}.{$brandCode}/".$roman[$end->month]."/".$end->year;
+
+            $cert = InternCertificate::create([
+                'intern_id'             => $intern->id,
+                'certificate_number'    => $serial,
+                'company_name'          => $brandData?->name ?? 'Seven Inc',
+                'background_image_path' => $brandData?->internship_certificate_bg,
+                'company_logo_path'     => $brandData?->logo,
+                'signatory_name'        => $brandData?->signatory_name ?? 'Ari Setia Husbana',
+                'signatory_position'    => $brandData?->signatory_position ?? 'HRD',
+                'signature_image_path'  => $brandData?->signature,
+            ]);
+
+            if ($cert) {
+                \App\Jobs\GenerateCertificateJob::dispatch($intern->id);
+            }
+        }
+    }
+
+    private function companyCode(string $companyName): string
+    {
+        $map = [
+            'seven inc' => 'SI',
+            'pt. seven inc' => 'SI',
+            'magang jogja' => 'MJ',
+            'magangjogja' => 'MJ',
+        ];
+        $k = strtolower(trim($companyName));
+        if (isset($map[$k])) return $map[$k];
+
+        $words = explode(' ', strtoupper($k));
+        if (count($words) >= 2) {
+            return substr($words[0],0,1) . substr($words[1],0,1);
+        }
+        return substr($k,0,2);
+    }
+
+    private function divisionFromInterest(string $interest): ?string
+    {
+        $map = [
+            'administration'=>'ADM','administrasi'=>'ADM',
+            'uiux'=>'UIUX','ui-ux'=>'UIUX','ui/ux'=>'UIUX',
+            'programmer'=>'PROG','programmer (front end / backend)'=>'PROG',
+            'hr'=>'HR','human resources (hr)'=>'HR',
+            'social-media-specialist'=>'SMM','spesialis media sosial'=>'SMM',
+            'photographer'=>'PV','videographer'=>'VID','fotografer'=>'PV','videografer'=>'VID',
+            'content-writer'=>'CW','penulis konten'=>'CW',
+            'marketing-and-sales'=>'MS','penjualan & pemasaran'=>'MS','penjualan dan pemasaran'=>'MS',
+            'graphic-designer'=>'CD','desainer grafis'=>'CD',
+            'digital-marketing'=>'DM','pemasaran digital'=>'DM',
+            'public-relation'=>'PR','public relations (marcomm)'=>'PR','hubungan masyarakat (marcomm)'=>'PR',
+            'tiktok-creator'=>'TC','kreator tiktok'=>'TC',
+            'content-planner'=>'CP','perencana konten'=>'CP',
+            'project-manager'=>'PM','manajer proyek'=>'PM',
+            'welding'=>'LAS','pengelasan'=>'LAS',
+            'animation'=>'ANIM','animasi'=>'ANIM',
+        ];
+        $key = \Illuminate\Support\Str::of($interest)->lower()->replace('/', '-')->toString();
+        return $map[$key] ?? null;
+    }
+
     public function updateStatus(Request $request, $id)
     {
         // Menemukan data berdasarkan ID yang diberikan
@@ -682,6 +776,7 @@ class InternController extends Controller
 
         // Jika berubah menjadi selesai, generate SKL via Background Job
         $this->checkAndGenerateSkl($intern, $oldStatus);
+        $this->checkAndGenerateCertificate($intern, $oldStatus);
 
         // Return JSON untuk AJAX (fetch), redirect untuk request biasa
         if ($request->wantsJson() || $request->ajax()) {
@@ -739,6 +834,7 @@ class InternController extends Controller
                 }
                 
                 $this->checkAndGenerateSkl($intern, $old);
+                $this->checkAndGenerateCertificate($intern, $old);
 
                 $affected++;
             }

@@ -227,7 +227,7 @@
 
 
         {{-- BUTTONS --}}
-        <div class="grid md:grid-cols-2 gap-4 mb-8">
+        <div class="grid md:grid-cols-3 gap-4 mb-8">
             {{-- Tombol Download SKL --}}
             <a href="{{ $canDownload ? route('user.skl.download', ['intern_id' => $reg->id]) : 'javascript:void(0)' }}"
               class="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition
@@ -240,6 +240,17 @@
                 Download SKL
             </a>
 
+            {{-- Tombol Download Sertifikat --}}
+            <a href="{{ $canDownload ? route('user.certificate.download', ['intern_id' => $reg->id]) : 'javascript:void(0)' }}"
+              class="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition
+                      {{ $canDownload ? 'bg-primary-600 text-white hover:bg-primary-700' : 'bg-zinc-200 text-zinc-500 cursor-not-allowed' }}"
+              @if(!$canDownload) disabled @endif>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3a1 1 0 0 1 1 1v9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-4.004 4.004a1 1 0 0 1-1.414 0l-4.004-4.004a1 1 0 1 1 1.414-1.414L11 13.586V4a1 1 0 0 1 1-1z"/>
+                    <path d="M5 20a1 1 0 0 1 0-2h14a1 1 0 1 1 0 2H5z"/>
+                </svg>
+                Download Sertifikat
+            </a>
 
             {{-- Tombol Download Membercard (3d) --}}
             <button type="button"

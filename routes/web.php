@@ -174,6 +174,7 @@ Route::middleware(['auth', 'role:pemagang'])->prefix('user/documents')->name('us
 
     // Download dinamis (pemagang COMPLETED; admin boleh untuk user lain dengan ?user_id=)
     Route::get('/skl/download', [SKLController::class, 'download'])->name('skl.download');
+    Route::get('/certificate/download', [CertificateController::class, 'downloadUserPdf'])->name('certificate.download');
 
     // Generate LOA (POST) — route ini sudah di-handle oleh user.loa.generate di atas
     // Hapus duplikasi ini agar tidak bentrok nama route

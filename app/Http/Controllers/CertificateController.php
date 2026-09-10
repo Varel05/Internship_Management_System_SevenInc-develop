@@ -20,9 +20,29 @@ class CertificateController extends Controller
 {
     public function index()
     {
-        $internCerts = InternCertificate::orderByDesc('id')->get();
-        $webinarCerts = WebinarCertificate::orderByDesc('id')->get();
-        return view('certificates.index', compact('internCerts', 'webinarCerts'));
+        $internCerts = InternCertificate::with('intern')->orderByDesc('id')->get()->map(function($cert) {
+            $cert->type = 'intern';
+            $cert->name = $cert->intern->fullname ?? '-';
+            $cert->division = $cert->intern->internship_interest ?? 'ADM';
+            $cert->company = $cert->company_name;
+            $cert->brand = $cert->intern->brand ?? '-';
+            $cert->serial_number = $cert->certificate_number;
+            return $cert;
+        });
+
+        $webinarCerts = WebinarCertificate::with('attendance.user')->orderByDesc('id')->get()->map(function($cert) {
+            $cert->type = 'webinar';
+            $cert->name = $cert->attendance->user->name ?? '-';
+            $cert->division = 'Webinar';
+            $cert->company = $cert->company_name;
+            $cert->brand = '-';
+            $cert->serial_number = $cert->certificate_number;
+            return $cert;
+        });
+
+        $certificates = $internCerts->concat($webinarCerts)->sortByDesc('id')->values();
+
+        return view('certificates.index', compact('certificates'));
     }
 
     public function storeFromInterns(Request $request)
@@ -139,6 +159,36 @@ class CertificateController extends Controller
         });
 
         return redirect()->route('admin.certificate.index')->with('success', 'Sertifikat webinar berhasil dibuat.');
+    }
+
+    public function downloadUserPdf(Request $request)
+    {
+        $internId = $request->get('intern_id');
+        $certificate = InternCertificate::where('intern_id', $internId)->firstOrFail();
+
+        $nameSlug  = Str::slug($certificate->intern->fullname ?? 'cert', '-');
+        $fileName  = "Sertifikat-{$nameSlug}.pdf";
+        $fullPath = public_path("storage/documents/certificates/{$fileName}");
+
+        if (!file_exists($fullPath)) {
+            // Jika file tidak ada, mungkin belum digenerate oleh job
+            // Fallback: generate on the fly
+            return $this->generatePdf($certificate, 'intern');
+        }
+
+        return response()->download($fullPath);
+    }
+
+    public function downloadPdf($id)
+    {
+        // For backwards compatibility with the generic route
+        if ($cert = InternCertificate::find($id)) {
+            return $this->downloadInternPdf($cert);
+        }
+        if ($cert = WebinarCertificate::find($id)) {
+            return $this->downloadWebinarPdf($cert);
+        }
+        abort(404, 'Sertifikat tidak ditemukan');
     }
 
     public function downloadInternPdf(InternCertificate $certificate)

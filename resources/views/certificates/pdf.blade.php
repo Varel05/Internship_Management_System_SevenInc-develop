@@ -23,11 +23,11 @@
     };
 
     // GANTI baris Storage::url(...) kamu dengan ini:
-    $bgUrl    = $dataUri($certificate->background_image ?? '');
-    $logo1Url = $dataUri($certificate->logo1 ?? '');
-    $logo2Url = $dataUri($certificate->logo2 ?? '');
-    $ttd1Url  = $dataUri($certificate->signature_image1 ?? '');
-    $ttd2Url  = $dataUri($certificate->signature_image2 ?? '');
+    $bgUrl    = $dataUri($certificate->background_image_path ?? '');
+    $logo1Url = $dataUri($certificate->company_logo_path ?? '');
+    $logo2Url = ''; // Not used in InternCertificate
+    $ttd1Url  = $dataUri($certificate->signature_image_path ?? '');
+    $ttd2Url  = ''; // Not used in InternCertificate
 
     // Apakah kolom kanan (penandatangan 2) perlu ditampilkan
     $hasRightSig = $ttd2Url || !empty($certificate->name_signatory2) || !empty($certificate->role2);
@@ -39,16 +39,26 @@
       'CD'=>'Content Creative (Desain Grafis)','DM'=>'Digital Marketing','PR'=>'Marcom/Public Relations','TC'=>'Tik Tok Creator',
       'CP'=>'Content Planner','PM'=>'Project Manager','LAS'=>'Las','ANIM'=>'Animasi',
     ];
-    $divisionLabel = $divisionLabels[$certificate->division] ?? $certificate->division;
+    $division = $certificate->intern->internship_interest ?? 'ADM';
+    $divisionLabel = $divisionLabels[$division] ?? $division;
 
     // Durasi (X bulan Y hari)
-    $start = Carbon::parse($certificate->start_date);
-    $end   = Carbon::parse($certificate->end_date);
+    $start = Carbon::parse($certificate->intern->start_date ?? now());
+    $end   = Carbon::parse($certificate->intern->end_date ?? now());
     $months = $start->diffInMonths($end);
     $pivot  = $start->copy()->addMonths($months);
     $days   = $pivot->diffInDays($end);
     $duration_text = trim(($months ? $months.' bulan ' : '').($days ? $days.' hari' : ''));
     if ($duration_text === '') $duration_text = '0 hari';
+    
+    $internName = $certificate->intern->fullname ?? ($certificate->intern->user->name ?? '-');
+    $cityName = 'Yogyakarta'; // default
+    if (isset($certificate->intern->brand_id)) {
+        $brand = \App\Models\Brand::find($certificate->intern->brand_id);
+        if ($brand && $brand->city) {
+            $cityName = $brand->city;
+        }
+    }
   @endphp
 
   <style>
@@ -125,13 +135,13 @@
       <!-- TITLES & SERIAL -->
       <div class="headings">
         <div class="title">Sertifikat</div>
-        <div><p><b>NO: {{ $certificate->serial_number ?? '000/SERT/—/—/—/—' }}</b></p></div>
+        <div><p><b>NO: {{ $certificate->certificate_number ?? '000/SERT/—/—/—/—' }}</b></p></div>
         <div class="subtitle">Diberikan kepada:</div>
       </div>
 
       <!-- RECIPIENT NAME -->
       <div class="name-wrap">
-        <span class="name">{{ $certificate->name }}</span>
+        <span class="name">{{ $internName }}</span>
         <div class="name-line" aria-hidden="true"></div>
       </div>
 
@@ -139,17 +149,17 @@
       <div class="body">
         <div>
           Telah menyelesaikan magang bidang <strong>{{ $divisionLabel }}</strong>
-          di {{ $certificate->company }} selama <strong>{{ $duration_text }}</strong>.
+          di {{ $certificate->company_name }} selama <strong>{{ $duration_text }}</strong>.
         </div>
         <div>
           Mulai dari
-          <strong>{{ Carbon::parse($certificate->start_date)->locale('id')->translatedFormat('j F Y') }}</strong>
+          <strong>{{ Carbon::parse($certificate->intern->start_date ?? now())->locale('id')->translatedFormat('j F Y') }}</strong>
           sampai dengan
-          <strong>{{ Carbon::parse($certificate->end_date)->locale('id')->translatedFormat('j F Y') }}</strong>
+          <strong>{{ Carbon::parse($certificate->intern->end_date ?? now())->locale('id')->translatedFormat('j F Y') }}</strong>
         </div>
         <div>
-          <strong>{{ $certificate->city }}</strong>,
-          <strong>{{ Carbon::parse($certificate->end_date)->locale('id')->translatedFormat('j F Y') }}</strong>
+          <strong>{{ $cityName }}</strong>,
+          <strong>{{ Carbon::parse($certificate->intern->end_date ?? now())->locale('id')->translatedFormat('j F Y') }}</strong>
         </div>
       </div>
 
@@ -157,8 +167,8 @@
       <div class="signatures">
         <!-- Left (wajib) -->
         <div class="sig sig-left">
-          @if(!empty($certificate->role1))
-            <div class="role">{{ $certificate->role1 }}</div>
+          @if(!empty($certificate->signatory_position))
+            <div class="role">{{ $certificate->signatory_position }}</div>
           @endif
           @if($ttd1Url)
             <div class="image" style="top:-10px; left:-24px; width:300px; height:140px;">
@@ -166,7 +176,7 @@
             </div>
           @endif
           <div class="line" aria-hidden="true"></div>
-          <div class="name">{{ $certificate->name_signatory1 }}</div>
+          <div class="name">{{ $certificate->signatory_name }}</div>
         </div>
 
         <!-- Right (opsional) -->
