@@ -1,199 +1,273 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Surat Keterangan Selesai Magang (SKL)</title>
+  <meta charset="UTF-8" />
+  <title>Surat Keterangan Selesai Magang (SKL) - {{ $participantName ?? '-' }}</title>
   <style>
-    @page { size: A4 portrait; margin: 1.5cm 2cm 2.5cm 2cm; }
+    /* ===== A4 & Margin ===== */
+    @page {
+      size: A4 portrait;
+      margin: 10mm 15mm;
+    }
 
     body {
-      font-family: 'Roboto', Arial, Helvetica, sans-serif;
-      font-size: 12px;
+      font-family: 'Times New Roman', serif;
+      font-size: 11pt;
       color: #000;
-      background: #fff;
+      line-height: 1.3;
       margin: 0;
-      line-height: 1.5;
+      padding: 0;
+      background-color: #ffffff;
     }
 
-    .letter {
-      max-width: 780px;
+    .wrap {
+      width: 100%;
       margin: 0 auto;
-      padding: 20px;
-      border: 1px solid #000;
-      border-radius: 10px;
-      background: #fff;
     }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      color: #000;
+    /* HEADER */
+    table.header-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      margin-bottom: 5px;
     }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #000;
+    table.header-table td {
+      border: none;
+      padding: 0;
+      vertical-align: middle;
     }
-
-    .brand img {
-      width: 80px;
+    .header-logo {
+      width: 120px;
+    }
+    .header-logo img {
+      width: 100px;
       height: auto;
-      border-radius: 8px;
     }
-
-    .company {
-      font-weight: 700;
-      font-size: 18px;
-      color: #000;
-    }
-
-    .company small {
-      display: block;
-      color: #000;
-      font-size: 13px;
-    }
-
-    .kop {
-      border-top: 4px solid #000;
-      margin-top: 8px;
-      padding-top: 6px;
-    }
-
-    .meta-top {
-      text-align: right;
-      font-size: 14px;
-      color: #000;
-    }
-
-    .meta-top .no {
-      font-weight: 700;
-      font-size: 14px;
-      color: #000;
-    }
-
-    h1.title {
+    .header-text-container {
       text-align: center;
-      font-size: 22px;
-      margin: 10px 0 20px;
-      color: #000;
-      border-top: 2px solid #000;
-      padding-top: 10px;
     }
-
-    .table-like p {
-      margin: 6px 0;
+    .header-text-container h1 {
+      margin: 0;
+      font-size: 16pt;
+      font-weight: bold;
       color: #000;
     }
-
-    .table-like strong {
-      display: inline-block;
-      width: 180px;
+    .header-text-container p {
+      margin: 4px 0 0 0;
+      font-size: 10pt;
       color: #000;
+      line-height: 1.2;
     }
 
+    .header-line {
+      border-top: 3px solid #000;
+      border-bottom: 1px solid #000;
+      height: 2px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+
+    /* TITLE */
+    .title-surat {
+      text-align: center;
+      font-size: 12pt;
+      font-weight: bold;
+      text-decoration: underline;
+      margin-bottom: 15px;
+    }
+
+    /* META */
+    table.meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      margin-bottom: 15px;
+      font-size: 11pt;
+    }
+    table.meta-table td {
+      border: none;
+      padding: 2px 0;
+      vertical-align: top;
+    }
+    .meta-label {
+      width: 80px;
+    }
+    .meta-colon {
+      width: 15px;
+    }
+
+    /* CONTENT */
     .content p {
       text-align: justify;
       margin: 10px 0;
-      font-size: 14px;
-      color: #000;
+      line-height: 1.5;
+    }
+    
+    .info-list {
+        margin-bottom: 15px;
+        margin-left: 20px;
+    }
+    .info-label {
+        display: inline-block;
+        width: 150px;
     }
 
-    .sign-wrap {
-      margin-top: 0px;
-      display: flex;
-      justify-content: flex-end;
-      border-top: 2px solid transparent;
-      padding-top: 20px;
-      color: #000;
+    /* SIGNATURE */
+    .signature-wrapper {
+      width: 100%;
+      margin-top: 30px;
     }
-
-    .sign {
+    .signature-box {
+      width: 300px;
+      float: right;
       text-align: center;
-      width: 260px;
+    }
+    .signature-box p {
+      margin: 2px 0;
+      line-height: 1.2;
+    }
+    .signature-img-container {
       position: relative;
-      font-size: 14px;
-      color: #000;
+      height: 80px;
+      margin: 10px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .signature-img-container img.ttd {
+      max-height: 80px;
+      max-width: 200px;
+      position: relative;
+      z-index: 2;
+    }
+    .signature-img-container img.stamp {
+      position: absolute;
+      max-height: 90px;
+      opacity: 0.3;
+      filter: blur(0.5px);
+      z-index: 1;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .signatory-name {
+      font-weight: bold;
+      text-decoration: underline;
     }
 
-    .stamp {
-      width: 100px;
-      height: 100px;
-      opacity: 100;
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
     }
 
-    .footer {
-      font-size: 10px;
-      text-align: center;
-      margin-top: 20px;
-      color: #000;
-    }
   </style>
 </head>
-
 <body>
-  {{-- HEADER --}}
-  <div class="header">
-    <div class="brand">
-      <img src="{{ $logoData ?? asset('storage/images/logos/logo_seveninc.png') }}" alt="Logo">
-      <div>
-        <div class="company">{{ $companyName ?? 'Seven Inc' }}</div>
-        <small>{{ $companyAddress ?? 'Jl. Raya Janti Gg. Harjuna No.59, Jaranan, Karangjambe, Kec. Banguntapan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55198' }}</small>
+  <div class="wrap">
+    
+    <!-- HEADER -->
+    <table class="header-table">
+      <tr>
+        <td class="header-logo" style="width: 20%; text-align: left;">
+          <img src="{{ $logoData ?? asset('storage/images/logos/logo_seveninc.png') }}" alt="Logo">
+        </td>
+        <td class="header-text-container" style="width: 60%; text-align: center;">
+          <h1>{{ $companyName ?? 'SEVEN INC.' }}</h1>
+          <p>
+            {!! nl2br(e($companyAddress ?? "Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe,\nBanguntapan, Bantul, Yogyakarta\nKode Pos: 55198 | Telp: 0274-4534571")) !!}
+          </p>
+        </td>
+        <td style="width: 20%;"></td>
+      </tr>
+    </table>
+    <div class="header-line"></div>
+
+    <!-- TITLE -->
+    <div class="title-surat">SURAT KETERANGAN SELESAI MAGANG</div>
+
+    <!-- META -->
+    <table class="meta-table">
+      <tr>
+        <td class="meta-label">Nomor</td>
+        <td class="meta-colon">:</td>
+        <td>{{ $letterNumber ?? '-' }}</td>
+      </tr>
+      <tr>
+        <td class="meta-label">Lamp.</td>
+        <td class="meta-colon">:</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td class="meta-label">Hal</td>
+        <td class="meta-colon">:</td>
+        <td>Surat Keterangan Selesai Magang</td>
+      </tr>
+    </table>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <p>
+        Yang bertanda tangan di bawah ini, perwakilan dari <b>{{ $companyName ?? 'SEVEN INC.' }}</b> menerangkan bahwa:
+      </p>
+
+      <div class="info-list">
+        <div><span class="info-label">Nama</span>: {{ $participantName ?? '-' }}</div>
+        <div><span class="info-label">NIM/NIS</span>: {{ $participantId ?? '-' }}</div>
+        <div><span class="info-label">Program Studi</span>: {{ $participantMajor ?? '-' }}</div>
+        <div><span class="info-label">Asal Sekolah/Kampus</span>: {{ $participantInstitute ?? '-' }}</div>
+      </div>
+
+      <p>
+        Adalah benar nama tersebut di atas telah melaksanakan <b>Program Kerja Praktek / Magang</b> di perusahaan kami pada divisi <b>{{ $divisionName ?? '-' }}</b>,
+        yang dilaksanakan pada tanggal <b>{{ $startStr ?? '-' }}</b> sampai dengan tanggal <b>{{ $endStr ?? '-' }}</b>.
+      </p>
+      
+      @if(!empty($activityDescription))
+      <p>
+        Selama magang, peserta bertugas untuk: {{ $activityDescription }}
+      </p>
+      @endif
+
+      @if(!empty($participantAchievement))
+      <p>
+        Pencapaian utama peserta selama di perusahaan: {{ $participantAchievement }}
+      </p>
+      @endif
+
+      <p>
+        Selama masa magang, yang bersangkutan telah menunjukkan kedisiplinan dan tanggung jawab yang baik serta berkontribusi positif bagi perusahaan. 
+        Kami berterima kasih atas dedikasi yang diberikan dan berharap pengalaman ini bermanfaat bagi masa depannya.
+      </p>
+
+      <p>
+        Demikian Surat Keterangan Selesai Magang ini dibuat dengan sebenar-benarnya untuk dapat dipergunakan sebagaimana mestinya.
+      </p>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="signature-wrapper clearfix">
+      <div class="signature-box">
+        <p>Yogyakarta, {{ $letterDateStr ?? \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+        <p>Hormat kami,</p>
+        <div class="signature-img-container">
+          <img src="{{ $logoData ?? asset('storage/images/logos/logo_seveninc.png') }}" class="stamp" alt="Cap Perusahaan">
+          <img src="{{ $stampData ?? asset('storage/images/signature/ttd_arisetiahusbana.png') }}" class="ttd" alt="Tanda Tangan">
+        </div>
+        <p class="signatory-name">{{ $leaderName ?? 'Ari Setia Husbana' }}</p>
+        <p>{{ $leaderTitle ?? 'HRD' }}</p>
       </div>
     </div>
-    <div class="meta-top">
-      <div class="kop"></div>
-      <div class="no">Nomor: {{ $letterNumber ?? '001/HRD/SKL/2023' }}</div>
-      <small>{{ $startStr ?? '1 Januari 2023' }} — {{ $endStr ?? '31 Januari 2023' }}</small>
-    </div>
-  </div>
 
-  {{-- TITLE --}}
-  <h1 class="title">SURAT KETERANGAN SELESAI MAGANG</h1>
-
-  {{-- PENANDATANGAN --}}
-  <div class="table-like">
-    <p>Yang bertanda tangan di bawah ini:</p>
-    <p><strong>Nama</strong> {{ $leaderName ?? 'Nama Pimpinan / HRD' }}</p>
-    <p><strong>Jabatan</strong> {{ $leaderTitle ?? 'Manajer HRD' }}</p>
-    <p><strong>Perusahaan</strong> {{ $companyName ?? 'Seven Inc' }}</p>
-    <p><strong>Alamat</strong> {{ $companyAddress ?? 'Jl. Raya Janti Gg. Harjuna No.59, Jaranan, Karangjambe, Kec. Banguntapan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55198' }}</p>
   </div>
-
-  {{-- PESERTA --}}
-  <div class="table-like" style="margin-top:12px;">
-    <p>Dengan ini menerangkan bahwa:</p>
-    <p><strong>Nama</strong> {{ $participantName ?? 'Nama Peserta' }}</p>
-    <p><strong>NIM / Identitas</strong> {{ $participantId ?? 'NIM Peserta' }}</p>
-    <p><strong>Program Studi</strong> {{ $participantMajor ?? 'Program Studi Peserta' }}</p>
-    <p><strong>Asal Institusi</strong> {{ $participantInstitute ?? 'Asal Institusi Peserta' }}</p>
-  </div>
-
-  {{-- ISI --}}
-  <div class="content" style="margin-top:10px;">
-    <p><br>Dengan ini menerangkan bahwa <strong>{{ $participantName ?? 'Nama Peserta' }}</strong> telah menyelesaikan program magang di <strong>{{ $companyName ?? 'Seven Inc' }}</strong> pada divisi <strong>{{ $divisionName ?? 'Divisi Peserta' }}</strong> selama periode <strong>{{ $startStr ?? '1 Januari 2023' }}</strong> hingga <strong>{{ $endStr ?? '31 Januari 2023' }}</strong>.</p>
-    <p>{{ $activityDescription ?? 'Selama magang, yang bersangkutan menunjukkan sikap profesional, inisiatif tinggi, serta kemampuan bekerja dalam tim maupun secara mandiri. Ia menguasai berbagai keterampilan praktis yang mendukung bidangnya dan menyelesaikan seluruh tugas dengan baik serta tepat waktu.' }}</p>
-    <p>{{ $participantAchievement ?? 'Peserta magang juga menunjukkan kemajuan signifikan dalam memahami proses operasional dan strategi perusahaan. Kontribusinya dihargai tim, terutama melalui ide-ide kreatif dan inovatif yang berhasil diterapkan di divisi tempat magang. Surat keterangan ini dibuat untuk digunakan sebagaimana mestinya dan sebagai bukti bahwa yang bersangkutan telah mengikuti dan menyelesaikan program magang dengan baik di perusahaan kami.' }}</p>
-  </div>
-
-  {{-- SIGN --}}
-  <div class="sign-wrap">
-    <div class="sign">
-      <div>{{ $companyCity ?? 'Yogyakarta' }}, {{ $letterDateStr ?? '1 Februari 2023' }}</div>
-      <div>Hormat kami,</div>
-      <img src="{{ $stampData ?? asset('storage/images/signature/ttd_arisetiahusbana.png') }}" class="stamp">
-      <div style="margin-top:-20px; font-weight:700;">{{ $leaderName ?? 'Nama Pimpinan / HRD' }}</div>
-      <div style="font-size:12px;">{{ $leaderTitle ?? 'Manajer HRD' }}</div>
-      <div style="font-size:12px;">{{ $companyName ?? 'Seven Inc' }}</div>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <div class="footer">
-    <p>© 2023 {{ $companyName ?? 'Seven Inc' }}. All rights reserved.</p>
-  </div>
+  
+  @if(isset($autoPrint) && $autoPrint)
+  <script>
+    window.onload = function() {
+        window.print();
+    }
+  </script>
+  @endif
 </body>
 </html>

@@ -79,7 +79,7 @@ class GenerateSklJob implements ShouldQueue
 
             $startStr      = $intern->start_date ? Carbon::parse($intern->start_date)->isoFormat('D MMMM Y') : '-';
             $endStr        = $intern->end_date   ? Carbon::parse($intern->end_date)->isoFormat('D MMMM Y')   : '-';
-            $letterDateStr = $intern->end_date   ? Carbon::parse($intern->end_date)->isoFormat('D MMMM Y')   : now()->isoFormat('D MMMM Y');
+            $letterDateStr = now()->translatedFormat('d F Y');
             
             $running       = str_pad((string) $intern->id, 4, '0', STR_PAD_LEFT);
             $year          = $intern->end_date ? Carbon::parse($intern->end_date)->format('Y') : now()->format('Y');

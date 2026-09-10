@@ -136,6 +136,17 @@ class SKLController extends Controller
         $errors         = [];
 
         Carbon::setLocale('id');
+        
+        $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+        $romanMonth = $roman[(int)date('n')];
+        $year = date('Y');
+
+        $lastSkl = \App\Models\SklDocument::where('skl_number', 'LIKE', "%/SKL/%/{$romanMonth}/{$year}")
+            ->orderByDesc('id')->first();
+        $seq = 1;
+        if ($lastSkl && preg_match('/^(\d{3})\/SKL\//', $lastSkl->skl_number, $m)) {
+            $seq = (int)$m[1] + 1;
+        }
 
         foreach ($interns as $intern) {
             try {
@@ -143,20 +154,30 @@ class SKLController extends Controller
                 $participantId        = $intern->student_id ?? '-';
                 $participantMajor     = $intern->study_program ?? '-';
                 $participantInstitute = $intern->institution_name ?? '-';
-                $divisionName         = $intern->internship_interest ?? '-';
+                
+                $interest = $intern->internship_interest ?? '';
+                $dbDivision = \App\Models\Division::where('name', $interest)
+                    ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+                    ->first();
+                $divisionName = $dbDivision?->code ?? 'UMUM';
 
                 // Gunakan brand pemagang sebagai nama perusahaan di surat
+                $brandData = \App\Models\Brand::whereRaw('LOWER(name) = ?', [strtolower(trim($intern->brand))])->first();
                 $companyName = $intern->brand ?: $config->company_name;
+                $companyAddress = $brandData?->company_address ?? $config->company_address;
 
                 $startStr      = $intern->start_date ? Carbon::parse($intern->start_date)->isoFormat('D MMMM Y') : '-';
                 $endStr        = $intern->end_date   ? Carbon::parse($intern->end_date)->isoFormat('D MMMM Y')   : '-';
-                $letterDateStr = $intern->end_date   ? Carbon::parse($intern->end_date)->isoFormat('D MMMM Y')   : now()->isoFormat('D MMMM Y');
-                $running       = str_pad((string) $intern->id, 4, '0', STR_PAD_LEFT);
-                $letterNumber  = 'SKL/' . ($intern->end_date ? Carbon::parse($intern->end_date)->format('Y') : now()->format('Y')) . '/' . $running;
+                $letterDateStr = now()->translatedFormat('d F Y');
+                
+                $brandCodeStr = strtoupper($intern->brand ?? 'SI');
+                $seqStr = str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
+                $letterNumber = "{$seqStr}/SKL/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
+                $seq++;
 
                 $data = [
                     'companyName'            => $companyName,
-                    'companyAddress'         => $config->company_address,
+                    'companyAddress'         => $companyAddress,
                     'companyCity'            => $config->company_city,
                     'leaderName'             => $config->leader_name,
                     'leaderTitle'            => $config->leader_title,

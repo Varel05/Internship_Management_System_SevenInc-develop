@@ -611,9 +611,21 @@ class InternController extends Controller
             $signatoryName  = $brandData->signatory_name ?? 'Ari Setia Husbana';
             $signatoryTitle = $brandData->signatory_position ?? 'HRD';
             
-            $running       = str_pad((string) $intern->id, 4, '0', STR_PAD_LEFT);
-            $year          = $intern->end_date ? Carbon::parse($intern->end_date)->format('Y') : now()->format('Y');
-            $sklNumber     = 'SKL/' . $year . '/' . $running;
+            $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+            $romanMonth = $roman[(int)date('n')];
+            $year = date('Y');
+
+            $lastSkl = \App\Models\SklDocument::where('skl_number', 'LIKE', "%/SKL/%/{$romanMonth}/{$year}")
+                ->orderByDesc('id')->first();
+            $seq = 1;
+            if ($lastSkl && preg_match('/^(\d{3})\/SKL\//', $lastSkl->skl_number, $m)) {
+                $seq = (int)$m[1] + 1;
+            }
+
+            $divisionCode = $this->divisionFromInterest((string)$intern->internship_interest) ?? 'UMUM';
+            $brandCodeStr = strtoupper($intern->brand ?? 'SI');
+            $seqStr = str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
+            $sklNumber = "{$seqStr}/SKL/{$divisionCode}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
 
             $sklDoc = \App\Models\SklDocument::updateOrCreate(
                 ['intern_id' => $intern->id],
@@ -668,9 +680,8 @@ class InternController extends Controller
 
             $seqStr = str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
             
-            $companyCode = $this->companyCode($brandData?->name ?? 'Seven Inc');
             $brandCode = strtoupper($intern->brand ?? 'SI');
-            $serial = "{$seqStr}/SERT/{$divisionCode}/{$companyCode}.{$brandCode}/".$roman[$end->month]."/".$end->year;
+            $serial = "{$seqStr}/SERT/{$divisionCode}/SEVEN.{$brandCode}/".$roman[$end->month]."/".$end->year;
 
             $cert = InternCertificate::create([
                 'intern_id'             => $intern->id,
@@ -709,26 +720,11 @@ class InternController extends Controller
 
     private function divisionFromInterest(string $interest): ?string
     {
-        $map = [
-            'administration'=>'ADM','administrasi'=>'ADM',
-            'uiux'=>'UIUX','ui-ux'=>'UIUX','ui/ux'=>'UIUX',
-            'programmer'=>'PROG','programmer (front end / backend)'=>'PROG',
-            'hr'=>'HR','human resources (hr)'=>'HR',
-            'social-media-specialist'=>'SMM','spesialis media sosial'=>'SMM',
-            'photographer'=>'PV','videographer'=>'VID','fotografer'=>'PV','videografer'=>'VID',
-            'content-writer'=>'CW','penulis konten'=>'CW',
-            'marketing-and-sales'=>'MS','penjualan & pemasaran'=>'MS','penjualan dan pemasaran'=>'MS',
-            'graphic-designer'=>'CD','desainer grafis'=>'CD',
-            'digital-marketing'=>'DM','pemasaran digital'=>'DM',
-            'public-relation'=>'PR','public relations (marcomm)'=>'PR','hubungan masyarakat (marcomm)'=>'PR',
-            'tiktok-creator'=>'TC','kreator tiktok'=>'TC',
-            'content-planner'=>'CP','perencana konten'=>'CP',
-            'project-manager'=>'PM','manajer proyek'=>'PM',
-            'welding'=>'LAS','pengelasan'=>'LAS',
-            'animation'=>'ANIM','animasi'=>'ANIM',
-        ];
-        $key = \Illuminate\Support\Str::of($interest)->lower()->replace('/', '-')->toString();
-        return $map[$key] ?? null;
+        $dbDivision = \App\Models\Division::where('name', $interest)
+            ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+            ->first();
+            
+        return $dbDivision?->code;
     }
 
     public function updateStatus(Request $request, $id)

@@ -46,10 +46,37 @@ class InternAssessmentController extends Controller
         if ($request->filled('signature_image_select')) {
             $sigPath = $request->signature_image_select;
         } elseif ($request->hasFile('signature_image')) {
-            $sigPath = $request->file('signature_image')->store('images/signature', 'public');
+            $sigPath = $request->file('signature_image')->store('images/signatures', 'public');
         }
 
         return [$logoPath, $sigPath];
+    }
+
+    private function generateAssessmentNumber($intern): string
+    {
+        if (!$intern) return '';
+
+        $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+        $romanMonth = $roman[(int)date('n')];
+        $year = date('Y');
+
+        $last = InternAssessment::where('assessment_number', 'LIKE', "%/PEN/%/{$romanMonth}/{$year}")
+            ->orderByDesc('id')->first();
+        $seq = 1;
+        if ($last && preg_match('/^(\d{3})\/PEN\//', $last->assessment_number, $m)) {
+            $seq = (int)$m[1] + 1;
+        }
+
+        $interest = $intern->internship_interest ?? '';
+        $dbDivision = \App\Models\Division::where('name', $interest)
+            ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+            ->first();
+        $division = $dbDivision?->code ?? 'UMUM';
+        
+        $brandStr = strtoupper($intern->brand ?? 'SI');
+        $seqStr = str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
+        
+        return "{$seqStr}/PEN/{$division}/SEVEN.{$brandStr}/{$romanMonth}/{$year}";
     }
 
     private function buildAspekData(array $aspeks, array $nilais): array
@@ -479,8 +506,12 @@ class InternAssessmentController extends Controller
         // Susun aspek penilaian
         [$data, $avg] = $this->buildAspekData($validated['aspek'], $validated['nilai']);
 
+        $intern = IR::find($validated['intern_id']);
+        $assessmentNumber = $this->generateAssessmentNumber($intern);
+
         $assessment = InternAssessment::create([
             'intern_id'             => $validated['intern_id'],
+            'assessment_number'     => $assessmentNumber,
             'company_name'          => $validated['company_name'] ?? null,
             'signatory_name'        => $validated['signatory_name'] ?? null,
             'signatory_position'    => $validated['signatory_position'] ?? null,
@@ -538,9 +569,13 @@ class InternAssessmentController extends Controller
             try {
                 [$data, $avg] = $this->buildAspekData($item['aspek'] ?? [], $item['nilai'] ?? []);
 
+                $intern = IR::find($item['intern_id']);
+                $assessmentNumber = $this->generateAssessmentNumber($intern);
+
                 InternAssessment::updateOrCreate(
                     ['intern_id' => $item['intern_id']],
                     [
+                        'assessment_number'     => $assessmentNumber,
                         'company_name'          => $item['company_name'] ?? null,
                         'company_address'       => $item['company_address'] ?? null,
                         'signatory_name'        => $item['signatory_name'] ?? null,
@@ -677,7 +712,14 @@ class InternAssessmentController extends Controller
 
         [$data, $avg] = $this->buildAspekData($validated['aspek'], $validated['nilai']);
 
+        $assessmentNumber = $assessment->assessment_number;
+        if (empty($assessmentNumber)) {
+            $intern = IR::find($assessment->intern_id);
+            $assessmentNumber = $this->generateAssessmentNumber($intern);
+        }
+
         $assessment->update([
+            'assessment_number'     => $assessmentNumber,
             'company_name'          => $validated['company_name'] ?? null,
             'company_address'       => $validated['company_address'] ?? null,
             'signatory_name'        => $validated['signatory_name'] ?? null,

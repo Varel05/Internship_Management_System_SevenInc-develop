@@ -14,6 +14,7 @@ class InternAssessment extends Model
     // Menambahkan properti $fillable untuk semua kolom yang bisa diisi
     protected $fillable = [
         'intern_id',
+        'assessment_number',
         'aspek_penilaian',
         'rata_rata',
         'company_name',

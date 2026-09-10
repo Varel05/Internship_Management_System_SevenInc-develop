@@ -21,11 +21,13 @@ class DivisionController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:100|unique:divisions,name',
+            'code' => 'nullable|string|max:10|unique:divisions,code',
         ]);
 
         Division::create([
             'name'       => trim($validated['name']),
             'slug'       => Str::slug(trim($validated['name']), '_'),
+            'code'       => isset($validated['code']) ? strtoupper(trim($validated['code'])) : null,
             'is_active'  => true,
         ]);
 
@@ -38,11 +40,13 @@ class DivisionController extends Controller
     {
         $validated = $request->validate([
             'name' => "required|string|max:100|unique:divisions,name,{$division->id}",
+            'code' => "nullable|string|max:10|unique:divisions,code,{$division->id}",
         ]);
 
         $division->update([
             'name' => trim($validated['name']),
             'slug' => Str::slug(trim($validated['name']), '_'),
+            'code' => isset($validated['code']) ? strtoupper(trim($validated['code'])) : null,
         ]);
 
         return redirect()->route('admin.form-settings.divisions')

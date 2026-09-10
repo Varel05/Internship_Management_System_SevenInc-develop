@@ -1,196 +1,306 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Form Penilaian Magang - {{ $assessment->intern->fullname ?? '-' }}</title>
+  <meta charset="UTF-8" />
+  <title>Surat Penilaian Magang - {{ $assessment->intern->fullname ?? '-' }}</title>
   <style>
-    @page { size: A4; margin: 60px; }
+    /* ===== A4 & Margin ===== */
+    @page {
+      size: A4 portrait;
+      margin: 10mm 15mm;
+    }
 
     body {
-        font-family: "Times New Roman", serif;
-        font-size: 13px;
-        color: #000;
-        line-height: 1.5;
-        position: relative;
+      font-family: 'Times New Roman', serif;
+      font-size: 11pt;
+      color: #000;
+      line-height: 1.3;
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
     }
 
-    .wrap { width: 100%; max-width: 700px; margin: 0 auto; position: relative; }
-
-    /* ===== HEADER ===== */
-    .header-table {
-        width: 100%;
-        border-collapse: collapse;
-        height: 90px;
+    .wrap {
+      width: 100%;
+      margin: 0 auto;
     }
 
-    .header-table td { vertical-align: middle; border: none; }
-
+    /* HEADER */
+    table.header-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      margin-bottom: 5px;
+    }
+    table.header-table td {
+      border: none;
+      padding: 0;
+      vertical-align: middle;
+    }
+    .header-logo {
+      width: 120px;
+    }
     .header-logo img {
-        height: {{ $assessment->logo_height ?? 70 }}px;
-        width: auto;
+      width: 100px;
+      height: auto;
+    }
+    .header-text-container {
+      text-align: center;
+    }
+    .header-text-container h1 {
+      margin: 0;
+      font-size: 16pt;
+      font-weight: bold;
+      color: #000;
+    }
+    .header-text-container p {
+      margin: 4px 0 0 0;
+      font-size: 10pt;
+      color: #000;
+      line-height: 1.2;
     }
 
-    .company { text-align: center; }
-    .company h1 { font-size: 20px; margin: 0; font-weight: bold; line-height: 1.3; }
-    .company p { margin: 0; font-size: 12px; line-height: 1.3; }
-
-    hr { border: none; border-top: 2px solid #000; margin: 8px 0 12px; }
-
-    /* ===== BODY ===== */
-    .title {
-        text-align: center;
-        font-weight: bold;
-        text-decoration: underline;
-        margin-bottom: 10px;
+    .header-line {
+      border-top: 3px solid #000;
+      border-bottom: 1px solid #000;
+      height: 2px;
+      margin-top: 5px;
+      margin-bottom: 15px;
     }
 
-    .info { margin-bottom: 12px; }
-    .label { width: 160px; display: inline-block; }
-    .range { margin-top: 10px; font-size: 12px; }
-
-    /* ===== SIGNATURE ===== */
-    .signature {
-        width: 100%;
-        margin-top: 70px;
-        position: relative;
-        clear: both;
+    /* TITLE */
+    .title-surat {
+      text-align: center;
+      font-size: 12pt;
+      font-weight: bold;
+      text-decoration: underline;
+      margin-bottom: 15px;
     }
 
-    .signature-inner {
-        width: 260px;
-        float: right;
-        text-align: center;
-        position: relative;
+    /* META */
+    table.meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: none;
+      margin-bottom: 15px;
+      font-size: 11pt;
+    }
+    table.meta-table td {
+      border: none;
+      padding: 2px 0;
+      vertical-align: top;
+    }
+    .meta-label {
+      width: 80px;
+    }
+    .meta-colon {
+      width: 15px;
     }
 
-    .signature-text {
-        text-align: center;
-        line-height: 1.4;
-        margin-bottom: 20px;
+    /* KEPADA */
+    .kepada-block {
+      margin-bottom: 15px;
+      font-weight: bold;
+      line-height: 1.4;
     }
 
-    .signature-image-block {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        z-index: 2;
+    /* CONTENT */
+    .content p {
+      text-align: justify;
+      margin: 10px 0;
+      line-height: 1.5;
+    }
+    
+    .info-list {
+        margin-bottom: 15px;
+    }
+    .info-label {
+        display: inline-block;
+        width: 150px;
     }
 
-    .signature img.ttd {
-        height: {{ $assessment->sig_height ?? 90 }}px;
-        width: auto;
-        margin-bottom: 5px;
-        z-index: 2;
+    /* TABLE ASPEK */
+    table.aspek-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 11pt;
+    }
+    table.aspek-table th, table.aspek-table td {
+      border: 1px solid #000;
+      padding: 6px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    table.aspek-table th {
+      background-color: #f3f3f3;
+      font-weight: bold;
+    }
+    table.aspek-table td.text-left {
+      text-align: left;
+    }
+    table.aspek-table td.text-bold {
+      font-weight: bold;
     }
 
-    .signature .name {
-        font-weight: bold;
-        text-decoration: underline;
-        text-align: center;
-        z-index: 3;
+    /* SIGNATURE */
+    .signature-wrapper {
+      width: 100%;
+      margin-top: 30px;
+    }
+    .signature-box {
+      width: 300px;
+      float: right;
+      text-align: center;
+    }
+    .signature-box p {
+      margin: 2px 0;
+      line-height: 1.2;
+    }
+    .signature-img-container {
+      position: relative;
+      height: 80px;
+      margin: 10px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .signature-img-container img.ttd {
+      max-height: 80px;
+      max-width: 200px;
+      position: relative;
+      z-index: 2;
+    }
+    .signature-img-container img.stamp {
+      position: absolute;
+      max-height: 90px;
+      opacity: 0.3;
+      filter: blur(0.5px);
+      z-index: 1;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .signatory-name {
+      font-weight: bold;
+      text-decoration: underline;
     }
 
-    /* === WATERMARK === */
-    .signature img.logo-bg {
-        position: absolute;
-        right: 35px;
-        bottom: 15px;
-        height: calc({{ $assessment->logo_height ?? 70 }}px * 1.8);
-        width: auto;
-        opacity: 0.8;
-        z-index: 1;
-        filter: blur(0.4px);
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
     }
+
   </style>
 </head>
 <body>
-    <div class="wrap">
-        {{-- HEADER --}}
-        <table class="header-table">
-            <tr>
-                <!-- Column for Logo -->
-                <td class="header-logo" style="width: 25%; text-align: left;">
-                    <img src="{{ $logoSrc }}" alt="Logo">  <!-- Logo perusahaan -->
-                </td>
+  <div class="wrap">
+    
+    <!-- HEADER -->
+    <table class="header-table">
+      <tr>
+        <td class="header-logo" style="width: 20%; text-align: left;">
+          <img src="{{ $logoSrc ?? asset('storage/images/logos/logo_seveninc.png') }}" alt="Logo">
+        </td>
+        <td class="header-text-container" style="width: 60%; text-align: center;">
+          <h1>{{ $assessment->company_name ?? 'SEVEN INC.' }}</h1>
+          <p>
+            {!! nl2br(e($assessment->company_address ?? "Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe,\nBanguntapan, Bantul, Yogyakarta\nKode Pos: 55198 | Telp: 0274-4534571")) !!}
+          </p>
+        </td>
+        <td style="width: 20%;"></td>
+      </tr>
+    </table>
+    <div class="header-line"></div>
 
-                <!-- Column for Company Information -->
-                <td style="width: 50%; text-align: center;">
-                    <div class="company">
-                        <h1>{{ $assessment->company_name ?? 'SEVEN INC.' }}</h1>
-                        <p>{!! nl2br(e($assessment->company_address ?? 'Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe, Banguntapan, Bantul, Yogyakarta')) !!}</p>
-                    </div>
-                </td>
+    <!-- TITLE -->
+    <div class="title-surat">FORM PENILAIAN MAGANG</div>
 
-                <!-- Dummy Column -->
-                <td style="width: 25%; text-align: center;">
-                    <!-- This is a placeholder for a dummy column -->
-                </td>
-            </tr>
-        </table>
+    <!-- META -->
+    <table class="meta-table">
+      <tr>
+        <td class="meta-label">Nomor</td>
+        <td class="meta-colon">:</td>
+        <td>{{ $assessment->assessment_number ?? '-' }}</td>
+      </tr>
+      <tr>
+        <td class="meta-label">Lamp.</td>
+        <td class="meta-colon">:</td>
+        <td>-</td>
+      </tr>
+      <tr>
+        <td class="meta-label">Hal</td>
+        <td class="meta-colon">:</td>
+        <td>Pemberitahuan Nilai Magang/Kerja Praktik</td>
+      </tr>
+    </table>
 
-        <hr>
+    <!-- CONTENT -->
+    <div class="content">
+      <p>
+        Dengan ini pihak <b>{{ $assessment->company_name ?? 'SEVEN INC.' }}</b> memberikan penilaian selama pelaksanaan magang kepada:
+      </p>
 
-        <div class="title">FORM PENILAIAN MAGANG {{ strtoupper($assessment->company_name ?? 'SEVEN INC.') }}</div>
+      <div class="info-list">
+        <div><span class="info-label">Nama</span>: {{ $assessment->intern->fullname ?? '-' }}</div>
+        <div><span class="info-label">NIM/NIS</span>: {{ $assessment->intern->student_id ?? $assessment->intern->nim_nis ?? '-' }}</div>
+        <div><span class="info-label">Program Studi</span>: {{ $assessment->intern->study_program ?? '-' }}</div>
+        <div><span class="info-label">Divisi/Keahlian</span>: {{ $assessment->intern->internship_interest ?? '-' }}</div>
+      </div>
 
-        <div class="info">
-            Dengan ini pihak <b>{{ $assessment->company_name ?? 'SEVEN INC.' }}</b> memberikan penilaian selama pelaksanaan magang kepada:<br>
-            <span class="label">Nama</span>: {{ $assessment->intern->fullname ?? '-' }}<br>
-            <span class="label">NIM/NIS</span>: {{ $assessment->intern->student_id ?? $assessment->intern->nim_nis ?? '-' }}<br>
-            <span class="label">Program Studi</span>: {{ $assessment->intern->study_program ?? '-' }}<br>
-            <span class="label">Divisi/Keahlian</span>: {{ $assessment->intern->internship_interest ?? '-' }}
-        </div>
-
-        {{-- TABEL ASPEK PENILAIAN --}}
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px; border: 1px solid #000;">
-            <thead>
-                <tr style="background-color: #f3f3f3; text-align: center;">
-                    <th style="width:50px; border: 1px solid #000; padding: 6px;">No</th>
-                    <th style="border: 1px solid #000; padding: 6px;">Aspek Penilaian</th>
-                    <th style="width:90px; border: 1px solid #000; padding: 6px;">Nilai</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach((is_string($assessment->aspek_penilaian) ? json_decode($assessment->aspek_penilaian, true) : $assessment->aspek_penilaian) ?? [] as $index => $item)
+      <table class="aspek-table">
+        <thead>
+          <tr>
+            <th style="width: 10%;">No</th>
+            <th style="width: 60%;">Aspek Penilaian</th>
+            <th style="width: 30%;">Nilai</th>
+          </tr>
+        </thead>
+        <tbody>
+            @if(is_array($assessment->aspek_penilaian))
+                @foreach($assessment->aspek_penilaian as $index => $item)
                 <tr>
-                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">{{ $index + 1 }}</td>
-                    <td style="border: 1px solid #000; padding: 6px;">{{ $item['aspek'] ?? '-' }}</td>
-                    <td style="border: 1px solid #000; text-align: center; padding: 6px;">{{ $item['nilai'] ?? '-' }}</td>
+                    <td>{{ $index + 1 }}</td>
+                    <td class="text-left">{{ $item['aspek'] }}</td>
+                    <td>{{ $item['nilai'] }}</td>
                 </tr>
                 @endforeach
-                <tr>
-                    <td colspan="2" style="border: 1px solid #000; text-align: center; font-weight: bold; padding: 6px;">Rata-rata</td>
-                    <td style="border: 1px solid #000; text-align: center; font-weight: bold; padding: 6px;">{{ $assessment->rata_rata }}</td>
-                </tr>
-            </tbody>
-        </table>
+            @endif
+            <tr>
+                <td colspan="2" class="text-bold">RATA-RATA</td>
+                <td class="text-bold">{{ $assessment->rata_rata ?? '-' }}</td>
+            </tr>
+        </tbody>
+      </table>
 
-        <div class="range">
-            <b>Keterangan rentang nilai:</b><br>
-            81–100 : Amat Baik<br>
-            65–80 : Baik<br>
-            50–64 : Cukup<br>
-            &lt; 50 : Kurang
-        </div>
-
-        {{-- SIGNATURE --}}
-        <div class="signature">
-            <div class="signature-inner">
-                <p class="signature-text">
-                    Yogyakarta, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
-                    {{ $assessment->signatory_position ?? 'Direktur SEVEN INC' }}
-                </p>
-
-                <div class="signature-image-block">
-                    <img class="ttd" src="{{ $sigSrc }}" alt="Tanda Tangan">  <!-- Tanda tangan -->
-                    <span class="name">{{ $assessment->signatory_name ?? 'Rekario Danny Sanjaya, S.Kom' }}</span>
-                </div>
-
-                {{-- WATERMARK yang ikut resize --}}
-                <img class="logo-bg" src="{{ $logoSrc }}" alt="Logo Transparan">
-            </div>
-        </div>
+      <p style="font-size: 10pt; margin-top: 5px;">
+        <em>*Keterangan Range Nilai: 90-100 (Sangat Baik), 80-89 (Baik), 70-79 (Cukup), &lt; 70 (Kurang)</em>
+      </p>
     </div>
+
+    <!-- SIGNATURE -->
+    <div class="signature-wrapper clearfix">
+      <div class="signature-box">
+        <p>Yogyakarta, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+        <p>Hormat kami,</p>
+        <div class="signature-img-container">
+          <img src="{{ $logoSrc ?? asset('storage/images/logos/logo_seveninc.png') }}" class="stamp" alt="Cap Perusahaan">
+          <img src="{{ $sigSrc ?? asset('storage/images/signature/ttd_arisetiahusbana.png') }}" class="ttd" alt="Tanda Tangan">
+        </div>
+        <p class="signatory-name">{{ $assessment->signatory_name ?? 'Ari Setia Husbana' }}</p>
+        <p>{{ $assessment->signatory_position ?? 'HRD' }}</p>
+      </div>
+    </div>
+
+  </div>
+  
+  @if(isset($autoPrint) && $autoPrint)
+  <script>
+    window.onload = function() {
+        window.print();
+    }
+  </script>
+  @endif
 </body>
 </html>

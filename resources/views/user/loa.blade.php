@@ -152,10 +152,25 @@
       position: relative;
       height: 80px;
       margin: 10px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    .signature-img-container img {
+    .signature-img-container img.ttd {
       max-height: 80px;
       max-width: 200px;
+      position: relative;
+      z-index: 2;
+    }
+    .signature-img-container img.stamp {
+      position: absolute;
+      max-height: 90px;
+      opacity: 0.3;
+      filter: blur(0.5px);
+      z-index: 1;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
     }
     .signatory-name {
       font-weight: bold;
@@ -175,17 +190,16 @@
     <!-- HEADER -->
     <table class="header-table">
       <tr>
-        <td class="header-logo">
+        <td class="header-logo" style="width: 20%; text-align: left;">
           <img src="{{ $logoData ?? asset('storage/images/logos/logo_seveninc.png') }}" alt="Logo">
         </td>
-        <td class="header-text-container">
+        <td class="header-text-container" style="width: 60%; text-align: center;">
           <h1>{{ $loaSettings->company_name ?? 'SEVEN INC.' }}</h1>
           <p>
-            Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe,<br>
-            Banguntapan, Bantul, Yogyakarta<br>
-            Kode Pos: 55198 | Telp: 0274-4534571
+            {!! nl2br(e($loaSettings->company_address ?? "Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe,\nBanguntapan, Bantul, Yogyakarta\nKode Pos: 55198 | Telp: 0274-4534571")) !!}
           </p>
         </td>
+        <td style="width: 20%;"></td>
       </tr>
     </table>
     <div class="header-line"></div>
@@ -198,7 +212,7 @@
       <tr>
         <td class="meta-label">Nomor</td>
         <td class="meta-colon">:</td>
-        <td>{{ $intern->loa_number ?? ('19/S1-Magang/HRD/SEVEN/'.\Carbon\Carbon::now()->format('VI/Y')) }}</td>
+        <td>{{ $loaNumber ?? ($intern->loa_number ?? ('19/S1-Magang/HRD/SEVEN/'.\Carbon\Carbon::now()->format('VI/Y'))) }}</td>
       </tr>
       <tr>
         <td class="meta-label">Lamp.</td>
@@ -273,7 +287,8 @@
         <p>Yogyakarta, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
         <p>Hormat kami,</p>
         <div class="signature-img-container">
-          <img src="{{ $stampData ?? asset('storage/images/signature/ttd_arisetiahusbana.png') }}" alt="Tanda Tangan">
+          <img src="{{ $logoData ?? asset('storage/images/logos/logo_seveninc.png') }}" class="stamp" alt="Cap Perusahaan">
+          <img src="{{ $stampData ?? asset('storage/images/signature/ttd_arisetiahusbana.png') }}" class="ttd" alt="Tanda Tangan">
         </div>
         <p class="signatory-name">{{ $loaSettings->signatory_name ?? 'Ari Setia Husbana' }}</p>
         <p>{{ $loaSettings->signatory_position ?? 'HRD' }} {{ $loaSettings->company_name ?? 'SEVEN INC.' }}</p>

@@ -159,7 +159,7 @@
         </div>
         <div>
           <strong>{{ $cityName }}</strong>,
-          <strong>{{ Carbon::parse($certificate->intern->end_date ?? now())->locale('id')->translatedFormat('j F Y') }}</strong>
+          <strong>{{ now()->locale('id')->translatedFormat('j F Y') }}</strong>
         </div>
       </div>
 

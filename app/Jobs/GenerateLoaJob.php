@@ -65,13 +65,42 @@ class GenerateLoaJob implements ShouldQueue
             // Dummy user untuk view (jika view membutuhkan object user)
             $user = $intern->user;
 
+            $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+            $romanMonth = $roman[(int)date('n')];
+            $year = date('Y');
+
+            $last = InternLoa::where('loa_number', 'LIKE', "%/LOA/%/{$romanMonth}/{$year}")
+                ->orderByDesc('id')->first();
+            $seq = 1;
+            if ($last && preg_match('/^(\d{3})\/LOA\//', $last->loa_number, $m)) {
+                $seq = (int)$m[1] + 1;
+            }
+            
+            $education = $intern->education ?? 'S1';
+            $typeString = strtoupper($education) . '-Magang';
+            
+            $interest = $intern->internship_interest ?? '';
+            
+            $dbDivision = \App\Models\Division::where('name', $interest)
+                ->orWhere('slug', Str::slug($interest, '-'))
+                ->first();
+                
+            $division = $dbDivision?->code ?? 'UMUM';
+            $brandStr = strtoupper($brandData?->code ?? 'SI');
+
+            $seqStr = str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
+            $loaNumber = "{$seqStr}/LOA/{$division}/SEVEN.{$brandStr}/{$romanMonth}/{$year}";
+            $safeLoaNumber = str_replace('/', '-', $loaNumber);
+
             $pdf = Pdf::loadView('user.loa', [
                 'intern'          => $intern,
+                'loaNumber'       => $loaNumber,
                 'user'            => $user,
                 'loaSettings'     => (object)[
                     'header_text' => 'Dengan ini kami mengonfirmasi bahwa pendaftar di bawah ini telah diterima untuk mengikuti program magang.',
                     'footer_text' => 'Harap konfirmasi kehadiran Anda melalui email atau telepon yang tertera.',
                     'company_name' => $companyName,
+                    'company_address' => $brandData?->company_address,
                     'signatory_name' => $signatoryName,
                     'signatory_position' => $signatoryPosition,
                 ],
@@ -85,8 +114,7 @@ class GenerateLoaJob implements ShouldQueue
             $pdf->setOptions(['isRemoteEnabled' => true, 'isPhpEnabled' => true]);
 
             $safeName = Str::slug($intern->fullname ?? 'intern', '-');
-            $loaNumber = 'LOA-' . $intern->id . '-' . date('Ymd');
-            $fileName = $loaNumber . '-' . $safeName . '.pdf';
+            $fileName = $safeLoaNumber . '-' . $safeName . '.pdf';
             $path     = $dir . '/' . $fileName;
 
             Storage::disk('public')->put($path, $pdf->output());

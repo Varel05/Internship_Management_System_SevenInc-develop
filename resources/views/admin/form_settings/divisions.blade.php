@@ -43,6 +43,17 @@
                         <p class="mt-1 text-[11.5px] text-[#D32F2F]">{{ $message }}</p>
                         @enderror
                     </div>
+                    <div>
+                        <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                            Kode Divisi
+                        </label>
+                        <input type="text" name="code" value="{{ old('code') }}"
+                            placeholder="Contoh: UIUX"
+                            class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none font-mono focus:border-[#2D8659] transition @error('code') border-red-300 @enderror">
+                        @error('code')
+                        <p class="mt-1 text-[11.5px] text-[#D32F2F]">{{ $message }}</p>
+                        @enderror
+                    </div>
                     <button type="submit"
                         class="flex w-full items-center justify-center gap-2 rounded-[9px] bg-[#2D8659] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1F5F3F]">
                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -81,6 +92,7 @@
                             <tr>
                                 <th class="bg-[#1B3A34] px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-white w-10">#</th>
                                 <th class="bg-[#1B3A34] px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-white">Nama Divisi</th>
+                                <th class="bg-[#1B3A34] px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-white w-24">Kode</th>
                                 <th class="bg-[#1B3A34] px-5 py-3 text-left text-[11px] font-bold uppercase tracking-[0.06em] text-white w-24">Status</th>
                                 <th class="bg-[#1B3A34] px-5 py-3 text-right text-[11px] font-bold uppercase tracking-[0.06em] text-white w-32">Aksi</th>
                             </tr>
@@ -104,19 +116,32 @@
                                         action="{{ route('admin.form-settings.divisions.update', $division) }}"
                                         class="hidden mt-1">
                                         @csrf @method('PUT')
-                                        <div class="flex gap-2">
-                                            <input type="text" name="name" value="{{ $division->name }}"
-                                                class="flex-1 rounded-[7px] border border-[#2D8659] bg-white px-2.5 py-1.5 text-[13px] text-[#1B3A34] outline-none">
-                                            <button type="submit"
-                                                class="rounded-[7px] bg-[#2D8659] px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-[#1F5F3F]">
-                                                Simpan
-                                            </button>
-                                            <button type="button" onclick="cancelEdit({{ $division->id }})"
-                                                class="rounded-[7px] border border-[#DCE7E1] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#4B5F5A] hover:bg-[#F4F8F6]">
-                                                Batal
-                                            </button>
+                                        <div class="flex flex-col gap-2">
+                                            <div class="flex gap-2">
+                                                <input type="text" name="name" value="{{ $division->name }}" placeholder="Nama Divisi"
+                                                    class="flex-1 rounded-[7px] border border-[#2D8659] bg-white px-2.5 py-1.5 text-[13px] text-[#1B3A34] outline-none">
+                                                <button type="submit"
+                                                    class="rounded-[7px] bg-[#2D8659] px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-[#1F5F3F]">
+                                                    Simpan
+                                                </button>
+                                                <button type="button" onclick="cancelEdit({{ $division->id }})"
+                                                    class="rounded-[7px] border border-[#DCE7E1] bg-white px-3 py-1.5 text-[12px] font-semibold text-[#4B5F5A] hover:bg-[#F4F8F6]">
+                                                    Batal
+                                                </button>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <input type="text" name="code" value="{{ $division->code }}" placeholder="Kode"
+                                                    class="w-32 rounded-[7px] border border-[#2D8659] bg-white px-2.5 py-1.5 text-[13px] text-[#1B3A34] outline-none font-mono">
+                                            </div>
                                         </div>
                                     </form>
+                                </td>
+
+                                {{-- Kode --}}
+                                <td class="px-5 py-3">
+                                    <span id="code-{{ $division->id }}" class="text-[#4B5F5A] text-[13px] font-mono bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">
+                                        {{ $division->code ?? '-' }}
+                                    </span>
                                 </td>
 
                                 {{-- Status --}}
@@ -199,12 +224,14 @@
 <script>
 function startEdit(id) {
     document.getElementById('name-' + id).classList.add('hidden');
+    document.getElementById('code-' + id).classList.add('hidden');
     document.getElementById('edit-form-' + id).classList.remove('hidden');
     document.querySelector('#edit-form-' + id + ' input[name="name"]').focus();
 }
 
 function cancelEdit(id) {
     document.getElementById('name-' + id).classList.remove('hidden');
+    document.getElementById('code-' + id).classList.remove('hidden');
     document.getElementById('edit-form-' + id).classList.add('hidden');
 }
 </script>
