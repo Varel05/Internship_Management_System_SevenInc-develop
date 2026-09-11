@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SKLSetting;
 use App\Models\User;
 use App\Models\InternshipRegistration as IR;
 use Illuminate\Http\Request;
@@ -82,27 +81,14 @@ class SKLController extends Controller
             return back()->with('error', 'Data pemagang tidak ditemukan atau belum berstatus Selesai.');
         }
 
-        // Simpan config ke database agar perubahan tersimpan
-        $config = SKLSetting::first() ?? new SKLSetting();
-        $config->company_name            = $validated['company_name'];
-        $config->company_address         = $validated['company_address'];
-        $config->company_city            = $validated['company_city'];
-        $config->leader_name             = $validated['leader_name'];
-        $config->leader_title            = $validated['leader_title'];
-        $config->activity_description    = $validated['activity_description'] ?? '';
-        $config->participant_achievement = $validated['participant_achievement'] ?? '';
-
+        $logoPath = null;
         if ($request->hasFile('logo')) {
-            $config->logo_path = $request->file('logo')->storeAs('images/logos', 'logo_' . Str::slug($validated['company_name']) . '.png', 'public');
+            $logoPath = $request->file('logo')->storeAs('images/logos', 'logo_' . Str::slug($validated['company_name']) . '_' . time() . '.png', 'public');
         }
+        $stampPath = null;
         if ($request->hasFile('stamp')) {
-            $config->stamp_path = $request->file('stamp')->storeAs('images/signature', 'ttd_' . Str::slug($validated['company_name']) . '.png', 'public');
+            $stampPath = $request->file('stamp')->storeAs('images/signature', 'ttd_' . Str::slug($validated['company_name']) . '_' . time() . '.png', 'public');
         }
-        $config->save();
-
-        // Resolve aset visual (logo & stempel) ke base64
-        $logoData  = $this->resolveBase64Image($request, 'logo',  $config->logo_path,  'images/logos/logo_seveninc.png');
-        $stampData = $this->resolveBase64Image($request, 'stamp', $config->stamp_path, 'images/signature/ttd_arisetiahusbana.png');
 
         $fullDir = public_path('storage/documents/skl');
         if (!is_dir($fullDir)) {
@@ -139,9 +125,11 @@ class SKLController extends Controller
                 $divisionName = $dbDivision?->code ?? 'UMUM';
 
                 // Gunakan brand pemagang sebagai nama perusahaan di surat
-                $brandData = \App\Models\Brand::whereRaw('LOWER(name) = ?', [strtolower(trim($intern->brand))])->first();
-                $companyName = $intern->brand ?: $config->company_name;
-                $companyAddress = $brandData?->company_address ?? $config->company_address;
+                $brandData = \App\Models\Brand::whereRaw('LOWER(name) = ?', [strtolower(trim($intern->brand))])
+                    ->orWhere('code', $intern->brand)
+                    ->first();
+                $companyName = $intern->brand ?: ($brandData->name ?? 'Seven Inc');
+                $companyAddress = $brandData?->company_address ?? 'Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe, Banguntapan, Bantul, Yogyakarta';
 
                 $startStr      = $intern->start_date ? Carbon::parse($intern->start_date)->isoFormat('D MMMM Y') : '-';
                 $endStr        = $intern->end_date   ? Carbon::parse($intern->end_date)->isoFormat('D MMMM Y')   : '-';
@@ -152,50 +140,25 @@ class SKLController extends Controller
                 $letterNumber = "{$seqStr}/SKL/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
                 $seq++;
 
-                $data = [
-                    'companyName'            => $companyName,
-                    'companyAddress'         => $companyAddress,
-                    'companyCity'            => $config->company_city,
-                    'leaderName'             => $config->leader_name,
-                    'leaderTitle'            => $config->leader_title,
-                    'letterNumber'           => $letterNumber,
-                    'logoData'               => $logoData,
-                    'stampData'              => $stampData,
-                    'participantName'        => $participantName,
-                    'participantId'          => $participantId,
-                    'participantMajor'       => $participantMajor,
-                    'participantInstitute'   => $participantInstitute,
-                    'divisionName'           => $divisionName,
-                    'startStr'               => $startStr,
-                    'endStr'                 => $endStr,
-                    'letterDateStr'          => $letterDateStr,
-                    'activityDescription'    => $config->activity_description ?? '',
-                    'participantAchievement' => $config->participant_achievement ?? '',
-                ];
-
-                $html     = view('user.skl', $data)->render();
-                $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $participantName);
-                $fileName = "SKL_{$safeName}_" . now()->format('Ymd_His') . ".pdf";
-                $relPath  = "storage/documents/skl/{$fileName}";
-                $fullPath = public_path($relPath);
-
-                Browsershot::html($html)
-                    ->setOption('no-sandbox', true)
-                    ->emulateMedia('print')
-                    ->format('A4')
-                    ->margins(10, 10, 10, 10)
-                    ->showBackground()
-                    ->waitUntilNetworkIdle()
-                    ->timeout(180)
-                    ->savePdf($fullPath);
-
-                // DocumentDownload removed due to database changes
+                // Simpan atau update data SklDocument
+                \App\Models\SklDocument::updateOrCreate(
+                    ['intern_id' => $intern->id],
+                    [
+                        'skl_number'           => $letterNumber,
+                        'company_name'         => $validated['company_name'] ?? $companyName,
+                        'company_logo_path'    => $logoPath ?? $brandData?->logo ?? 'images/logos/logo_seveninc.png',
+                        'signatory_name'       => $validated['leader_name'] ?? $brandData?->signatory_name ?? 'Ari Setia Husbana',
+                        'signatory_position'   => $validated['leader_title'] ?? $brandData?->signatory_position ?? 'HRD',
+                        'signature_image_path' => $stampPath ?? $brandData?->signature ?? 'images/signature/ttd_arisetiahusbana.png',
+                    ]
+                );
 
                 $generatedFiles[$intern->id] = [
                     'fullname' => $participantName,
-                    'path'     => $fullPath,
-                    'filename' => $fileName,
+                    'path'     => '', // Removed physical path
+                    'filename' => "SKL_{$safeName}.pdf",
                 ];
+
 
             } catch (\Throwable $e) {
                 Log::error('Gagal generate SKL (brand)', ['err' => $e->getMessage(), 'intern_id' => $intern->id]);
@@ -275,22 +238,12 @@ class SKLController extends Controller
      */
     public function preview(Request $request)
     {
-        $config = SKLSetting::first() ?? new SKLSetting([
-            'company_name'    => 'Seven Inc',
-            'company_address' => 'Jl. Raya Janti Gg. Harjuna No.59, Jaranan, Karangjambe, Kec. Banguntapan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55198',
-            'company_city'    => 'Yogyakarta',
-            'leader_name'     => 'Nama Pimpinan / HRD',
-            'leader_title'    => 'Manajer HRD',
-            'logo_path'       => 'storage/images/logos/logo_seveninc.png',
-            'stamp_path'      => 'storage/images/signature/ttd_rekariodanny.png',
-        ]);
-
         // Company block (boleh override dari query agar realtime di iframe)
-        $companyName    = $request->get('company_name',    $config->company_name);
-        $companyAddress = $request->get('company_address', $config->company_address);
-        $companyCity    = $request->get('company_city',    $config->company_city);
-        $leaderName     = $request->get('leader_name',     $config->leader_name);
-        $leaderTitle    = $request->get('leader_title',    $config->leader_title);
+        $companyName    = $request->get('company_name',    'Seven Inc');
+        $companyAddress = $request->get('company_address', 'Jl. Raya Janti Gg. Harjuna No.59, Jaranan, Karangjambe, Kec. Banguntapan, Kabupaten Bantul, Daerah Istimewa Yogyakarta 55198');
+        $companyCity    = $request->get('company_city',    'Yogyakarta');
+        $leaderName     = $request->get('leader_name',     'Nama Pimpinan / HRD');
+        $leaderTitle    = $request->get('leader_title',    'Manajer HRD');
 
         // Dummy peserta untuk preview
         $participantName      = $request->get('participant_name', 'Nama Pemagang (Preview)');
@@ -323,8 +276,8 @@ class SKLController extends Controller
         $stampPath = $stampFile;
 
         // Mendapatkan data dari request atau menggunakan default value
-        $activityDescription = $request->get('activity_description', $config->activity_description);
-        $participantAchievement = $request->get('participant_achievement', $config->participant_achievement);
+        $activityDescription = $request->get('activity_description', '');
+        $participantAchievement = $request->get('participant_achievement', '');
 
 
         return view('user.skl', compact(
@@ -376,14 +329,69 @@ class SKLController extends Controller
 
         $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $ir->fullname ?? $targetUser->name);
         $fileName = "SKL_{$safeName}.pdf";
-        $fullPath = public_path("storage/documents/skl/{$fileName}");
         
-        if (!file_exists($fullPath)) {
-            return back()->with('error', 'File fisik SKL tidak ditemukan. Hubungi admin.');
+        $brandData = \App\Models\Brand::whereRaw('LOWER(name) = ?', [strtolower(trim($ir->brand))])
+            ->orWhere('code', $ir->brand)
+            ->first();
+
+        // Siapkan data untuk view
+        $companyName    = $sklRecord->company_name ?? $ir->brand ?? $brandData?->name ?? 'Seven Inc';
+        $companyAddress = $brandData?->company_address ?? 'Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe, Banguntapan, Bantul, Yogyakarta';
+        
+        $interest = $ir->internship_interest ?? '';
+        $dbDivision = \App\Models\Division::where('name', $interest)
+            ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+            ->first();
+        $divisionName = $dbDivision?->code ?? 'UMUM';
+
+        Carbon::setLocale('id');
+        $startStr      = $ir->start_date ? Carbon::parse($ir->start_date)->isoFormat('D MMMM Y') : '-';
+        $endStr        = $ir->end_date   ? Carbon::parse($ir->end_date)->isoFormat('D MMMM Y')   : '-';
+        $letterDateStr = $ir->end_date   ? Carbon::parse($ir->end_date)->isoFormat('D MMMM Y')   : now()->translatedFormat('d F Y');
+
+        $logoData  = $this->resolveBase64Image(new Request(), 'logo',  $sklRecord->company_logo_path,  'images/logos/logo_seveninc.png');
+        $stampData = $this->resolveBase64Image(new Request(), 'stamp', $sklRecord->signature_image_path, 'images/signature/ttd_arisetiahusbana.png');
+
+        $data = [
+            'companyName'            => $companyName,
+            'companyAddress'         => $companyAddress,
+            'companyCity'            => 'Yogyakarta',
+            'leaderName'             => $sklRecord->signatory_name ?? $brandData?->signatory_name ?? 'Ari Setia Husbana',
+            'leaderTitle'            => $sklRecord->signatory_position ?? $brandData?->signatory_position ?? 'HRD',
+            'letterNumber'           => $sklRecord->skl_number,
+            'logoData'               => $logoData,
+            'stampData'              => $stampData,
+            'participantName'        => $ir->fullname ?? '-',
+            'participantId'          => $ir->student_id ?? '-',
+            'participantMajor'       => $ir->study_program ?? '-',
+            'participantInstitute'   => $ir->institution_name ?? '-',
+            'divisionName'           => $divisionName,
+            'startStr'               => $startStr,
+            'endStr'                 => $endStr,
+            'letterDateStr'          => $letterDateStr,
+            'activityDescription'    => '',
+            'participantAchievement' => '',
+        ];
+
+        $html = view('user.skl', $data)->render();
+
+        $tmpPath = storage_path('app/tmp/' . $fileName);
+        if (!is_dir(dirname($tmpPath))) {
+            mkdir(dirname($tmpPath), 0775, true);
         }
 
-        $downloadName = "SKL_{$safeName}.pdf";
+        Browsershot::html($html)
+            ->setOption('no-sandbox', true)
+            ->setOption('args', ['--disable-setuid-sandbox'])
+            ->emulateMedia('print')
+            ->format('A4')
+            ->margins(10, 10, 10, 10)
+            ->showBackground()
+            ->waitUntilNetworkIdle()
+            ->timeout(180)
+            ->savePdf($tmpPath);
 
-        return response()->download($fullPath, $downloadName, ['Content-Type' => 'application/pdf']);
+        return response()->download($tmpPath, $fileName, ['Content-Type' => 'application/pdf'])
+            ->deleteFileAfterSend(true);
     }
 }

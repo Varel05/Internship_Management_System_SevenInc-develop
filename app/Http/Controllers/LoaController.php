@@ -57,7 +57,9 @@ class LoaController extends Controller
         }
 
         $brandCode = $interns->first()->brand;
-        $brandData = Brand::where('code', $brandCode)->first();
+        $brandData = Brand::whereRaw('LOWER(name) = ?', [strtolower(trim($brandCode))])
+            ->orWhere('code', $brandCode)
+            ->first();
 
         $companyName = $brandData->name ?? $brandCode ?? 'Seven Inc';
         $signatoryName = $brandData->signatory_name ?? 'Ari Setia Husbana';
@@ -129,8 +131,8 @@ class LoaController extends Controller
 
                 Storage::disk('public')->put($path, $pdf->output());
 
-                // Insert snapshot to intern_loas
-                InternLoa::updateOrCreate(
+                // Insert snapshot to intern_loas (if missing or update if needed)
+                $internLoa = InternLoa::updateOrCreate(
                     ['intern_id' => $intern->id],
                     [
                         'loa_number' => $loaNumber,
@@ -144,9 +146,47 @@ class LoaController extends Controller
                     ]
                 );
 
+                $html = view('user.loa', [
+                    'intern'          => $intern,
+                    'loaNumber'       => $loaNumber,
+                    'user'            => $user,
+                    'loaSettings'     => (object)[
+                        'header_text' => 'Dengan ini kami mengonfirmasi bahwa pendaftar di bawah ini telah diterima untuk mengikuti program magang.',
+                        'footer_text' => 'Harap konfirmasi kehadiran Anda melalui email atau telepon yang tertera.',
+                        'company_name' => $companyName,
+                        'company_address' => $brandData?->company_address,
+                        'signatory_name' => $signatoryName,
+                        'signatory_position' => $signatoryPosition,
+                    ],
+                    'rows'            => $rows,
+                    'openingGreeting' => 'Dengan ini kami mengonfirmasi bahwa pendaftar di bawah ini telah diterima untuk mengikuti program magang.',
+                    'closingGreeting' => 'Harap konfirmasi kehadiran Anda melalui email atau telepon yang tertera.',
+                    'logoData'        => $logoData,
+                    'stampData'       => $stampData,
+                ])->render();
+
+                $safeName = Str::slug($intern->fullname ?? 'intern', '-');
+                $fileName = $safeLoaNumber . '-' . $safeName . '.pdf';
+                $tmpPath  = storage_path('app/tmp/' . $fileName);
+                
+                if (!is_dir(dirname($tmpPath))) {
+                    mkdir(dirname($tmpPath), 0775, true);
+                }
+
+                \Spatie\Browsershot\Browsershot::html($html)
+                    ->setOption('no-sandbox', true)
+                    ->setOption('args', ['--disable-setuid-sandbox'])
+                    ->emulateMedia('print')
+                    ->format('A4')
+                    ->margins(0, 0, 0, 0)
+                    ->showBackground()
+                    ->waitUntilNetworkIdle()
+                    ->timeout(180)
+                    ->savePdf($tmpPath);
+
                 $generatedFiles[$intern->id] = [
                     'fullname' => $intern->fullname,
-                    'path'     => storage_path("app/public/{$path}"),
+                    'path'     => $tmpPath,
                     'filename' => $fileName,
                 ];
 
@@ -162,11 +202,11 @@ class LoaController extends Controller
 
         if (count($generatedFiles) === 1) {
             $file = reset($generatedFiles);
-            return response()->download($file['path'], $file['filename'])->deleteFileAfterSend(false);
+            return response()->download($file['path'], $file['filename'])->deleteFileAfterSend(true);
         }
 
         $zipName = 'LOA-BATCH-' . now()->format('Ymd_His') . '.zip';
-        $zipPath = storage_path("app/public/documents/loa/{$zipName}");
+        $zipPath = storage_path("app/tmp/{$zipName}");
 
         $zip = new \ZipArchive();
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
@@ -180,7 +220,13 @@ class LoaController extends Controller
         }
         $zip->close();
 
-        return response()->download($zipPath, $zipName)->deleteFileAfterSend(false);
+        // Delete individual temporary PDFs after zip creation
+        foreach ($generatedFiles as $file) {
+            if (file_exists($file['path'])) @unlink($file['path']);
+        }
+
+        return response()->download($zipPath, $zipName)->deleteFileAfterSend(true);
+
     }
 
     protected function resolveBase64Image(?string $savedPath, string $fallbackRelative): ?string
@@ -217,38 +263,9 @@ class LoaController extends Controller
                 ->where('user_id', $user->id)
                 ->firstOrFail();
             $this->ensureCanAccessCompletedDocs($user, $intern);
-
-            $safeName = \Illuminate\Support\Str::slug($intern->fullname ?? $user->name, '-');
-            
-            // Cek format nama file baru (menggunakan loa_number)
-            $internLoa = InternLoa::where('intern_id', $intern->id)->first();
-            $fullPath = null;
-            
-            if ($internLoa && $internLoa->loa_number) {
-                $safeLoaNumber = str_replace('/', '-', $internLoa->loa_number);
-                $newFormatPath = storage_path("app/public/documents/loa/{$safeLoaNumber}-{$safeName}.pdf");
-                if (file_exists($newFormatPath)) {
-                    $fullPath = $newFormatPath;
-                }
-            }
-            
-            // Fallback ke format lama jika format baru tidak ditemukan
-            if (!$fullPath) {
-                $files = glob(storage_path("app/public/documents/loa/LOA-{$intern->id}-*.pdf"));
-                if (!empty($files)) {
-                    $fullPath = end($files);
-                }
-            }
-
-            if (!$fullPath || !file_exists($fullPath)) {
-                return back()->with('error', 'LOA belum tersedia atau file tidak ditemukan. Hubungi admin untuk mendapatkan LOA Anda.');
-            }
-
-            $safeName = \Illuminate\Support\Str::slug($intern->fullname ?? $user->name, '-');
-            return response()->download($fullPath, "LOA-{$safeName}.pdf", ['Content-Type' => 'application/pdf']);
         }
 
-        // Admin generate single
+        // Delegate to generateForBrand which now generates on the fly
         $request->merge(['intern_ids' => [$intern->id]]);
         return $this->generateForBrand($request);
     }

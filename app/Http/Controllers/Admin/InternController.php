@@ -639,14 +639,66 @@ class InternController extends Controller
                 ]
             );
             if ($sklDoc) {
-                \App\Jobs\GenerateSklJob::dispatch($intern->id);
+                // \App\Jobs\GenerateSklJob::dispatch($intern->id);
             }
 
             // Generate Surat Penilaian jika data penilaian sudah ada
             $assessment = \App\Models\InternAssessment::where('intern_id', $intern->id)->first();
             if ($assessment) {
-                \App\Jobs\GenerateAssessmentJob::dispatch($intern->id);
+                // \App\Jobs\GenerateAssessmentJob::dispatch($intern->id);
             }
+        }
+    }
+
+    private function checkAndGenerateLoa(IR $intern, $oldStatus)
+    {
+        if ($oldStatus !== IR::STATUS_ACCEPTED && $intern->internship_status === IR::STATUS_ACCEPTED) {
+            $brandData = null;
+            if ($intern->brand_id) {
+                $brandData = \App\Models\Brand::find($intern->brand_id);
+            } elseif ($intern->brand) {
+                $brandData = \App\Models\Brand::whereRaw('LOWER(name) = ?', [strtolower(trim($intern->brand))])->first();
+            }
+
+            $companyName = $brandData->name ?? $intern->brand ?? 'Seven Inc';
+            $signatoryName = $brandData->signatory_name ?? 'Ari Setia Husbana';
+            $signatoryPosition = $brandData->signatory_position ?? 'HRD';
+
+            $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+            $romanMonth = $roman[(int)date('n')];
+            $year = date('Y');
+
+            $last = \App\Models\InternLoa::where('loa_number', 'LIKE', "%/LOA/%/{$romanMonth}/{$year}")
+                ->orderByDesc('id')->first();
+            $seq = 1;
+            if ($last && preg_match('/^(\d{3})\/LOA\//', $last->loa_number, $m)) {
+                $seq = (int)$m[1] + 1;
+            }
+
+            $interest = $intern->internship_interest ?? '';
+            $dbDivision = \App\Models\Division::where('name', $interest)
+                ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+                ->first();
+                
+            $division = $dbDivision?->code ?? 'UMUM';
+            $brandStr = strtoupper($brandData?->code ?? 'SI');
+
+            $seqStr = str_pad((string)$seq, 3, '0', STR_PAD_LEFT);
+            $loaNumber = "{$seqStr}/LOA/{$division}/SEVEN.{$brandStr}/{$romanMonth}/{$year}";
+
+            \App\Models\InternLoa::updateOrCreate(
+                ['intern_id' => $intern->id],
+                [
+                    'loa_number' => $loaNumber,
+                    'accepted_start_date' => $intern->start_date ?? now(),
+                    'accepted_end_date' => $intern->end_date ?? now(),
+                    'company_name' => $companyName,
+                    'company_logo_path' => $brandData?->logo,
+                    'signatory_name' => $signatoryName,
+                    'signatory_position' => $signatoryPosition,
+                    'signature_image_path' => $brandData?->signature,
+                ]
+            );
         }
     }
 
@@ -695,7 +747,7 @@ class InternController extends Controller
             ]);
 
             if ($cert) {
-                \App\Jobs\GenerateCertificateJob::dispatch($intern->id);
+                // \App\Jobs\GenerateCertificateJob::dispatch($intern->id);
             }
         }
     }
@@ -764,9 +816,10 @@ class InternController extends Controller
             $intern->user?->createMemberCard();
         }
 
-        // Jika berubah menjadi diterima, generate LOA via Background Job
+        // Jika berubah menjadi diterima, simpan info LOA
+        $this->checkAndGenerateLoa($intern, $oldStatus);
+        
         if ($oldStatus !== IR::STATUS_ACCEPTED && $intern->internship_status === IR::STATUS_ACCEPTED) {
-            \App\Jobs\GenerateLoaJob::dispatch($intern->id, $intern->brand_id);
             $this->sendAcceptedEmail($intern);
         }
 
