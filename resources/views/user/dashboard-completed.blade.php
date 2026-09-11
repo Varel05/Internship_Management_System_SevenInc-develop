@@ -269,16 +269,7 @@
         </div>
 
 
-        {{-- FEEDBACK --}}
-        <div class="bg-primary-50 p-6 rounded-xl border border-primary-200 shadow-sm">
-          <h3 class="text-lg font-semibold text-primary-900">💬 Umpan Balik Magang</h3>
-          <p class="text-gray-700 mt-2 text-sm">Terima kasih atas kontribusimu! Silakan berikan masukan tentang pengalaman magangmu.</p>
-          <form action="{{ route('user.feedback.submit') }}" method="POST" class="mt-3">
-            @csrf
-            <textarea name="feedback" rows="4" class="w-full p-3 border border-primary-200 rounded-lg focus:ring-primary-500 focus:border-primary-500" placeholder="Tulis umpan balik Anda..."></textarea>
-            <button type="submit" class="mt-3 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">Kirim Umpan Balik</button>
-          </form>
-        </div>
+
       </div>
     @endif
   </div>

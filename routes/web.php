@@ -19,7 +19,6 @@ use App\Http\Controllers\Admin\SuratPenilaianController;
 // App
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CertificateController;
-use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\LoaController;
 use App\Http\Controllers\MembercardController;
 use App\Http\Controllers\InternAssessmentController;
@@ -180,9 +179,6 @@ Route::middleware(['auth', 'role:pemagang'])->prefix('user/documents')->name('us
     // Hapus duplikasi ini agar tidak bentrok nama route
 
 });
-
-Route::post('/user/feedback', [FeedbackController::class, 'submit'])
-    ->name('user.feedback.submit');
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin/documents')->name('admin.documents.')->group(function () {
     Route::get('/skl/{intern}', [\App\Http\Controllers\Admin\InternController::class, 'showSKL'])
@@ -401,16 +397,6 @@ Route::middleware(['auth'])->group(function () {
     // Preview (tanpa simpan)
     Route::get('/user/loa/preview', [LoaController::class, 'preview'])->name('user.loa.preview');
 });
-
-Route::middleware(['auth', 'role:admin']) // Menambahkan middleware untuk autentikasi dan role admin
-    ->prefix('admin/feedback') // Menambahkan prefix URL
-    ->name('admin.feedback.') // Menambahkan prefix nama route
-    ->group(function () {
-        Route::get('/', [FeedbackController::class, 'index'])->name('index'); // Menampilkan daftar feedback
-        Route::get('{id}/edit', [FeedbackController::class, 'edit'])->name('edit'); // Menampilkan halaman edit feedback
-        Route::post('{id}/update', [FeedbackController::class, 'update'])->name('update'); // Proses update feedback
-        Route::delete('{id}', [FeedbackController::class, 'destroy'])->name('destroy'); // Menghapus feedback
-    });
 
 Route::post('/membercard/download', [MembercardController::class, 'downloadMembercard'])->name('membercard.download');
 

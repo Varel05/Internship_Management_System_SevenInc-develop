@@ -48,8 +48,8 @@
                             <p class="mt-1 text-xs leading-5 text-admin-text-mid">Ada pendaftar baru yang menunggu review.</p>
                         </div>
                         <div class="px-4 py-3">
-                            <p class="text-sm font-semibold text-admin-text-dark">Feedback baru diterima</p>
-                            <p class="mt-1 text-xs leading-5 text-admin-text-mid">Pemagang mengirim masukan tentang program magang.</p>
+                            <p class="text-sm font-semibold text-admin-text-dark">Sistem berjalan normal</p>
+                            <p class="mt-1 text-xs leading-5 text-admin-text-mid">Tidak ada pemberitahuan penting.</p>
                         </div>
                     </div>
                 </div>

@@ -48,12 +48,7 @@
                 ['label' => 'Kelola Webinar', 'route' => 'admin.webinars.index', 'icon' => 'video'],
             ],
         ],
-        [
-            'label' => 'Feedback',
-            'items' => [
-                ['label' => 'Feedback Pemagang', 'route' => 'admin.feedback.index', 'icon' => 'message'],
-            ],
-        ],
+
     ];
 @endphp
 

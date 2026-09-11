@@ -257,51 +257,7 @@
   </div>
 </div>
 
-{{-- ===== FEEDBACK SECTION ===== --}}
-@php
-  $reg = auth()->user()->internshipRegistration;
-  $isCompleted = $reg?->internship_status === 'completed';
-  $alreadyFeedback = $reg ? \Illuminate\Support\Facades\DB::table('feedback')
-      ->where('intern_id', $reg->id)->exists() : false;
-@endphp
-<div class="bg-white rounded-xl border border-gray-100 p-5 mt-6">
-  <p class="text-sm font-semibold text-gray-700 mb-1">Feedback</p>
-  <p class="text-xs text-gray-400 mb-4">Sampaikan saran, masukan, atau keluhan kepada admin · Hanya bisa dikirim 1 kali setelah magang selesai</p>
 
-  @if($alreadyFeedback)
-    <div class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-      <i class="fas fa-check-circle text-green-600"></i>
-      <div>
-        <p class="text-sm font-medium text-green-800">Feedback sudah terkirim</p>
-        <p class="text-xs text-green-600">Terima kasih atas masukan Anda!</p>
-      </div>
-    </div>
-  @elseif(!$isCompleted)
-    <div class="flex items-center gap-3 p-4 bg-gray-50 border border-dashed border-gray-200 rounded-lg">
-      <i class="fas fa-lock text-gray-400"></i>
-      <div>
-        <p class="text-sm font-medium text-gray-600">Belum tersedia</p>
-        <p class="text-xs text-gray-400">Feedback hanya bisa dikirim setelah masa magang selesai.</p>
-      </div>
-    </div>
-  @else
-    <form action="{{ route('user.feedback.submit') }}" method="POST">
-      @csrf
-      <textarea name="feedback" rows="3"
-        placeholder="Tulis feedback Anda di sini..."
-        class="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent resize-none"
-      ></textarea>
-      <div class="flex items-center justify-between mt-2">
-        <p class="text-xs text-amber-600">⚠️ Feedback hanya bisa dikirim 1 kali dan tidak bisa diubah.</p>
-        <button type="submit"
-          class="px-4 py-2 text-sm font-medium text-white rounded-lg"
-          style="background-color:#1a5c38;">
-          Kirim Feedback
-        </button>
-      </div>
-    </form>
-  @endif
-</div>
 
 {{-- ===== MODAL SYARAT & KETENTUAN ===== --}}
 <div id="modal-syarat" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
