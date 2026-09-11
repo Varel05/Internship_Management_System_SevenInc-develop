@@ -55,26 +55,8 @@ class InternExtraController extends Controller
             'intern_id' => $intern->id,
         ]);
 
-        // Load konfigurasi rekomendasi — override nama perusahaan dengan brand pemagang jika ada
-        $config = RekomendasiSetting::first() ?? new RekomendasiSetting([
-            'company_name'    => 'SEVEN INC.',
-            'company_address' => 'Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe, Banguntapan, Bantul, Yogyakarta',
-            'company_city'    => 'Yogyakarta',
-            'company_phone'   => '0274-4534571',
-            'company_postal_code' => '55198',
-            'leader_name'     => 'Rekario Danny Sanjaya, S.Kom',
-            'leader_title'    => 'CEO',
-            'company_brand'   => 'Seven Inc (Magangjogja.com)',
-        ]);
-
-        // Override brand & company name dengan brand pemagang jika ada
-        if (!empty($intern->brand)) {
-            $config = clone $config;
-            $config->company_name  = $intern->brand;
-            $config->company_brand = $intern->brand;
-        }
-
-        return view('admin.intern_extras.edit', compact('intern', 'extra', 'config'));
+        $brands = \App\Models\Brand::orderBy('name')->get();
+        return view('admin.intern_extras.edit', compact('intern', 'extra', 'brands'));
     }
 
     /**
@@ -158,39 +140,13 @@ class InternExtraController extends Controller
     public function saveTemplate(Request $request, IR $intern)
     {
         $request->validate([
-            'company_name'        => 'required|string|max:100',
-            'company_address'     => 'required|string|max:500',
-            'company_city'        => 'required|string|max:100',
-            'company_phone'       => 'nullable|string|max:50',
-            'company_postal_code' => 'nullable|string|max:10',
-            'leader_name'         => 'required|string|max:150',
-            'leader_title'        => 'required|string|max:100',
-            'company_brand'       => 'nullable|string|max:150',
-            'body_template'       => 'nullable|string',
-            'logo'                => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
-            'stamp'               => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+            'brand_id'      => 'required|integer|exists:brands,id',
+            'body_template' => 'nullable|string',
         ]);
 
-        $config = RekomendasiSetting::firstOrCreate([]);
-        $config->fill($request->only([
-            'company_name', 'company_address', 'company_city', 'company_phone',
-            'company_postal_code', 'leader_name', 'leader_title', 'company_brand', 'body_template',
-        ]));
-
-        if ($request->hasFile('logo')) {
-            $brandSlug = Str::slug($request->company_brand ?? $request->company_name, '_');
-            $config->logo_path = $request->file('logo')
-                ->storeAs('images/logos', 'logo_rekomendasi_' . $brandSlug . '.png', 'public');
-        }
-        if ($request->hasFile('stamp')) {
-            $brandSlug = Str::slug($request->company_brand ?? $request->company_name, '_');
-            $config->stamp_path = $request->file('stamp')
-                ->storeAs('images/signature', 'ttd_rekomendasi_' . $brandSlug . '.png', 'public');
-        }
-
-        $config->save();
-
-        return response()->json(['success' => true, 'message' => 'Template berhasil disimpan.']);
+        // Karena tabel rekomendasi_settings sudah tidak ada, fitur ini dinonaktifkan
+        // Atau jika ingin menyimpan, harus membuat tabel baru.
+        return response()->json(['success' => true, 'message' => 'Template berhasil diproses (Mode On-the-fly).']);
     }
 
     /**
@@ -201,16 +157,12 @@ class InternExtraController extends Controller
     public function sendAll(Request $request, IR $intern)
     {
         $allBrandMode = $request->input('mode') === 'all_brand';
+        $targets = ($allBrandMode && !empty($intern->brand_id))
+            ? IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand_id', $intern->brand_id)->get()
+            : collect([$intern]);
 
         $request->validate([
-            'company_name'         => 'required|string|max:100',
-            'company_address'      => 'required|string|max:500',
-            'company_city'         => 'required|string|max:100',
-            'company_phone'        => 'nullable|string|max:50',
-            'company_postal_code'  => 'nullable|string|max:10',
-            'leader_name'          => 'required|string|max:150',
-            'leader_title'         => 'required|string|max:100',
-            'company_brand'        => 'nullable|string|max:150',
+            'brand_id'             => 'required|integer|exists:brands,id',
             'body_template'        => 'nullable|string',
             'alumni_group_url'     => 'nullable|url|max:500',
             'alumni_group_label'   => 'nullable|string|max:100',
@@ -218,40 +170,26 @@ class InternExtraController extends Controller
             'job_info_description' => 'nullable|string|max:500',
         ]);
 
-        // Simpan template rekomendasi
-        $config = RekomendasiSetting::firstOrCreate([]);
-        $config->fill($request->only([
-            'company_name', 'company_address', 'company_city', 'company_phone',
-            'company_postal_code', 'leader_name', 'leader_title', 'company_brand', 'body_template',
-        ]));
-        if ($request->hasFile('logo')) {
-            $brandSlug = Str::slug($request->company_brand ?? $request->company_name, '_');
-            $config->logo_path = $request->file('logo')
-                ->storeAs('images/logos', 'logo_rekomendasi_' . $brandSlug . '.png', 'public');
-        }
-        if ($request->hasFile('stamp')) {
-            $brandSlug = Str::slug($request->company_brand ?? $request->company_name, '_');
-            $config->stamp_path = $request->file('stamp')
-                ->storeAs('images/signature', 'ttd_rekomendasi_' . $brandSlug . '.png', 'public');
-        }
-        $config->save();
-
-        // Tentukan daftar target
-        $targets = ($allBrandMode && !empty($intern->brand_id))
-            ? IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand_id', $intern->brand_id)->get()
-            : collect([$intern]);
-
-        if ($targets->isEmpty()) {
-            return response()->json([
-                'success' => false, 'message' => 'Tidak ada pemagang valid yang ditemukan.',
-                'generated' => 0, 'failed' => 0, 'names' => [],
-            ]);
-        }
-
+        $brand = \App\Models\Brand::findOrFail($request->brand_id);
+        $bodyTemplate = $request->body_template ?? RekomendasiSetting::defaultBodyTemplate();
+        
         Storage::disk('public')->makeDirectory('documents/rekomendasi');
-        $logoData  = $this->toDataUri($config->logo_path);
-        $stampData = $this->toDataUri($config->stamp_path);
+        
+        // Resolve aset visual ke base64 (dari brand)
+        $logoData  = null;
+        if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
+            $logoData = 'data:' . mime_content_type(storage_path('app/public/' . $brand->logo)) . ';base64,' . base64_encode(Storage::disk('public')->get($brand->logo));
+        }
+
+        $stampData = null;
+        if ($brand->signature && Storage::disk('public')->exists($brand->signature)) {
+            $stampData = 'data:' . mime_content_type(storage_path('app/public/' . $brand->signature)) . ';base64,' . base64_encode(Storage::disk('public')->get($brand->signature));
+        }
         Carbon::setLocale('id');
+
+        $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+        $romanMonth = $roman[(int)date('n')];
+        $year = date('Y');
 
         $generated = [];
         $failed    = [];
@@ -269,12 +207,20 @@ class InternExtraController extends Controller
                     $durationStr = $months . ' bulan';
                 }
 
-                $running       = str_pad((string) $target->id, 3, '0', STR_PAD_LEFT);
-                $letterNumber  = $running . '/SR/' . Str::upper(Str::slug($config->company_brand ?? $config->company_name, '.')) . '/' . now()->format('m/Y');
+                $interest = $target->internship_interest ?? '';
+                $dbDivision = \App\Models\Division::where('name', $interest)
+                    ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+                    ->first();
+                $divisionName = $dbDivision?->code ?? 'UMUM';
+
+                $running      = str_pad((string) $target->id, 3, '0', STR_PAD_LEFT);
+                $brandCodeStr = strtoupper($brand->code ?? 'SVII');
+                $letterNumber = "{$running}/SR/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
+                
                 $letterDateStr = now()->isoFormat('D MMMM Y');
 
                 $bodyText = $this->buildBodyText(
-                    $config->body_template ?? RekomendasiSetting::defaultBodyTemplate(),
+                    $bodyTemplate,
                     [
                         'nama'          => $target->fullname,
                         'divisi'        => $target->internship_interest ?? '-',
@@ -283,19 +229,15 @@ class InternExtraController extends Controller
                         'durasi'        => $durationStr,
                         'instansi'      => $target->institution_name ?? '-',
                         'nim'           => $target->student_id ?? '-',
-                        'company_brand' => $config->company_brand ?? $config->company_name,
+                        'company_brand' => $brand->name,
                     ]
                 );
 
                 $html = view('admin.rekomendasi_letter', [
-                    'companyName'          => $config->company_name,
-                    'companyAddress'       => $config->company_address,
-                    'companyCity'          => $config->company_city,
-                    'companyPhone'         => $config->company_phone,
-                    'companyPostalCode'    => $config->company_postal_code,
-                    'companyBrand'         => $config->company_brand,
-                    'leaderName'           => $config->leader_name,
-                    'leaderTitle'          => $config->leader_title,
+                    'companyName'          => $brand->name,
+                    'companyAddress'       => $brand->company_address,
+                    'leaderName'           => $brand->signatory_name,
+                    'leaderTitle'          => $brand->signatory_position,
                     'letterNumber'         => $letterNumber,
                     'letterDateStr'        => $letterDateStr,
                     'participantName'      => $target->fullname,
@@ -338,10 +280,18 @@ class InternExtraController extends Controller
                     @unlink(storage_path('app/public/' . $extra->rekomendasi_path));
                 }
 
-                $extra->intern_id = $target->id;
-                $extra->rekomendasi_path           = $relPath;
-                $extra->rekomendasi_url            = asset('storage/' . $relPath);
-                $extra->rekomendasi_granted_at     = now();
+                $extra->intern_id                    = $target->id;
+                $extra->rekomendasi_path             = $relPath;
+                $extra->rekomendasi_url              = asset('storage/' . $relPath);
+                $extra->rekomendasi_granted_at       = now();
+                $extra->letter_number                = $letterNumber;
+                $extra->brand_id                     = $brand->id;
+                $extra->company_name                 = $brand->name;
+                $extra->company_address              = $brand->company_address;
+                $extra->company_logo_path            = $brand->logo;
+                $extra->signatory_name               = $brand->signatory_name;
+                $extra->signatory_position           = $brand->signatory_position;
+                $extra->signature_image_path         = $brand->signature;
 
                 // Link grup alumni (jika diisi)
                 if ($request->filled('alumni_group_url')) {

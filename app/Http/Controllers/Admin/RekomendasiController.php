@@ -17,7 +17,7 @@ class RekomendasiController extends Controller
     /** GET /admin/rekomendasi/editor */
     public function edit()
     {
-        $config = RekomendasiSetting::first() ?? RekomendasiSetting::create([
+        $config = new RekomendasiSetting([
             'company_name'         => 'SEVEN INC.',
             'company_address'      => 'Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe, Banguntapan, Bantul, Yogyakarta',
             'company_city'         => 'Yogyakarta',
@@ -29,15 +29,7 @@ class RekomendasiController extends Controller
             'body_template'        => RekomendasiSetting::defaultBodyTemplate(),
         ]);
 
-        // Ambil semua brand dari pemagang yang sudah completed
-        $brands = IR::query()
-            ->where('internship_status', IR::STATUS_COMPLETED)
-            ->whereNotNull('brand')
-            ->where('brand', '!=', '')
-            ->distinct()
-            ->orderBy('brand')
-            ->pluck('brand')
-            ->values();
+        $brands = \App\Models\Brand::orderBy('name')->get();
 
         return view('admin.intern_extras.rekomendasi_editor', compact('config', 'brands'));
     }
@@ -56,7 +48,7 @@ class RekomendasiController extends Controller
 
         $interns = IR::query()
             ->where('internship_status', IR::STATUS_COMPLETED)
-            ->where('brand', $brand)
+            ->where('brand_id', $brand)
             ->select('id', 'fullname', 'student_id', 'study_program', 'institution_name', 'start_date', 'end_date', 'internship_interest')
             ->latest('id')
             ->get()
@@ -80,42 +72,12 @@ class RekomendasiController extends Controller
     /** POST /admin/rekomendasi/editor */
     public function update(Request $request)
     {
-        $request->validate([
-            'company_name'        => 'required|string|max:100',
-            'company_address'     => 'required|string|max:500',
-            'company_city'        => 'required|string|max:100',
-            'company_phone'       => 'nullable|string|max:50',
-            'company_postal_code' => 'nullable|string|max:10',
-            'leader_name'         => 'required|string|max:150',
-            'leader_title'        => 'required|string|max:100',
-            'company_brand'       => 'nullable|string|max:150',
-            'body_template'       => 'nullable|string',
-            'logo'                => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
-            'stamp'               => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
-        ]);
-
-        $config = RekomendasiSetting::firstOrCreate([]);
-
-        $config->fill($request->only([
-            'company_name','company_address','company_city','company_phone',
-            'company_postal_code','leader_name','leader_title','company_brand','body_template',
-        ]));
-
-        if ($request->hasFile('logo')) {
-            $brandSlug = Str::slug($request->company_brand ?? $request->company_name, '_');
-            $config->logo_path = $request->file('logo')
-                ->storeAs('images/logos', 'logo_rekomendasi_' . $brandSlug . '.png', 'public');
-        }
-        if ($request->hasFile('stamp')) {
-            $brandSlug = Str::slug($request->company_brand ?? $request->company_name, '_');
-            $config->stamp_path = $request->file('stamp')
-                ->storeAs('images/signature', 'ttd_rekomendasi_' . $brandSlug . '.png', 'public');
-        }
-
-        $config->save();
-
-        return back()->with('success', 'Template surat rekomendasi berhasil disimpan.');
+        // Fitur simpan ke DB dinonaktifkan karena tabel rekomendasi_settings dihapus.
+        // Return back dengan error message jika user mencoba.
+        return back()->with('error', 'Penyimpanan template global tidak didukung pada versi ini (tabel settings dihapus).');
     }
+
+
 
     /**
      * POST /admin/rekomendasi/generate-brand
@@ -125,21 +87,11 @@ class RekomendasiController extends Controller
      */
     public function generateBulk(Request $request)
     {
-        // Tangkap validation error sebagai JSON
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'intern_ids'          => 'required|array|min:1',
-            'intern_ids.*'        => 'integer|exists:internship_registrations,id',
-            'company_name'        => 'required|string|max:100',
-            'company_address'     => 'required|string|max:500',
-            'company_city'        => 'required|string|max:100',
-            'company_phone'       => 'nullable|string|max:50',
-            'company_postal_code' => 'nullable|string|max:10',
-            'leader_name'         => 'required|string|max:150',
-            'leader_title'        => 'required|string|max:100',
-            'company_brand'       => 'nullable|string|max:150',
-            'body_template'       => 'nullable|string',
-            'logo'                => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
-            'stamp'               => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
+            'intern_ids'    => 'required|array|min:1',
+            'intern_ids.*'  => 'integer|exists:internship_registrations,id',
+            'brand_id'      => 'required|integer|exists:brands,id',
+            'body_template' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -151,28 +103,19 @@ class RekomendasiController extends Controller
             ], 422);
         }
 
-        // Build config dari input form (tidak wajib simpan ke DB, tapi update tetap dilakukan)
-        $config = RekomendasiSetting::firstOrNew([]);
-        $config->fill($request->only([
-            'company_name','company_address','company_city','company_phone',
-            'company_postal_code','leader_name','leader_title','company_brand','body_template',
-        ]));
+        $brand = \App\Models\Brand::findOrFail($request->brand_id);
+        $bodyTemplate = $request->body_template ?? RekomendasiSetting::defaultBodyTemplate();
 
-        if ($request->hasFile('logo')) {
-            $brandSlug = Str::slug($request->company_brand ?? $request->company_name, '_');
-            $config->logo_path = $request->file('logo')
-                ->storeAs('images/logos', 'logo_rekomendasi_' . $brandSlug . '.png', 'public');
+        // Resolve aset visual ke base64 (dari brand)
+        $logoData  = null;
+        if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
+            $logoData = 'data:' . mime_content_type(storage_path('app/public/' . $brand->logo)) . ';base64,' . base64_encode(Storage::disk('public')->get($brand->logo));
         }
-        if ($request->hasFile('stamp')) {
-            $brandSlug = Str::slug($request->company_brand ?? $request->company_name, '_');
-            $config->stamp_path = $request->file('stamp')
-                ->storeAs('images/signature', 'ttd_rekomendasi_' . $brandSlug . '.png', 'public');
-        }
-        $config->save();
 
-        // Resolve aset visual ke base64
-        $logoData  = $this->toDataUri($config->logo_path);
-        $stampData = $this->toDataUri($config->stamp_path);
+        $stampData = null;
+        if ($brand->signature && Storage::disk('public')->exists($brand->signature)) {
+            $stampData = 'data:' . mime_content_type(storage_path('app/public/' . $brand->signature)) . ';base64,' . base64_encode(Storage::disk('public')->get($brand->signature));
+        }
 
         $interns = IR::whereIn('id', $request->intern_ids)
             ->where('internship_status', IR::STATUS_COMPLETED)
@@ -195,6 +138,10 @@ class RekomendasiController extends Controller
 
         Carbon::setLocale('id');
 
+        $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+        $romanMonth = $roman[(int)date('n')];
+        $year = date('Y');
+
         foreach ($interns as $intern) {
             try {
                 $startStr = $intern->start_date
@@ -212,12 +159,20 @@ class RekomendasiController extends Controller
                     $durationStr = $months . ' bulan';
                 }
 
+                $interest = $intern->internship_interest ?? '';
+                $dbDivision = \App\Models\Division::where('name', $interest)
+                    ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+                    ->first();
+                $divisionName = $dbDivision?->code ?? 'UMUM';
+
                 $running      = str_pad((string) $intern->id, 3, '0', STR_PAD_LEFT);
-                $letterNumber = $running . '/SR/' . Str::upper(Str::slug($config->company_brand ?? $config->company_name, '.')) . '/' . now()->format('m/Y');
+                $brandCodeStr = strtoupper($brand->code ?? 'SVII');
+                $letterNumber = "{$running}/SR/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
+                
                 $letterDateStr = now()->isoFormat('D MMMM Y');
 
                 $bodyText = $this->buildBodyText(
-                    $config->body_template ?? RekomendasiSetting::defaultBodyTemplate(),
+                    $bodyTemplate,
                     [
                         'nama'          => $intern->fullname,
                         'divisi'        => $intern->internship_interest ?? '-',
@@ -226,19 +181,15 @@ class RekomendasiController extends Controller
                         'durasi'        => $durationStr,
                         'instansi'      => $intern->institution_name ?? '-',
                         'nim'           => $intern->student_id ?? '-',
-                        'company_brand' => $config->company_brand ?? $config->company_name,
+                        'company_brand' => $brand->name,
                     ]
                 );
 
                 $html = view('admin.rekomendasi_letter', [
-                    'companyName'          => $config->company_name,
-                    'companyAddress'       => $config->company_address,
-                    'companyCity'          => $config->company_city,
-                    'companyPhone'         => $config->company_phone,
-                    'companyPostalCode'    => $config->company_postal_code,
-                    'companyBrand'         => $config->company_brand,
-                    'leaderName'           => $config->leader_name,
-                    'leaderTitle'          => $config->leader_title,
+                    'companyName'          => $brand->name,
+                    'companyAddress'       => $brand->company_address,
+                    'leaderName'           => $brand->signatory_name,
+                    'leaderTitle'          => $brand->signatory_position,
                     'letterNumber'         => $letterNumber,
                     'letterDateStr'        => $letterDateStr,
                     'participantName'      => $intern->fullname,
@@ -277,6 +228,16 @@ class RekomendasiController extends Controller
                 // Update InternExtra
                 $extra = InternExtra::firstOrNew(['intern_id' => $intern->id]);
 
+                // Simpan snapshot data ke intern_extras
+                $extra->letter_number        = $letterNumber;
+                $extra->brand_id             = $brand->id;
+                $extra->company_name         = $brand->name;
+                $extra->company_address      = $brand->company_address;
+                $extra->company_logo_path    = $brand->logo;
+                $extra->signatory_name       = $brand->signatory_name;
+                $extra->signatory_position   = $brand->signatory_position;
+                $extra->signature_image_path = $brand->signature;
+
                 // Hapus file lama jika ada
                 if ($extra->rekomendasi_path && file_exists(storage_path('app/public/' . $extra->rekomendasi_path))) {
                     @unlink(storage_path('app/public/' . $extra->rekomendasi_path));
@@ -314,24 +275,11 @@ class RekomendasiController extends Controller
     /** GET /admin/rekomendasi/preview */
     public function preview(Request $request)
     {
-        $config = RekomendasiSetting::first() ?? new RekomendasiSetting([
-            'company_name'    => 'SEVEN INC.',
-            'company_address' => 'Jl. Raya Janti, Gang Arjuna No. 59, Karangjambe, Banguntapan, Bantul, Yogyakarta',
-            'company_city'    => 'Yogyakarta',
-            'leader_name'     => 'Rekario Danny Sanjaya, S.Kom',
-            'leader_title'    => 'CEO',
-            'company_brand'   => 'Seven Inc (Magangjogja.com)',
-        ]);
-
-        // Override dari query params (live preview)
-        foreach (['company_name','company_address','company_city','company_phone','company_postal_code',
-                  'leader_name','leader_title','company_brand','body_template'] as $field) {
-            if ($request->filled($field)) {
-                $config->$field = $request->get($field);
-            }
-        }
-
         Carbon::setLocale('id');
+
+        $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+        $romanMonth = $roman[(int)date('n')];
+        $year = date('Y');
 
         // Jika ada intern_id di query, load data pemagang asli
         $intern = null;
@@ -339,12 +287,26 @@ class RekomendasiController extends Controller
             $intern = IR::find((int) $request->get('intern_id'));
         }
 
+        $bodyTemplate = $request->get('body_template', RekomendasiSetting::defaultBodyTemplate());
+
+        $brand = null;
+        if ($request->filled('brand_id')) {
+            $brand = \App\Models\Brand::find($request->get('brand_id'));
+        } elseif ($intern && $intern->brand_id) {
+            $brand = \App\Models\Brand::find($intern->brand_id);
+        }
+
         if ($intern) {
             $participantName      = $intern->fullname;
             $participantId        = $intern->student_id ?? '-';
             $participantMajor     = $intern->study_program ?? '-';
             $participantInstitute = $intern->institution_name ?? '-';
-            $divisionName         = $intern->internship_interest ?? '-';
+            
+            $interest = $intern->internship_interest ?? '';
+            $dbDivision = \App\Models\Division::where('name', $interest)
+                ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+                ->first();
+            $divisionName = $dbDivision?->code ?? 'UMUM';
 
             $startStr = $intern->start_date
                 ? Carbon::parse($intern->start_date)->isoFormat('MMMM Y')
@@ -362,7 +324,8 @@ class RekomendasiController extends Controller
             }
 
             $running      = str_pad((string) $intern->id, 3, '0', STR_PAD_LEFT);
-            $letterNumber = $running . '/SR/' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::slug($config->company_brand ?? $config->company_name, '.')) . '/' . now()->format('m/Y');
+            $brandCodeStr = strtoupper($brand ? $brand->code : 'SVII');
+            $letterNumber = "{$running}/SR/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
         } else {
             // Dummy data jika belum ada pemagang dipilih
             $participantName      = '— Pilih pemagang untuk preview —';
@@ -373,12 +336,12 @@ class RekomendasiController extends Controller
             $startStr             = 'Bulan Tahun';
             $endStr               = 'Bulan Tahun';
             $durationStr          = '? bulan';
-            $letterNumber         = '000/SR/BRAND/' . now()->format('m/Y');
+            $letterNumber         = '000/SR/UMUM/SEVEN.BRAND/' . $romanMonth . '/' . $year;
         }
 
         $letterDateStr = Carbon::now()->isoFormat('D MMMM Y');
 
-        $bodyText = $this->buildBodyText($config->body_template ?? RekomendasiSetting::defaultBodyTemplate(), [
+        $bodyText = $this->buildBodyText($bodyTemplate, [
             'nama'          => $participantName,
             'divisi'        => $divisionName,
             'mulai'         => $startStr,
@@ -386,21 +349,24 @@ class RekomendasiController extends Controller
             'durasi'        => $durationStr,
             'instansi'      => $participantInstitute,
             'nim'           => $participantId,
-            'company_brand' => $config->company_brand ?? 'Seven Inc',
+            'company_brand' => $brand ? $brand->name : 'Seven Inc',
         ]);
 
-        $logoData  = $this->toDataUri($config->logo_path);
-        $stampData = $this->toDataUri($config->stamp_path);
+        $logoData  = null;
+        if ($brand && $brand->logo && Storage::disk('public')->exists($brand->logo)) {
+            $logoData = 'data:' . mime_content_type(storage_path('app/public/' . $brand->logo)) . ';base64,' . base64_encode(Storage::disk('public')->get($brand->logo));
+        }
+
+        $stampData = null;
+        if ($brand && $brand->signature && Storage::disk('public')->exists($brand->signature)) {
+            $stampData = 'data:' . mime_content_type(storage_path('app/public/' . $brand->signature)) . ';base64,' . base64_encode(Storage::disk('public')->get($brand->signature));
+        }
 
         return view('admin.rekomendasi_letter', [
-            'companyName'         => $config->company_name,
-            'companyAddress'      => $config->company_address,
-            'companyCity'         => $config->company_city,
-            'companyPhone'        => $config->company_phone,
-            'companyPostalCode'   => $config->company_postal_code,
-            'companyBrand'        => $config->company_brand,
-            'leaderName'          => $config->leader_name,
-            'leaderTitle'         => $config->leader_title,
+            'companyName'         => $brand ? $brand->name : 'Seven Inc',
+            'companyAddress'      => $brand ? $brand->company_address : '-',
+            'leaderName'          => $brand ? $brand->signatory_name : '-',
+            'leaderTitle'         => $brand ? $brand->signatory_position : '-',
             'letterNumber'        => $letterNumber,
             'letterDateStr'       => $letterDateStr,
             'participantName'     => $participantName,
@@ -424,20 +390,20 @@ class RekomendasiController extends Controller
             return back()->with('error', 'Surat rekomendasi hanya dapat di-generate untuk pemagang yang sudah selesai.');
         }
 
-        $config = RekomendasiSetting::first();
-        if (!$config) {
-            return back()->with('error', 'Konfigurasi template rekomendasi belum diatur. Silakan atur di halaman Template Rekomendasi.');
-        }
+        $request->validate([
+            'brand_id'      => 'required|integer|exists:brands,id',
+            'body_template' => 'nullable|string',
+        ]);
 
-        // Override nama perusahaan dengan brand pemagang jika ada
-        if (!empty($intern->brand)) {
-            $config = clone $config;
-            $config->company_name  = $intern->brand;
-            $config->company_brand = $intern->brand;
-        }
+        $brand = \App\Models\Brand::findOrFail($request->brand_id);
+        $bodyTemplate = $request->body_template ?? RekomendasiSetting::defaultBodyTemplate();
 
         try {
             Carbon::setLocale('id');
+
+            $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
+            $romanMonth = $roman[(int)date('n')];
+            $year = date('Y');
 
             $startStr = $intern->start_date
                 ? Carbon::parse($intern->start_date)->isoFormat('MMMM Y')
@@ -452,12 +418,20 @@ class RekomendasiController extends Controller
                 $durationStr = $months . ' bulan';
             }
 
-            $running       = str_pad((string) $intern->id, 3, '0', STR_PAD_LEFT);
-            $letterNumber  = $running . '/SR/' . Str::upper(Str::slug($config->company_brand ?? $config->company_name, '.')) . '/' . now()->format('m/Y');
+            $interest = $intern->internship_interest ?? '';
+            $dbDivision = \App\Models\Division::where('name', $interest)
+                ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
+                ->first();
+            $divisionName = $dbDivision?->code ?? 'UMUM';
+
+            $running      = str_pad((string) $intern->id, 3, '0', STR_PAD_LEFT);
+            $brandCodeStr = strtoupper($brand->code ?? 'SVII');
+            $letterNumber = "{$running}/SR/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
+            
             $letterDateStr = now()->isoFormat('D MMMM Y');
 
             $bodyText = $this->buildBodyText(
-                $config->body_template ?? RekomendasiSetting::defaultBodyTemplate(),
+                $bodyTemplate,
                 [
                     'nama'          => $intern->fullname,
                     'divisi'        => $intern->internship_interest ?? '-',
@@ -466,22 +440,26 @@ class RekomendasiController extends Controller
                     'durasi'        => $durationStr,
                     'instansi'      => $intern->institution_name ?? '-',
                     'nim'           => $intern->student_id ?? '-',
-                    'company_brand' => $config->company_brand ?? 'Seven Inc',
+                    'company_brand' => $brand->name,
                 ]
             );
 
-            $logoData  = $this->toDataUri($config->logo_path);
-            $stampData = $this->toDataUri($config->stamp_path);
+            // Resolve aset visual ke base64 (dari brand)
+            $logoData  = null;
+            if ($brand->logo && Storage::disk('public')->exists($brand->logo)) {
+                $logoData = 'data:' . mime_content_type(storage_path('app/public/' . $brand->logo)) . ';base64,' . base64_encode(Storage::disk('public')->get($brand->logo));
+            }
+
+            $stampData = null;
+            if ($brand->signature && Storage::disk('public')->exists($brand->signature)) {
+                $stampData = 'data:' . mime_content_type(storage_path('app/public/' . $brand->signature)) . ';base64,' . base64_encode(Storage::disk('public')->get($brand->signature));
+            }
 
             $html = view('admin.rekomendasi_letter', [
-                'companyName'          => $config->company_name,
-                'companyAddress'       => $config->company_address,
-                'companyCity'          => $config->company_city,
-                'companyPhone'         => $config->company_phone,
-                'companyPostalCode'    => $config->company_postal_code,
-                'companyBrand'         => $config->company_brand,
-                'leaderName'           => $config->leader_name,
-                'leaderTitle'          => $config->leader_title,
+                'companyName'          => $brand->name,
+                'companyAddress'       => $brand->company_address,
+                'leaderName'           => $brand->signatory_name,
+                'leaderTitle'          => $brand->signatory_position,
                 'letterNumber'         => $letterNumber,
                 'letterDateStr'        => $letterDateStr,
                 'participantName'      => $intern->fullname,
@@ -527,8 +505,18 @@ class RekomendasiController extends Controller
             // Update InternExtra
             $extra = InternExtra::firstOrNew(['intern_id' => $intern->id]);
 
-            if ($extra->rekomendasi_path && file_exists(storage_path('app/public/' . $extra->rekomendasi_path))) {
-                @unlink(storage_path('app/public/' . $extra->rekomendasi_path));
+            // Simpan snapshot data ke intern_extras
+            $extra->letter_number        = $letterNumber;
+            $extra->brand_id             = $brand->id;
+            $extra->company_name         = $brand->name;
+            $extra->company_address      = $brand->company_address;
+            $extra->company_logo_path    = $brand->logo;
+            $extra->signatory_name       = $brand->signatory_name;
+            $extra->signatory_position   = $brand->signatory_position;
+            $extra->signature_image_path = $brand->signature;
+
+            if ($extra->rekomendasi_path && Storage::disk('public')->exists($extra->rekomendasi_path)) {
+                Storage::disk('public')->delete($extra->rekomendasi_path);
             }
 
             $extra->intern_id = $intern->id;

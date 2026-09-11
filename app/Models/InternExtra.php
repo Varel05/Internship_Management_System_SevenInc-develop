@@ -19,6 +19,14 @@ class InternExtra extends Model
         'job_info_url',
         'job_info_description',
         'job_info_granted_at',
+        'letter_number',
+        'brand_id',
+        'company_name',
+        'company_address',
+        'company_logo_path',
+        'signatory_name',
+        'signatory_position',
+        'signature_image_path',
     ];
 
     protected $casts = [
@@ -30,5 +38,10 @@ class InternExtra extends Model
     public function registration()
     {
         return $this->belongsTo(InternshipRegistration::class, 'intern_id');
+    }
+
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class, 'brand_id');
     }
 }

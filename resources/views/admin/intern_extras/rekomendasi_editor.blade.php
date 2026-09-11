@@ -30,7 +30,7 @@
               class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
               <option value="">-- Pilih Brand --</option>
               @foreach($brands as $brand)
-                <option value="{{ $brand }}">{{ $brand }}</option>
+                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
               @endforeach
             </select>
           </div>
@@ -75,74 +75,8 @@
                 enctype="multipart/form-data" class="space-y-4" id="templateForm">
             @csrf
 
-            {{-- Informasi Perusahaan --}}
-            <div class="rounded-[10px] border border-[#DCE7E1] p-4 space-y-3">
-              <p class="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#2D8659]">Informasi Perusahaan</p>
-
-              <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Nama Perusahaan</label>
-                <input type="text" name="company_name" id="f_company_name"
-                  value="{{ old('company_name', $config->company_name) }}"
-                  class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-              </div>
-
-              <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Alamat Perusahaan</label>
-                <textarea name="company_address" id="f_company_address" rows="2"
-                  class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition resize-none">{{ old('company_address', $config->company_address) }}</textarea>
-              </div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Kota</label>
-                  <input type="text" name="company_city" id="f_company_city"
-                    value="{{ old('company_city', $config->company_city) }}"
-                    class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-                </div>
-                <div>
-                  <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Kode Pos</label>
-                  <input type="text" name="company_postal_code"
-                    value="{{ old('company_postal_code', $config->company_postal_code) }}"
-                    placeholder="55198"
-                    class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-                </div>
-              </div>
-
-              <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Nomor Telepon</label>
-                <input type="text" name="company_phone"
-                  value="{{ old('company_phone', $config->company_phone) }}"
-                  placeholder="0274-4534571"
-                  class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-              </div>
-
-              <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Brand Perusahaan</label>
-                <input type="text" name="company_brand" id="f_company_brand"
-                  value="{{ old('company_brand', $config->company_brand) }}"
-                  placeholder="Seven Inc (Magangjogja.com)"
-                  class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-              </div>
-            </div>
-
-            {{-- Penandatangan --}}
-            <div class="rounded-[10px] border border-[#DCE7E1] p-4 space-y-3">
-              <p class="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#2D8659]">Penandatangan</p>
-
-              <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Nama Pimpinan</label>
-                <input type="text" name="leader_name" id="f_leader_name"
-                  value="{{ old('leader_name', $config->leader_name) }}"
-                  class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-              </div>
-
-              <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Jabatan Pimpinan</label>
-                <input type="text" name="leader_title" id="f_leader_title"
-                  value="{{ old('leader_title', $config->leader_title) }}"
-                  class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
-              </div>
-            </div>
+            {{-- Hidden input for brand_id so it gets sent with the form --}}
+            <input type="hidden" name="brand_id" id="f_brand_id" value="">
 
             {{-- Isi Surat --}}
             <div class="rounded-[10px] border border-[#DCE7E1] p-4 space-y-3">
@@ -165,28 +99,7 @@
               </div>
             </div>
 
-            {{-- Aset Visual --}}
-            <div class="rounded-[10px] border border-[#DCE7E1] p-4 space-y-3">
-              <p class="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[#2D8659]">Aset Visual</p>
-              <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Upload Logo</label>
-                <input type="file" name="logo" id="f_logo" accept="image/*"
-                  class="block w-full text-[12.5px] text-[#4B5F5A]">
-                @if($config->logo_path && Storage::disk('public')->exists($config->logo_path))
-                <img src="{{ asset('storage/' . $config->logo_path) }}"
-                  class="mt-2 h-12 rounded-[6px] border border-[#DCE7E1] object-contain" alt="Logo">
-                @endif
-              </div>
-              <div>
-                <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Upload Tanda Tangan / Stempel</label>
-                <input type="file" name="stamp" id="f_stamp" accept="image/*"
-                  class="block w-full text-[12.5px] text-[#4B5F5A]">
-                @if($config->stamp_path && Storage::disk('public')->exists($config->stamp_path))
-                <img src="{{ asset('storage/' . $config->stamp_path) }}"
-                  class="mt-2 h-12 rounded-[6px] border border-[#DCE7E1] object-contain" alt="TTD">
-                @endif
-              </div>
-            </div>
+
 
             {{-- Tombol Simpan Template --}}
             <div class="flex justify-between items-center pt-1 gap-3">
@@ -293,8 +206,7 @@
 
   // ── Preview live update ──────────────────────────────────────────
   const watchFields = [
-    'f_company_name','f_company_address','f_company_city',
-    'f_company_brand','f_leader_name','f_leader_title','f_body_template'
+    'f_body_template', 'f_brand_id'
   ];
 
   function buildPreviewParams() {
@@ -357,11 +269,9 @@
       return;
     }
 
-    // Otomatis isi field company_name dan company_brand dengan nilai brand
-    const fName  = document.getElementById('f_company_name');
-    const fBrand = document.getElementById('f_company_brand');
-    if (fName)  fName.value  = brand;
-    if (fBrand) fBrand.value = brand;
+    // Set hidden brand_id
+    const fBrandId = document.getElementById('f_brand_id');
+    if (fBrandId) fBrandId.value = brand;
     refreshPreview();
 
     // Tampilkan section

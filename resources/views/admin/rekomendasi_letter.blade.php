@@ -3,158 +3,180 @@
 <head>
 <meta charset="UTF-8">
 <style>
-  @page { size: A4 portrait; margin: 2.5cm 3cm 2.5cm 3cm; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html {
-    width: 210mm;
+  @page {
+    size: A4 portrait;
+    margin: 10mm 15mm;
   }
   body {
-    font-family: 'Times New Roman', Times, serif;
-    font-size: 12pt;
+    font-family: 'Times New Roman', serif;
+    font-size: 11pt;
     color: #000;
-    line-height: 1.8;
-    width: 210mm;
+    line-height: 1.3;
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff;
   }
-
-  /* ── Kop Surat ── */
-  .kop {
-    border-bottom: 3px double #000;
-    padding-bottom: 12px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
+  
+  /* HEADER */
+  table.header-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: none;
+    margin-bottom: 5px;
   }
-  .kop-logo img {
-    height: 72px;
-    width: auto;
-    object-fit: contain;
+  table.header-table td {
+    border: none;
+    padding: 0;
+    vertical-align: middle;
   }
-  .kop-text .company-name {
+  .header-logo {
+    width: 120px;
+  }
+  .header-logo img {
+    width: 100px;
+    height: auto;
+  }
+  .header-text-container {
+    text-align: center;
+  }
+  .header-text-container h1 {
+    margin: 0;
     font-size: 16pt;
     font-weight: bold;
+    color: #000;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    margin-bottom: 4px;
   }
-  .kop-text .company-address {
-    font-size: 9.5pt;
-    line-height: 1.6;
-    color: #222;
+  .header-text-container p {
+    margin: 4px 0 0 0;
+    font-size: 10pt;
+    color: #000;
+    line-height: 1.2;
   }
 
-  /* ── Judul ── */
+  .header-line {
+    border-top: 3px solid #000;
+    border-bottom: 1px solid #000;
+    height: 2px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+  }
+
+  /* TITLE */
   .letter-title {
     text-align: center;
-    margin: 24px 0 6px;
-    font-size: 14pt;
+    font-size: 12pt;
     font-weight: bold;
     text-decoration: underline;
+    margin-bottom: 5px;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
   }
   .letter-number {
     text-align: center;
     font-size: 11pt;
-    margin-bottom: 28px;
-    color: #333;
+    margin-bottom: 25px;
+    color: #000;
   }
 
   /* ── Paragraf intro ── */
   .intro {
-    font-size: 12pt;
-    margin-bottom: 12px;
+    font-size: 11pt;
+    margin-bottom: 10px;
   }
 
   /* ── Tabel info penandatangan & pemagang ── */
   table.info-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 6px 0 18px 12px;
+    margin: 6px 0 15px 15px;
   }
   table.info-table td {
-    padding: 4px 0;
+    padding: 2px 0;
     vertical-align: top;
-    font-size: 11.5pt;
-    line-height: 1.6;
+    font-size: 11pt;
+    line-height: 1.4;
   }
   table.info-table td:first-child {
-    width: 170px;
+    width: 150px;
     font-weight: normal;
   }
   table.info-table td:nth-child(2) {
-    width: 20px;
-    text-align: center;
+    width: 15px;
+    text-align: left;
   }
-  table.info-table td:last-child {
-    padding-left: 4px;
-  }
-
-  /* ── Separator ── */
-  .section-gap { margin: 16px 0; }
 
   /* ── Body paragraf ── */
   .body-text {
     text-align: justify;
-    margin-bottom: 14px;
-    font-size: 12pt;
-    line-height: 1.8;
-    text-indent: 0;
+    margin: 10px 0;
+    font-size: 11pt;
+    line-height: 1.5;
   }
 
   /* ── TTD ── */
-  .ttd-area {
-    margin-top: 32px;
-    display: flex;
-    justify-content: flex-end;
+  .signature-wrapper {
+    width: 100%;
+    margin-top: 30px;
   }
-  .ttd-block {
+  .signature-box {
+    width: 300px;
+    float: right;
     text-align: center;
-    min-width: 220px;
   }
-  .ttd-place-date {
-    font-size: 12pt;
-    margin-bottom: 4px;
+  .signature-box p {
+    margin: 2px 0;
+    line-height: 1.2;
   }
-  .ttd-title {
-    font-size: 11.5pt;
-    margin-bottom: 70px;
-    line-height: 1.6;
+  .signature-img-container {
+    position: relative;
+    height: 80px;
+    margin: 10px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  .ttd-img {
-    height: 72px;
-    margin: 0 auto 4px;
-    display: block;
-    object-fit: contain;
+  .signature-img-container img.ttd {
+    max-height: 80px;
+    max-width: 200px;
+    position: relative;
+    z-index: 2;
   }
-  .ttd-name {
+  .signature-img-container img.stamp {
+    position: absolute;
+    max-height: 90px;
+    opacity: 0.3;
+    filter: blur(0.5px);
+    z-index: 1;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .signatory-name {
     font-weight: bold;
-    font-size: 12pt;
-    border-top: 1.5px solid #000;
-    padding-top: 5px;
-    margin-top: 4px;
+    text-decoration: underline;
   }
 </style>
 </head>
 <body>
 
 {{-- KOP SURAT --}}
-<div class="kop">
-  @if(!empty($logoData))
-  <div class="kop-logo">
-    <img src="{{ $logoData }}" alt="Logo">
-  </div>
-  @endif
-  <div class="kop-text">
-    <div class="company-name">{{ $companyName }}</div>
-    <div class="company-address">
-      {{ $companyAddress }}
-      @if(!empty($companyPostalCode) || !empty($companyPhone))
-        <br>Kode Pos: {{ $companyPostalCode ?? '-' }}&nbsp;&nbsp;|&nbsp;&nbsp;Telp: {{ $companyPhone ?? '-' }}
-      @endif
-    </div>
-  </div>
-</div>
+<table class="header-table">
+  <tr>
+    @if(!empty($logoData))
+    <td class="header-logo">
+      <img src="{{ $logoData }}" alt="Logo" />
+    </td>
+    @endif
+    <td class="header-text-container">
+      <h1>{{ $companyName }}</h1>
+      <p>
+        {{ $companyAddress }}
+      </p>
+    </td>
+  </tr>
+</table>
+<div class="header-line"></div>
 
 {{-- JUDUL --}}
 <div class="letter-title">Surat Rekomendasi</div>
@@ -214,17 +236,20 @@
 <p class="body-text">Demikian surat rekomendasi ini dibuat dengan penuh kesadaran dan tanpa paksaan dari pihak manapun dan untuk dipergunakan sebagaimana mestinya.</p>
 
 {{-- TTD --}}
-<div class="ttd-area">
-  <div class="ttd-block">
-    <div class="ttd-place-date">{{ $companyCity }}, {{ $letterDateStr }}</div>
-    <div class="ttd-title">
-      {{ $leaderTitle }} {{ $companyName }}<br>
-      <span style="font-size:10.5pt;font-weight:normal;">({{ $companyBrand }})</span>
+<div class="signature-wrapper">
+  <div class="signature-box">
+    <p>Yogyakarta, {{ $letterDateStr }}</p>
+    <p>Hormat kami,</p>
+    <div class="signature-img-container">
+      @if(!empty($logoData))
+      <img src="{{ $logoData }}" class="stamp" alt="Cap Perusahaan">
+      @endif
+      @if(!empty($stampData))
+      <img src="{{ $stampData }}" class="ttd" alt="Tanda Tangan">
+      @endif
     </div>
-    @if(!empty($stampData))
-    <img src="{{ $stampData }}" alt="TTD" class="ttd-img">
-    @endif
-    <div class="ttd-name">{{ $leaderName }}</div>
+    <p class="signatory-name">{{ $leaderName }}</p>
+    <p>{{ $leaderTitle }} {{ $companyName }}</p>
   </div>
 </div>
 
