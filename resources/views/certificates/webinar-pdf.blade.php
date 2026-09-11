@@ -17,25 +17,22 @@
         return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($abs));
     };
 
-    $bgUrl    = $dataUri($certificate->background_image ?? '');
-    $logo1Url = $dataUri($certificate->logo1 ?? '');
+    $bgUrl    = $dataUri($certificate->background_image_path ?? $certificate->background_image ?? '');
+    $logo1Url = $dataUri($certificate->company_logo_path ?? $certificate->logo1 ?? '');
     $logo2Url = $dataUri($certificate->logo2 ?? '');
-    $ttd1Url  = $dataUri($certificate->signature_image1 ?? '');
+    $ttd1Url  = $dataUri($certificate->signature_image_path ?? $certificate->signature_image1 ?? '');
     $ttd2Url  = $dataUri($certificate->signature_image2 ?? '');
 
     $hasRightSig = $ttd2Url || !empty($certificate->name_signatory2) || !empty($certificate->role2);
 
+    $startDate = $certificate->start_date ?? $certificate->attendance?->webinar?->event_date ?? $certificate->created_at;
     Carbon::setLocale('id');
-    $eventDate = Carbon::parse($certificate->start_date)->isoFormat('DD MMMM YYYY');
+    $eventDate = Carbon::parse($startDate)->isoFormat('DD MMMM YYYY');
 
     // Ambil judul webinar dari webinar_attendances
-    $webinarTitle = null;
-    try {
-        $attendance = \App\Models\WebinarAttendance::where('certificate_id', $certificate->id)->first();
-        $webinarTitle = $attendance?->webinar?->title;
-    } catch (\Throwable $e) {}
+    $webinarTitle = $certificate->attendance?->webinar?->title;
 
-    $company = $certificate->company ?? 'Seven Inc';
+    $company = $certificate->company_name ?? $certificate->company ?? 'Seven Inc';
     $city    = $certificate->city    ?? 'Yogyakarta';
 
     // Handle format "JudulWebinar||Company" untuk generate manual
@@ -44,8 +41,13 @@
         [$webinarTitleFromCompany, $company] = explode('||', $company, 2);
     }
 
-    // Final judul webinar: dari attendance (alur bukti kehadiran) atau dari company field (generate manual)
+    // Final judul webinar
     $finalWebinarTitle = $webinarTitle ?? $webinarTitleFromCompany;
+
+    $recipientName = $certificate->name ?? $certificate->attendance?->user?->name ?? 'Peserta';
+    $serialNum = $certificate->certificate_number ?? $certificate->serial_number ?? '';
+    $sigName = $certificate->signatory_name ?? $certificate->name_signatory1 ?? 'Penandatangan';
+    $sigRole = $certificate->signatory_position ?? $certificate->role1 ?? 'Penyelenggara';
   @endphp
 
   <style>
@@ -248,13 +250,13 @@
     <div class="cert-title">Sertifikat</div>
 
     {{-- NOMOR --}}
-    <div class="cert-number">Nomor: {{ $certificate->serial_number }}</div>
+    <div class="cert-number">Nomor: {{ $serialNum }}</div>
 
     {{-- DIBERIKAN KEPADA --}}
     <div class="given-to">Diberikan kepada:</div>
 
     {{-- NAMA PESERTA --}}
-    <div class="recipient-name">{{ $certificate->name }}</div>
+    <div class="recipient-name">{{ $recipientName }}</div>
     <div class="name-underline"></div>
 
     {{-- SEBAGAI PESERTA --}}
@@ -284,8 +286,8 @@
     <div class="signatures">
       {{-- Penandatangan 1 (wajib) --}}
       <div class="sig">
-        @if(!empty($certificate->role1))
-          <div class="sig-role">{{ $certificate->role1 }}</div>
+        @if(!empty($sigRole))
+          <div class="sig-role">{{ $sigRole }}</div>
         @else
           <div class="sig-role">&nbsp;</div>
         @endif
@@ -295,7 +297,7 @@
           @endif
         </div>
         <div class="sig-line"></div>
-        <div class="sig-name">{{ $certificate->name_signatory1 }}</div>
+        <div class="sig-name">{{ $sigName }}</div>
       </div>
 
       {{-- Penandatangan 2 (opsional) --}}

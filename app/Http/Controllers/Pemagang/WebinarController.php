@@ -24,11 +24,14 @@ class WebinarController extends Controller
     {
         $user = auth()->user();
 
-        // Ambil brand pemagang dari internship_registrations terbaru
-        $internBrandRaw = \App\Models\InternshipRegistration::where('user_id', $user->id)
-            ->whereNotNull('brand')
+        // Ambil brand_id pemagang dari internship_registrations terbaru
+        $registration = \App\Models\InternshipRegistration::with('brandRel')
+            ->where('user_id', $user->id)
+            ->whereNotNull('brand_id')
             ->latest()
-            ->value('brand');
+            ->first();
+
+        $internBrandRaw = $registration && $registration->brandRel ? $registration->brandRel->code : null;
 
         // Normalisasi brand ke kode (allowed_brands menyimpan kode, bukan nama lengkap)
         // internship_registrations bisa menyimpan nama lengkap ATAU kode, tangani keduanya

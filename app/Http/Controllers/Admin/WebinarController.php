@@ -210,21 +210,30 @@ class WebinarController extends Controller
     }
 
     /**
-     * Approve semua yang masih pending sekaligus.
+     * Approve data yang dipilih.
      */
-    public function approveAll(Webinar $webinar)
+    public function approveAll(\Illuminate\Http\Request $request, Webinar $webinar)
     {
-        $pendings = WebinarAttendance::with('user')
+        $ids = $request->input('ids', []);
+        
+        if (empty($ids)) {
+            return back()->with('error', 'Tidak ada data yang dipilih untuk diapprove.');
+        }
+
+        $attendances = WebinarAttendance::with('user')
             ->where('webinar_id', $webinar->id)
+            ->whereIn('id', $ids)
             ->where('status', WebinarAttendance::STATUS_PENDING)
             ->get();
 
         $success = 0;
         $failed  = 0;
 
-        foreach ($pendings as $attendance) {
+        foreach ($attendances as $attendance) {
+            if ($attendance->status !== WebinarAttendance::STATUS_PENDING) continue;
+
             try {
-                $cert = $this->generateWebinarCertificate($webinar, $attendance->user);
+                $cert = $this->generateWebinarCertificate($webinar, $attendance->user, $attendance->id);
 
                 $attendance->update([
                     'status'         => WebinarAttendance::STATUS_APPROVED,
@@ -260,7 +269,7 @@ class WebinarController extends Controller
      * Menggunakan DB transaction + lock untuk mencegah duplicate serial number
      * ketika banyak peserta di-approve bersamaan.
      */
-    private function generateWebinarCertificate(Webinar $webinar, $user): ?Certificate
+    private function generateWebinarCertificate(Webinar $webinar, $user, $attendanceId): ?\App\Models\WebinarCertificate
     {
         $webinar->loadMissing('brand');
         
@@ -280,51 +289,37 @@ class WebinarController extends Controller
         // Gunakan path relatif tanpa storage/ karena dicetak di PDF, fungsi gambar_logo di Helper yang akan me-resolve path
         $bg   = $brand->webinar_certificate_bg;
         $l1   = $brand->logo;
-        $l2   = null;
         $sig1 = $brand->signature;
-        $sig2 = null;
 
-        $certDesc = 'Atas partisipasinya sebagai Peserta dalam Webinar "' . $webinar->title . '" yang diselenggarakan oleh ' . $companyName;
-        $companyEncoded = $webinar->title . '||' . $companyName;
-
-        return DB::transaction(function () use (
-            $user, $webinar, $startDate, $endDate,
+        return \Illuminate\Support\Facades\DB::transaction(function () use (
+            $attendanceId, $webinar, $startDate, $endDate,
             $monthRoman, $year, $brandCode, $companyName, $companyCode,
-            $divisionCode, $companyEncoded, $bg, $l1, $l2, $sig1, $sig2, $brand, $certDesc
+            $divisionCode, $bg, $l1, $sig1, $brand
         ) {
             $serialSuffix = "/SERT/{$divisionCode}/{$companyCode}.{$brandCode}/{$monthRoman}/{$year}";
 
-            $last = Certificate::where('serial_number', 'LIKE', "%{$serialSuffix}")
+            $last = \App\Models\WebinarCertificate::where('certificate_number', 'LIKE', "%{$serialSuffix}")
                 ->orderByDesc('id')
                 ->lockForUpdate()
                 ->first();
 
             $seq = 1;
-            if ($last && preg_match('/^(\d{3})\/SERT\//', $last->serial_number, $m)) {
+            if ($last && preg_match('/^(\d{3})\/SERT\//', $last->certificate_number, $m)) {
                 $seq = (int)$m[1] + 1;
             }
             $seqStr = str_pad($seq, 3, '0', STR_PAD_LEFT);
             $serial = "{$seqStr}{$serialSuffix}";
 
-            return Certificate::create([
-                'name'              => $user->name,
-                'division'          => $divisionCode,
-                'company'           => $companyEncoded,
-                'description'       => $certDesc,
-                'background_image'  => $bg,
-                'start_date'        => $startDate,
-                'end_date'          => $endDate,
-                'city'              => 'Yogyakarta',
-                'brand'             => $brandCode,
-                'serial_number'     => $serial,
-                'logo1'             => $l1,
-                'logo2'             => $l2,
-                'signature_image1'  => $sig1,
-                'signature_image2'  => $sig2,
-                'name_signatory1'   => $brand->signatory_name ?? 'Penandatangan',
-                'name_signatory2'   => null,
-                'role1'             => $brand->signatory_position ?? 'Penyelenggara',
-                'role2'             => null,
+            return \App\Models\WebinarCertificate::create([
+                'attendance_id'         => $attendanceId,
+                'certificate_number'    => $serial,
+                'company_name'          => $companyName,
+                'background_image_path' => $bg,
+                'company_logo_path'     => $l1,
+                'signatory_name'        => $brand->signatory_name ?? 'Penandatangan',
+                'signatory_position'    => $brand->signatory_position ?? 'Penyelenggara',
+                'signature_image_path'  => $sig1,
+                'created_at'            => now(),
             ]);
         });
     }

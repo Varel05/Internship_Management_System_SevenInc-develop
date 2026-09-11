@@ -23,25 +23,14 @@
     @endphp
     <div class="flex items-center gap-2">
       @if($pendingCount > 0)
-      <form method="POST" action="{{ route('admin.webinars.attendances.approve_all', $webinar) }}"
-            onsubmit="return confirm('Setujui semua {{ $pendingCount }} bukti kehadiran yang masih pending?')">
-        @csrf
-        <button type="submit"
-                class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg"
-                style="background-color:#2D8659;">
+        <button type="submit" form="bulk-approve-form"
+                class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg opacity-50 cursor-not-allowed transition"
+                style="background-color:#2D8659;"
+                id="btn-approve-selected" disabled
+                onclick="return confirm('Setujui bukti kehadiran yang dipilih?')">
           <i class="fas fa-check-double text-xs"></i>
-          Approve Semua ({{ $pendingCount }})
+          Approve Terpilih (<span id="selected-count">0</span>)
         </button>
-      </form>
-      @endif
-
-      @if($approvedCount > 0)
-      <a href="{{ route('admin.certificate.webinar.create', ['webinar_id' => $webinar->id]) }}"
-         class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg"
-         style="background-color:#1a5c38;">
-        <i class="fas fa-award text-xs"></i>
-        Generate Sertifikat ({{ $approvedCount }})
-      </a>
       @endif
     </div>
   </div>
@@ -80,10 +69,15 @@
   </div>
 
   {{-- Table --}}
+  <form id="bulk-approve-form" method="POST" action="{{ route('admin.webinars.attendances.approve_all', $webinar) }}">
+  @csrf
   <div class="bg-white rounded-xl border border-[#DCE7E1] overflow-hidden shadow-sm">
     <table class="w-full">
       <thead class="bg-[#1B3A34]">
         <tr>
+          <th class="px-5 py-3 text-left w-12">
+            <input type="checkbox" id="cb-select-all" class="h-4 w-4 rounded accent-[#2D8659]">
+          </th>
           <th class="px-5 py-3 text-left text-xs font-bold uppercase text-white">Pemagang</th>
           <th class="px-5 py-3 text-left text-xs font-bold uppercase text-white">Bukti Kehadiran</th>
           <th class="px-5 py-3 text-left text-xs font-bold uppercase text-white">Catatan</th>
@@ -94,6 +88,11 @@
       <tbody class="divide-y divide-[#DCE7E1]">
         @forelse($attendances as $att)
         <tr class="hover:bg-[#F4F8F6] transition">
+          <td class="px-5 py-4">
+            @if($att->status === 'pending')
+              <input type="checkbox" name="ids[]" value="{{ $att->id }}" class="bulk-cb h-4 w-4 rounded accent-[#2D8659]">
+            @endif
+          </td>
           <td class="px-5 py-4">
             <p class="font-semibold text-[#1B3A34] text-sm">{{ $att->user->name }}</p>
             <p class="text-xs text-[#9ca3af]">{{ $att->user->email }}</p>
@@ -174,6 +173,7 @@
     </table>
     <div class="px-5 py-4 border-t border-[#DCE7E1]">{{ $attendances->links() }}</div>
   </div>
+  </form>
 </div>
 
 {{-- Modal Reject --}}
@@ -212,5 +212,39 @@ function openRejectModal(id, action) {
 function closeRejectModal() {
   document.getElementById('modal-reject').classList.add('hidden');
 }
+
+// Bulk approve logic
+const selectAllCb = document.getElementById('cb-select-all');
+const bulkCbs = document.querySelectorAll('.bulk-cb');
+const btnApprove = document.getElementById('btn-approve-selected');
+const selectedCountEl = document.getElementById('selected-count');
+
+function updateBulkBtn() {
+  if (!btnApprove) return;
+  const checked = document.querySelectorAll('.bulk-cb:checked').length;
+  selectedCountEl.textContent = checked;
+  if (checked > 0) {
+    btnApprove.disabled = false;
+    btnApprove.classList.remove('opacity-50', 'cursor-not-allowed');
+  } else {
+    btnApprove.disabled = true;
+    btnApprove.classList.add('opacity-50', 'cursor-not-allowed');
+  }
+}
+
+if (selectAllCb) {
+  selectAllCb.addEventListener('change', (e) => {
+    bulkCbs.forEach(cb => cb.checked = e.target.checked);
+    updateBulkBtn();
+  });
+}
+
+bulkCbs.forEach(cb => {
+  cb.addEventListener('change', () => {
+    const allChecked = document.querySelectorAll('.bulk-cb:checked').length === bulkCbs.length;
+    if (selectAllCb) selectAllCb.checked = allChecked && bulkCbs.length > 0;
+    updateBulkBtn();
+  });
+});
 </script>
 @endsection
