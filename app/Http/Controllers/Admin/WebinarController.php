@@ -8,6 +8,7 @@ use App\Models\WebinarAttendance;
 use App\Models\InternshipRegistration as IR;
 use App\Models\Certificate;
 use App\Models\DocumentDownload;
+use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -28,9 +29,8 @@ class WebinarController extends Controller
 
     public function create()
     {
-        $assetOptions = $this->loadAssets();
-        $brands = $this->brandList();
-        return view('admin.webinars.create', compact('assetOptions', 'brands'));
+        $brands = Brand::all();
+        return view('admin.webinars.create', compact('brands'));
     }
 
     public function store(Request $request)
@@ -39,49 +39,16 @@ class WebinarController extends Controller
             'title'                      => 'required|string|max:255',
             'description'                => 'nullable|string',
             'event_date'                 => 'required|date',
-            'event_end_date'             => 'nullable|date|after_or_equal:event_date',
             'zoom_link'                  => 'nullable|url|max:500',
-            'platform'                   => 'nullable|string|max:50',
-            'is_active'                  => 'boolean',
-            'certificate_background'     => 'nullable|string',
-            'certificate_logo1'          => 'nullable|string',
-            'certificate_logo2'          => 'nullable|string',
-            'certificate_signature1'     => 'nullable|string',
-            'certificate_signature2'     => 'nullable|string',
-            'certificate_signatory1_name'=> 'required|string|max:255',
-            'certificate_signatory1_role'=> 'required|string|max:255',
-            'certificate_signatory2_name'=> 'nullable|string|max:255',
-            'certificate_signatory2_role'=> 'nullable|string|max:255',
-            'certificate_company'        => 'nullable|string|max:255',
-            'certificate_city'           => 'nullable|string|max:255',
-            'certificate_brand'          => 'nullable|string|max:10',
-            'certificate_description'    => 'nullable|string|max:1000',
+            'brand_id'                   => 'required|exists:brands,id',
             'allowed_brands'             => 'nullable|array',
             'allowed_brands.*'           => 'string|max:10',
-            // File upload langsung
-            'upload_background'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:4096',
-            'upload_logo1'               => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'upload_logo2'               => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'upload_signature1'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'upload_signature2'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $validated['created_by'] = auth()->id();
-        $validated['is_active']  = $request->boolean('is_active', true);
-
-        // Proses upload langsung — override pilihan dropdown jika file baru diupload
-        $validated = $this->processAssetUploads($request, $validated);
-
-        // allowed_brands: null = semua, array kosong atau mode=all = null
         $mode = $request->input('_allowed_brands_mode', 'all');
         $validated['allowed_brands'] = ($mode === 'specific' && !empty($validated['allowed_brands']))
             ? array_values(array_unique($validated['allowed_brands']))
             : null;
-
-        // Sinkron certificate_company dengan nama brand
-        if (!empty($validated['certificate_brand'])) {
-            $validated['certificate_company'] = Webinar::brandLabel($validated['certificate_brand']);
-        }
 
         Webinar::create($validated);
 
@@ -91,9 +58,8 @@ class WebinarController extends Controller
 
     public function edit(Webinar $webinar)
     {
-        $assetOptions = $this->loadAssets();
-        $brands = $this->brandList();
-        return view('admin.webinars.edit', compact('webinar', 'assetOptions', 'brands'));
+        $brands = Brand::all();
+        return view('admin.webinars.edit', compact('webinar', 'brands'));
     }
 
     public function update(Request $request, Webinar $webinar)
@@ -102,48 +68,16 @@ class WebinarController extends Controller
             'title'                      => 'required|string|max:255',
             'description'                => 'nullable|string',
             'event_date'                 => 'required|date',
-            'event_end_date'             => 'nullable|date|after_or_equal:event_date',
             'zoom_link'                  => 'nullable|url|max:500',
-            'platform'                   => 'nullable|string|max:50',
-            'is_active'                  => 'boolean',
-            'certificate_background'     => 'nullable|string',
-            'certificate_logo1'          => 'nullable|string',
-            'certificate_logo2'          => 'nullable|string',
-            'certificate_signature1'     => 'nullable|string',
-            'certificate_signature2'     => 'nullable|string',
-            'certificate_signatory1_name'=> 'required|string|max:255',
-            'certificate_signatory1_role'=> 'required|string|max:255',
-            'certificate_signatory2_name'=> 'nullable|string|max:255',
-            'certificate_signatory2_role'=> 'nullable|string|max:255',
-            'certificate_company'        => 'nullable|string|max:255',
-            'certificate_city'           => 'nullable|string|max:255',
-            'certificate_brand'          => 'nullable|string|max:10',
-            'certificate_description'    => 'nullable|string|max:1000',
+            'brand_id'                   => 'required|exists:brands,id',
             'allowed_brands'             => 'nullable|array',
             'allowed_brands.*'           => 'string|max:10',
-            // File upload langsung
-            'upload_background'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:4096',
-            'upload_logo1'               => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'upload_logo2'               => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'upload_signature1'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            'upload_signature2'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $validated['is_active'] = $request->boolean('is_active', true);
-
-        // Proses upload langsung — override pilihan dropdown jika file baru diupload
-        $validated = $this->processAssetUploads($request, $validated);
-
-        // allowed_brands
         $mode = $request->input('_allowed_brands_mode', 'all');
         $validated['allowed_brands'] = ($mode === 'specific' && !empty($validated['allowed_brands']))
             ? array_values(array_unique($validated['allowed_brands']))
             : null;
-
-        // Sinkron certificate_company dengan nama brand
-        if (!empty($validated['certificate_brand'])) {
-            $validated['certificate_company'] = Webinar::brandLabel($validated['certificate_brand']);
-        }
 
         $webinar->update($validated);
 
@@ -328,41 +262,38 @@ class WebinarController extends Controller
      */
     private function generateWebinarCertificate(Webinar $webinar, $user): ?Certificate
     {
+        $webinar->loadMissing('brand');
+        
         $startDate = $webinar->event_date;
-        $endDate   = $webinar->event_end_date ?? $webinar->event_date;
+        $endDate   = $webinar->event_date;
 
         $roman = [1=>'I',2=>'II',3=>'III',4=>'IV',5=>'V',6=>'VI',7=>'VII',8=>'VIII',9=>'IX',10=>'X',11=>'XI',12=>'XII'];
         $monthRoman = $roman[$endDate->month];
         $year       = $endDate->year;
 
-        $brandCode    = strtoupper($webinar->certificate_brand ?? 'SI');
-        $companyName  = Webinar::brandLabel($brandCode);
+        $brand = $webinar->brand;
+        $brandCode    = strtoupper($brand->code);
+        $companyName  = $brand->name;
         $companyCode  = $this->companyCode($companyName);
         $divisionCode = 'WBN';
 
-        // Normalisasi path aset
-        $bg   = $webinar->certificate_background ? "images/backgrounds/{$webinar->certificate_background}" : null;
-        $l1   = $webinar->certificate_logo1      ? "images/logos/{$webinar->certificate_logo1}"            : null;
-        $l2   = $webinar->certificate_logo2      ? "images/logos/{$webinar->certificate_logo2}"            : null;
-        $sig1 = $webinar->certificate_signature1 ? "images/signature/{$webinar->certificate_signature1}"   : null;
-        $sig2 = $webinar->certificate_signature2 ? "images/signature/{$webinar->certificate_signature2}"   : null;
+        // Gunakan path relatif tanpa storage/ karena dicetak di PDF, fungsi gambar_logo di Helper yang akan me-resolve path
+        $bg   = $brand->webinar_certificate_bg;
+        $l1   = $brand->logo;
+        $l2   = null;
+        $sig1 = $brand->signature;
+        $sig2 = null;
 
-        // Judul webinar di-encode ke field company agar template bisa membacanya
+        $certDesc = 'Atas partisipasinya sebagai Peserta dalam Webinar "' . $webinar->title . '" yang diselenggarakan oleh ' . $companyName;
         $companyEncoded = $webinar->title . '||' . $companyName;
 
-        // Gunakan transaction + lockForUpdate untuk mencegah race condition
-        // saat approve semua sekaligus (serial number bisa duplikat tanpa lock)
         return DB::transaction(function () use (
             $user, $webinar, $startDate, $endDate,
             $monthRoman, $year, $brandCode, $companyName, $companyCode,
-            $divisionCode, $companyEncoded, $bg, $l1, $l2, $sig1, $sig2
+            $divisionCode, $companyEncoded, $bg, $l1, $l2, $sig1, $sig2, $brand, $certDesc
         ) {
-            // Suffix unik per divisi/brand/bulan/tahun
-            // Format serial: NNN/SERT/{divisionCode}/{companyCode}.{brandCode}/{monthRoman}/{year}
             $serialSuffix = "/SERT/{$divisionCode}/{$companyCode}.{$brandCode}/{$monthRoman}/{$year}";
 
-            // Cari serial terakhir berdasarkan suffix yang sama (bukan created_at),
-            // karena event_date bisa berbeda bulan dengan created_at record sertifikat.
             $last = Certificate::where('serial_number', 'LIKE', "%{$serialSuffix}")
                 ->orderByDesc('id')
                 ->lockForUpdate()
@@ -379,77 +310,23 @@ class WebinarController extends Controller
                 'name'              => $user->name,
                 'division'          => $divisionCode,
                 'company'           => $companyEncoded,
-                'description'       => $webinar->certificate_description ?: null,
+                'description'       => $certDesc,
                 'background_image'  => $bg,
                 'start_date'        => $startDate,
                 'end_date'          => $endDate,
-                'city'              => $webinar->certificate_city ?? 'Yogyakarta',
+                'city'              => 'Yogyakarta',
                 'brand'             => $brandCode,
                 'serial_number'     => $serial,
                 'logo1'             => $l1,
                 'logo2'             => $l2,
                 'signature_image1'  => $sig1,
                 'signature_image2'  => $sig2,
-                'name_signatory1'   => $webinar->certificate_signatory1_name ?? 'Penandatangan',
-                'name_signatory2'   => $webinar->certificate_signatory2_name,
-                'role1'             => $webinar->certificate_signatory1_role ?? 'Penyelenggara',
-                'role2'             => $webinar->certificate_signatory2_role,
+                'name_signatory1'   => $brand->signatory_name ?? 'Penandatangan',
+                'name_signatory2'   => null,
+                'role1'             => $brand->signatory_position ?? 'Penyelenggara',
+                'role2'             => null,
             ]);
         });
-    }
-
-    /**
-     * Handle inline file uploads for certificate assets.
-     * If a new file is uploaded, store it to the shared asset folder and
-     * override the corresponding certificate_* field in $validated.
-     */
-    private function processAssetUploads(Request $request, array $validated): array
-    {
-        $map = [
-            'upload_background' => [
-                'disk'   => 'public/images/backgrounds',
-                'prefix' => 'bg_',
-                'field'  => 'certificate_background',
-            ],
-            'upload_logo1' => [
-                'disk'   => 'public/images/logos',
-                'prefix' => 'logo_',
-                'field'  => 'certificate_logo1',
-            ],
-            'upload_logo2' => [
-                'disk'   => 'public/images/logos',
-                'prefix' => 'logo_',
-                'field'  => 'certificate_logo2',
-            ],
-            'upload_signature1' => [
-                'disk'   => 'public/images/signature',
-                'prefix' => 'ttd_',
-                'field'  => 'certificate_signature1',
-            ],
-            'upload_signature2' => [
-                'disk'   => 'public/images/signature',
-                'prefix' => 'ttd_',
-                'field'  => 'certificate_signature2',
-            ],
-        ];
-
-        foreach ($map as $inputName => $cfg) {
-            if ($request->hasFile($inputName) && $request->file($inputName)->isValid()) {
-                $file      = $request->file($inputName);
-                $ext       = $file->getClientOriginalExtension();
-                $filename  = $cfg['prefix'] . \Illuminate\Support\Str::slug(
-                    pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)
-                ) . '_' . time() . '.' . $ext;
-
-                $file->storeAs($cfg['disk'], $filename);
-                $validated[$cfg['field']] = $filename;
-            }
-
-            // Buang field upload_ dari validated agar tidak masuk fillable
-            unset($validated[$inputName]);
-        }
-
-        return $validated;
     }
 
     private function companyCode(string $company): string
@@ -457,22 +334,6 @@ class WebinarController extends Controller
         $t = strtoupper(preg_replace('/\b(PT|CV|CO\.?|LTD\.?|INC\.?|TBK|PERSERO)\b\.?/i', '', $company));
         $first = preg_split('/\s+/', trim($t))[0] ?? $t;
         return preg_replace('/[^A-Z0-9]/', '', $first) ?: 'COMP';
-    }
-
-    private function loadAssets(): array
-    {
-        $bg  = collect(Storage::files('public/images/backgrounds'))
-            ->map(fn($f) => basename($f))->filter(fn($f) => str_starts_with($f, 'bg_'))->values();
-        $logo = collect(Storage::files('public/images/logos'))
-            ->map(fn($f) => basename($f))->filter(fn($f) => str_starts_with($f, 'logo_'))->values();
-        $sig  = collect(Storage::files('public/images/signature'))
-            ->map(fn($f) => basename($f))->filter(fn($f) => str_starts_with($f, 'ttd_'))->values();
-        return compact('bg', 'logo', 'sig');
-    }
-
-    private function brandList(): array
-    {
-        return Webinar::brandList();
     }
 }
 

@@ -15,31 +15,20 @@ class Webinar extends Model
         'title',
         'description',
         'event_date',
-        'event_end_date',
         'zoom_link',
-        'platform',
-        'certificate_background',
-        'certificate_logo1',
-        'certificate_logo2',
-        'certificate_signature1',
-        'certificate_signature2',
-        'certificate_signatory1_name',
-        'certificate_signatory1_role',
-        'certificate_signatory2_name',
-        'certificate_signatory2_role',
-        'certificate_company',
-        'certificate_city',
-        'certificate_brand',
-        'certificate_description',
+        'brand_id',
         'allowed_brands',
-        'created_by',
     ];
 
     protected $casts = [
         'event_date'     => 'datetime',
-        'event_end_date' => 'datetime',
         'allowed_brands' => 'array',    // null = semua brand boleh ikut
     ];
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
 
     /**
      * Perusahaan penerbit sertifikat = nama brand yang dipilih.
