@@ -218,15 +218,30 @@ class LoaController extends Controller
                 ->firstOrFail();
             $this->ensureCanAccessCompletedDocs($user, $intern);
 
-            $files = glob(storage_path("app/public/documents/loa/LOA-{$intern->id}-*.pdf"));
-
-            if (empty($files)) {
-                return back()->with('error', 'LOA belum tersedia. Hubungi admin untuk mendapatkan LOA Anda.');
+            $safeName = \Illuminate\Support\Str::slug($intern->fullname ?? $user->name, '-');
+            
+            // Cek format nama file baru (menggunakan loa_number)
+            $internLoa = InternLoa::where('intern_id', $intern->id)->first();
+            $fullPath = null;
+            
+            if ($internLoa && $internLoa->loa_number) {
+                $safeLoaNumber = str_replace('/', '-', $internLoa->loa_number);
+                $newFormatPath = storage_path("app/public/documents/loa/{$safeLoaNumber}-{$safeName}.pdf");
+                if (file_exists($newFormatPath)) {
+                    $fullPath = $newFormatPath;
+                }
+            }
+            
+            // Fallback ke format lama jika format baru tidak ditemukan
+            if (!$fullPath) {
+                $files = glob(storage_path("app/public/documents/loa/LOA-{$intern->id}-*.pdf"));
+                if (!empty($files)) {
+                    $fullPath = end($files);
+                }
             }
 
-            $fullPath = end($files);
-            if (!file_exists($fullPath)) {
-                return back()->with('error', 'File LOA tidak ditemukan. Hubungi admin.');
+            if (!$fullPath || !file_exists($fullPath)) {
+                return back()->with('error', 'LOA belum tersedia atau file tidak ditemukan. Hubungi admin untuk mendapatkan LOA Anda.');
             }
 
             $safeName = \Illuminate\Support\Str::slug($intern->fullname ?? $user->name, '-');

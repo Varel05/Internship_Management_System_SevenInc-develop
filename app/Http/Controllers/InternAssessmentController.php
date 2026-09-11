@@ -482,62 +482,6 @@ class InternAssessmentController extends Controller
         ]);
     }
 
-    // =========================================================================
-    // STORE (simpan 1 penilaian)
-    // =========================================================================
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'intern_id'           => 'required|integer|exists:internship_registrations,id',
-            'company_name'        => 'nullable|string|max:255',
-            'signatory_name'      => 'nullable|string|max:255',
-            'signatory_position'  => 'nullable|string|max:255',
-            'company_logo'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'signature_image'     => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'aspek'               => 'required|array',
-            'nilai'               => 'required|array',
-            'save_signatory'      => 'nullable|boolean',
-        ]);
-
-        // Resolve logo & tanda tangan
-        [$logoPath, $sigPath] = $this->resolveLogoAndSignature($request, null, null);
-
-        // Susun aspek penilaian
-        [$data, $avg] = $this->buildAspekData($validated['aspek'], $validated['nilai']);
-
-        $intern = IR::find($validated['intern_id']);
-        $assessmentNumber = $this->generateAssessmentNumber($intern);
-
-        $assessment = InternAssessment::create([
-            'intern_id'             => $validated['intern_id'],
-            'assessment_number'     => $assessmentNumber,
-            'company_name'          => $validated['company_name'] ?? null,
-            'signatory_name'        => $validated['signatory_name'] ?? null,
-            'signatory_position'    => $validated['signatory_position'] ?? null,
-            'company_logo_path'     => $logoPath,
-            'signature_image_path'  => $sigPath,
-            'aspek_penilaian'       => json_encode($data),
-            'rata_rata'             => $avg,
-        ]);
-
-        // Simpan setting penandatangan per brand kalau diminta
-        if ($request->input('save_signatory') && $request->filled('brand')) {
-            $this->saveSignatorySetting($request, $request->input('brand'), $logoPath, $sigPath);
-        }
-
-        // Tulis ke document_downloads
-        if ($assessment->intern_id) {
-            $intern = IR::find($assessment->intern_id);
-            if ($intern?->user_id) {
-                /* DocumentDownload log removed */
-            }
-        }
-
-        return redirect()->route('interns.assessment.index')
-            ->with('success', '✅ Penilaian berhasil disimpan.' .
-                ($assessment->intern_id ? ' Surat penilaian tersedia di halaman Dokumen pemagang.' : ''));
-    }
 
     // =========================================================================
     // STORE BULK — simpan banyak penilaian sekaligus (1 per pemagang)
@@ -654,84 +598,7 @@ class InternAssessmentController extends Controller
         return response()->json(['success' => true, 'message' => 'Setting penandatangan berhasil disimpan.']);
     }
 
-    // =========================================================================
-    // EDIT & UPDATE
-    // =========================================================================
 
-    public function edit($id)
-    {
-        $assessment  = InternAssessment::findOrFail($id);
-        $divisions   = $this->getDivisionOptions();
-        $defaultAspects = $this->getDefaultAspects();
-
-        $aspekPenilaian = is_array($assessment->aspek_penilaian) ? $assessment->aspek_penilaian : json_decode($assessment->aspek_penilaian, true);
-        if (!is_array($aspekPenilaian) || empty($aspekPenilaian)) {
-            $division = $this->mapInterestToDivision($assessment->intern->internship_interest ?? '');
-            $aspekPenilaian = $defaultAspects[$division] ?? $defaultAspects['Content Writer'];
-        }
-
-        $logos = collect(Storage::disk('public')->files('images/logos'))
-            ->filter(fn($f) => preg_match('/\.(png|jpe?g)$/i', $f))->values()->toArray();
-        $signatures = collect(Storage::disk('public')->files('images/signature'))
-            ->filter(fn($f) => preg_match('/\.(png|jpe?g)$/i', $f))->values()->toArray();
-
-        $interns = IR::whereIn('internship_status', [IR::STATUS_ACTIVE, IR::STATUS_COMPLETED])
-            ->orderBy('fullname', 'asc')
-            ->get();
-
-        return view('admin.interns.edit_assessment', [
-            'assessment'     => $assessment,
-            'aspekPenilaian' => $aspekPenilaian,
-            'divisions'      => $divisions,
-            'logos'          => $logos,
-            'signatures'     => $signatures,
-            'interns'        => $interns,
-        ]);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $assessment = InternAssessment::findOrFail($id);
-
-        $validated = $request->validate([
-            'company_name'       => 'nullable|string|max:255',
-            'company_address'    => 'nullable|string|max:1000',
-            'signatory_name'     => 'nullable|string|max:255',
-            'signatory_position' => 'nullable|string|max:255',
-            'company_logo'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'signature_image'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'aspek'              => 'required|array',
-            'nilai'              => 'required|array',
-        ]);
-
-        [$logoPath, $sigPath] = $this->resolveLogoAndSignature(
-            $request,
-            $assessment->company_logo_path,
-            $assessment->signature_image_path
-        );
-
-        [$data, $avg] = $this->buildAspekData($validated['aspek'], $validated['nilai']);
-
-        $assessmentNumber = $assessment->assessment_number;
-        if (empty($assessmentNumber)) {
-            $intern = IR::find($assessment->intern_id);
-            $assessmentNumber = $this->generateAssessmentNumber($intern);
-        }
-
-        $assessment->update([
-            'assessment_number'     => $assessmentNumber,
-            'company_name'          => $validated['company_name'] ?? null,
-            'company_address'       => $validated['company_address'] ?? null,
-            'signatory_name'        => $validated['signatory_name'] ?? null,
-            'signatory_position'    => $validated['signatory_position'] ?? null,
-            'company_logo_path'     => $logoPath,
-            'signature_image_path'  => $sigPath,
-            'aspek_penilaian'       => $data,
-            'rata_rata'             => $avg,
-        ]);
-
-        return redirect()->route('interns.assessment.index')->with('success', 'Penilaian berhasil diperbarui.');
-    }
 
     // =========================================================================
     // DESTROY

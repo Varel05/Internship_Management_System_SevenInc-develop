@@ -313,23 +313,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'preve
         Route::post('/external', [CertificateController::class, 'bulkStoreExternal'])->name('external.store');
     });
 
-    // External create/store -> admin.certificate.external.*
-    Route::get('/certificate/external/create', [CertificateController::class, 'createExternal'])->name('certificate.external.create');
-    Route::post('/certificate/external',        [CertificateController::class, 'storeExternal'])->name('certificate.external.store');
-
-    // Webinar certificate create/store -> admin.certificate.webinar.*
-    Route::get('/certificate/webinar/create', [CertificateController::class, 'createWebinar'])->name('certificate.webinar.create');
-    Route::post('/certificate/webinar',       [CertificateController::class, 'storeWebinar'])->name('certificate.webinar.store');
 
     // Download PDF satu sertifikat -> admin.certificate.pdf
     Route::get('/certificate/{certificate}/pdf', [CertificateController::class, 'downloadPdf'])->name('certificate.pdf');
 
-    // Bulk ZIP -> admin.certificate.external.bulk
-    Route::post('/certificate/external/bulk-zip', [CertificateController::class, 'externalBulkZip'])->name('certificate.external.bulk');
 
-    // Bulk download tanpa simpan DB -> admin.certificate.external.bulkDownload
-    Route::post('/certificate/external/bulk-download', [CertificateController::class, 'externalBulkDownloadFromForm'])
-        ->name('certificate.external.bulkDownload');
 
     // Resource Certificate → sudah dideklarasikan di atas (baris awal admin group)
     // Route::resource('certificate', CertificateController::class); // dihapus duplikasi
@@ -343,16 +331,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'preve
     Route::get('/user/{user}/leave-requests', [DashboardController::class, 'showLeaves'])->name('user.leaveRequests');
     Route::get('/user/{user}/pending-tasks', [DashboardController::class, 'showTasks'])->name('user.pendingTasks');
 
-    Route::get('/skl/editor', [SKLController::class, 'edit'])->name('skl.editor');
-    Route::post('/skl/editor', [SKLController::class, 'update'])->name('skl.update');
     Route::get('/skl/interns-by-brand', [SKLController::class, 'getInternsByBrand'])->name('skl.interns_by_brand');
     Route::post('/skl/generate-brand', [SKLController::class, 'generateForBrand'])->name('skl.generate_brand');
-    Route::get('/skl/generate/{intern}', [SKLController::class, 'generateForm'])->name('skl.generate.form');
-    Route::post('/skl/generate/{intern}', [SKLController::class, 'generateDownload'])->name('skl.generate.download');
-
-    // LOA generate form (review sebelum generate)
-    Route::get('/loa/generate/{intern}', [\App\Http\Controllers\LoaController::class, 'generateForm'])->name('loa.generate.form');
-
     // ===== WEBINAR (menggantikan Sertifikat Non-Magang) =====
     Route::prefix('webinars')->name('webinars.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\WebinarController::class, 'index'])->name('index');
@@ -406,9 +386,6 @@ Route::get('/skl-preview', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Editor & Settings
-    Route::get('/admin/loa/editor', [LoaController::class, 'edit'])->name('admin.loa.editor');
-    Route::put('/admin/loa', [LoaController::class, 'update'])->name('admin.loa.update');
 
     // CRUD sederhana data pemagang (opsional jika sudah ada halaman lain)
     Route::get('/admin/loa/interns', [LoaController::class, 'indexInterns'])->name('admin.loa.interns');
@@ -484,7 +461,6 @@ Route::middleware(['auth', 'role:admin'])
     // === CRUD Assessment ===
     Route::get('/assessment/list', [InternAssessmentController::class, 'index'])->name('interns.assessment.index');
     Route::get('/assessment/create', [InternAssessmentController::class, 'create'])->name('interns.assessment.create');
-    Route::post('/assessment/store', [InternAssessmentController::class, 'store'])->name('interns.assessment.store');
 
     // === Bulk store (banyak pemagang sekaligus) ===
     Route::post('/assessment/store-bulk', [InternAssessmentController::class, 'storeBulk'])->name('interns.assessment.store_bulk');
@@ -502,8 +478,7 @@ Route::middleware(['auth', 'role:admin'])
     // === AJAX Route untuk Aspek Berdasarkan Divisi ===
     Route::get('/ajax/aspek', [InternAssessmentController::class, 'getAspekByDivision'])->name('ajax.aspek');
 
-    Route::get('/assessment/{id}/edit', [InternAssessmentController::class, 'edit'])->name('interns.assessment.edit');
-    Route::put('/assessment/{id}', [InternAssessmentController::class, 'update'])->name('interns.assessment.update');
+
     Route::delete('/assessment/{id}', [InternAssessmentController::class, 'destroy'])->name('interns.assessment.destroy');
 
 });
