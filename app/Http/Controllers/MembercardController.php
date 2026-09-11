@@ -35,6 +35,7 @@ class MembercardController extends Controller
     public function index(Request $request)
     {
         $brandFilter = $request->get('brand');
+        $search = $request->get('search');
 
         $query = AlumniMembercard::with(['intern.brandRel', 'intern.institution'])->orderByDesc('created_at');
 
@@ -44,12 +45,20 @@ class MembercardController extends Controller
             });
         }
 
+        if ($search) {
+            $query->whereHas('intern', function ($q) use ($search) {
+                $q->where('fullname', 'like', "%{$search}%")
+                  ->orWhere('student_id', 'like', "%{$search}%")
+                  ->orWhere('institution_name', 'like', "%{$search}%");
+            })->orWhere('member_code', 'like', "%{$search}%");
+        }
+
         $downloads = $query->get();
 
         // Daftar brand unik (dari master brand)
         $availableBrands = Brand::orderBy('name')->pluck('name');
 
-        return view('admin.membercards.index', compact('downloads', 'availableBrands', 'brandFilter'));
+        return view('admin.membercards.index', compact('downloads', 'availableBrands', 'brandFilter', 'search'));
     }
 
     public function logDownload(Request $request)
@@ -156,36 +165,27 @@ class MembercardController extends Controller
     public function generateBulk(Request $request)
     {
         $request->validate([
-            'brand' => 'nullable|string|max:100',
+            'member_codes' => 'required|array|min:1',
+            'member_codes.*' => 'string',
         ]);
 
-        $brandFilter = $request->input('brand');
+        $codes = $request->input('member_codes');
 
-        // Ambil semua registrasi dengan status completed
-        $query = InternshipRegistration::where('internship_status', InternshipRegistration::STATUS_COMPLETED)
-            ->with('user', 'brandRel');
+        // Ambil semua registrasi berdasarkan code membercard
+        $membercards = AlumniMembercard::with('intern.user')
+            ->whereIn('member_code', $codes)
+            ->get();
 
-        // Filter brand jika dipilih
-        if ($brandFilter) {
-            $query->whereHas('brandRel', function ($q) use ($brandFilter) {
-                $q->where('name', $brandFilter);
-            });
-        }
-
-        $registrations = $query->get();
-
-        if ($registrations->isEmpty()) {
-            $msg = $brandFilter
-                ? "Tidak ada pemagang selesai dengan brand '{$brandFilter}'."
-                : "Tidak ada pemagang dengan status selesai.";
-            return back()->with('error', $msg);
+        if ($membercards->isEmpty()) {
+            return back()->with('error', 'Tidak ada data pemagang yang dipilih atau ditemukan.');
         }
 
         $generated = 0;
         $skipped   = 0;
 
-        foreach ($registrations as $reg) {
-            if (!$reg->user) {
+        foreach ($membercards as $mc) {
+            $reg = $mc->intern;
+            if (!$reg || !$reg->user) {
                 $skipped++;
                 continue;
             }
@@ -193,8 +193,7 @@ class MembercardController extends Controller
             $generated++;
         }
 
-        $brandLabel = $brandFilter ? " untuk brand '{$brandFilter}'" : '';
-        $msg = "✅ {$generated} membercard berhasil digenerate{$brandLabel}.";
+        $msg = "✅ {$generated} membercard berhasil digenerate ulang.";
         if ($skipped > 0) {
             $msg .= " {$skipped} dilewati (user tidak ditemukan).";
         }

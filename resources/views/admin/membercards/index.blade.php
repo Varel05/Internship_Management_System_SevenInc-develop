@@ -58,87 +58,48 @@
     </div>
     @endif
 
-    {{-- ===== PANEL BULK GENERATE ===== --}}
-    <div class="mb-5 rounded-[12px] border border-[#DCE7E1] bg-white p-5 shadow-sm">
-        <p class="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2D8659]">Generate Membercard</p>
-        <p class="mb-4 text-[13px] text-[#4B5F5A]">
-            Generate membercard untuk pemagang yang sudah <strong>Selesai</strong> magang. Membercard yang sudah di-generate akan otomatis tersedia di halaman pemagang.
-        </p>
-        <form action="{{ route('admin.membercards.generate.bulk') }}" method="POST"
-              class="flex flex-wrap items-end gap-3">
-            @csrf
-            <div class="flex-1 min-w-[160px] max-w-xs">
-                <label class="block text-[11px] font-semibold uppercase tracking-wide text-[#4B5F5A] mb-1">
-                    Filter Brand (opsional)
-                </label>
-                <select name="brand"
-                    class="w-full rounded-[9px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-sm text-[#1B3A34] focus:outline-none focus:ring-2 focus:ring-[#2D8659]">
-                    <option value="">— Semua Brand —</option>
-                    @php
-                        $allBrands = [
-                            'magangjogja.com'  => 'Magangjogja.com',
-                            'areakerja.com'    => 'Areakerja.com',
-                            'republikweb.net'  => 'Republikweb.net',
-                            'titipsini.com'    => 'Titipsini.com',
-                            'ambilpaket.com'   => 'Ambilpaket.com',
-                            'bikinkepo.com'    => 'Bikinkepo.com',
-                            'bimbelcerdas.com' => 'Bimbelcerdas.com',
-                            'latihankerja.com' => 'Latihankerja.com',
-                            'lowkerjateng.com' => 'Lowkerjateng.com',
-                            'lowkerjogja.com'  => 'Lowkerjogja.com',
-                            'pijatjogja.com'   => 'Pijatjogja.com',
-                            'sayabantu.com'    => 'Sayabantu.com',
-                            'titikvisual.com'  => 'Titikvisual.com',
-                            'tuantanah.com'    => 'Tuantanah.com',
-                            'tukanglas.org'    => 'Tukanglas.org',
-                            'adakamarid'       => 'Adakamar.id',
-                            'seven inc'        => 'Seven Inc',
-                            'Ambilpaket'       => 'Ambilpaket',
-                            'Seven Inc'        => 'Seven Inc (kapital)',
-                        ];
-                    @endphp
-                    @foreach($allBrands as $val => $label)
-                        <option value="{{ $val }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <button type="submit"
-                class="inline-flex items-center gap-2 rounded-[9px] bg-[#2D8659] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#1F5F3F]">
-                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
-                Generate Sekarang
-            </button>
-            <a href="{{ route('admin.membercards.generate.bulk') }}"
-               onclick="this.closest('form').submit(); return false;"
-               class="hidden"></a>
-        </form>
-    </div>
+
 
     {{-- ===== FILTER + TABEL ===== --}}
     <div class="overflow-hidden rounded-[12px] border border-[#DCE7E1] bg-white shadow-sm">
 
         {{-- Filter bar --}}
-        <div class="flex flex-wrap items-center gap-3 border-b border-[#DCE7E1] px-5 py-3 bg-[#F4F8F6]">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[#DCE7E1] px-5 py-3 bg-[#F4F8F6]">
             <form method="GET" action="{{ route('admin.membercards.index') }}"
                   class="flex flex-wrap items-center gap-2 flex-1">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, NIM..." 
+                       class="rounded-[9px] border border-[#DCE7E1] bg-white px-3 py-1.5 text-sm text-[#1B3A34] focus:outline-none focus:ring-2 focus:ring-[#2D8659] w-48">
                 <select name="brand" onchange="this.form.submit()"
                     class="rounded-[9px] border border-[#DCE7E1] bg-white px-3 py-1.5 text-sm text-[#1B3A34] focus:outline-none focus:ring-2 focus:ring-[#2D8659]">
                     <option value="">Semua Brand</option>
                     @foreach($availableBrands as $b)
-                        <option value="{{ $b }}" @selected($brandFilter === $b)>{{ $b }}</option>
+                        <option value="{{ $b }}" @selected(request('brand') === $b)>{{ $b }}</option>
                     @endforeach
                 </select>
-                @if($brandFilter)
+                <button type="submit" class="rounded-[9px] bg-[#2D8659] px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-[#1F5F3F]">Cari</button>
+                @if(request('brand') || request('search'))
                     <a href="{{ route('admin.membercards.index') }}"
-                       class="text-xs text-[#4B5F5A] hover:text-red-500 underline">Reset filter</a>
+                       class="text-xs text-[#4B5F5A] hover:text-red-500 underline ml-2">Reset filter</a>
                 @endif
             </form>
-            <span class="text-xs text-[#4B5F5A]">{{ $downloads->count() }} data</span>
+            
+            <button type="button" onclick="submitBulkGenerate()"
+                class="inline-flex items-center gap-2 rounded-[9px] bg-[#2D8659] px-4 py-1.5 text-sm font-semibold text-white transition hover:bg-[#1F5F3F]">
+                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+                Generate Terpilih
+            </button>
         </div>
 
+
         <div class="overflow-x-auto">
+            <form id="bulkGenerateForm" action="{{ route('admin.membercards.generate.bulk') }}" method="POST">
+                @csrf
             <table class="w-full min-w-[860px] text-left text-sm">
                 <thead>
                     <tr>
+                        <th class="bg-[#1B3A34] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-white w-[40px]">
+                            <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-[#2D8659] focus:ring-[#2D8659]">
+                        </th>
                         <th class="bg-[#1B3A34] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-white">No.</th>
                         <th class="bg-[#1B3A34] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-white">Nama</th>
                         <th class="bg-[#1B3A34] px-5 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-white">Kode</th>
@@ -150,9 +111,12 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-[#DCE7E1]">
-                    @forelse($downloads as $dl)
-                    <tr class="transition hover:bg-[#F4F8F6]">
-                        <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $loop->iteration }}</td>
+                        @forelse($downloads as $dl)
+                        <tr class="transition hover:bg-[#F4F8F6]">
+                            <td class="px-5 py-4">
+                                <input type="checkbox" name="member_codes[]" value="{{ $dl->member_code }}" class="member-checkbox rounded border-gray-300 text-[#2D8659] focus:ring-[#2D8659]">
+                            </td>
+                            <td class="px-5 py-4 text-[13px] text-[#4B5F5A]">{{ $loop->iteration }}</td>
                         <td class="px-5 py-4">
                             <p class="font-semibold text-[#1B3A34]">{{ $dl->intern->fullname ?? '-' }}</p>
                         </td>
@@ -219,13 +183,14 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-5 py-12 text-center text-sm text-[#4B5F5A]">
+                        <td colspan="9" class="px-5 py-12 text-center text-sm text-[#4B5F5A]">
                             Belum ada data member card.
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
+            </form>
         </div>
     </div>
 
@@ -243,6 +208,24 @@ function openDeleteModal(action, name) {
 }
 function closeDeleteModal() {
     document.getElementById('deleteModal').classList.add('hidden');
+}
+
+// Checkbox select all logic
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.member-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+
+// Bulk generate logic
+function submitBulkGenerate() {
+    const selected = document.querySelectorAll('.member-checkbox:checked');
+    if (selected.length === 0) {
+        alert('Pilih setidaknya satu data untuk di-generate.');
+        return;
+    }
+    if (confirm(`Anda akan meng-generate ${selected.length} membercard. Lanjutkan?`)) {
+        document.getElementById('bulkGenerateForm').submit();
+    }
 }
 </script>
 

@@ -132,6 +132,14 @@ class User extends Authenticatable
 
     public function getBrandPrefix(string $brand): string
     {
+        $dbBrand = \App\Models\Brand::whereRaw('LOWER(name) = ?', [strtolower(trim($brand))])
+            ->orWhere('code', $brand)
+            ->first();
+
+        if ($dbBrand && $dbBrand->code) {
+            return strtoupper(trim($dbBrand->code));
+        }
+
         return match (strtolower($brand)) {
             'magangjogja.com' => 'MJ',
             'areakerja.com'   => 'AK',

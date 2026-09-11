@@ -43,17 +43,11 @@ class DocumentController extends Controller
 
         // --- Cek apakah masing-masing dokumen sudah di-generate admin ---
 
-        // SKL: cek di tabel skl_documents
+        // SKL: Karena SKL sekarang digenerate secara on-the-fly,
+        // SKL selalu tersedia jika status magang sudah selesai.
         $sklDownload = null;
         if ($registration && $isCompleted) {
-            $sklRecord = \App\Models\SklDocument::where('intern_id', $registration->id)->latest()->first();
-            if ($sklRecord) {
-                $safeName = preg_replace('/[^a-z0-9\-_]+/i', '_', $registration->fullname);
-                $filePath = "storage/documents/skl/SKL_{$safeName}.pdf";
-                if (file_exists(public_path($filePath))) {
-                    $sklDownload = (object) ['file_path' => $filePath];
-                }
-            }
+            $sklDownload = true;
         }
 
         // LOA: cek di tabel intern_loas
@@ -97,8 +91,8 @@ class DocumentController extends Controller
                 'icon'        => 'fa-certificate',
                 'available'   => $isCompleted && $sklDownload !== null,
                 'pending'     => $isCompleted && $sklDownload === null,
-                'route'       => ($isCompleted && $sklDownload !== null)
-                    ? route('user.skl.download')
+                'route'       => ($isCompleted)
+                    ? route('user.skl.download', ['intern_id' => $registration->id])
                     : null,
                 'date'        => null,
             ],
