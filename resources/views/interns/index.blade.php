@@ -739,10 +739,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 markSelect(this, true);
                 updatePendingBar();
 
-                // Kalau status → accepted di mode pendaftar, wajib pilih brand dulu
+                // Kalau status → accepted di mode pendaftar, wajib pilih brand dulu (jika belum ada)
                 if (MODE === 'pendaftar' && to === 'accepted') {
-                    openBrandModal(id, name);
-                    return; // jangan refresh tombol dulu — dilakukan setelah konfirmasi
+                    const internData = window.rowData.get(id);
+                    if (internData && internData.brand) {
+                        const item = pending.get(id);
+                        if (item) {
+                            item.brand = internData.brand;
+                            saveOneItem(item);
+                        }
+                        return; // jangan refresh tombol dulu — dilakukan setelah save
+                    } else {
+                        openBrandModal(id, name);
+                        return; // jangan refresh tombol dulu — dilakukan setelah konfirmasi
+                    }
                 }
             };
         });
