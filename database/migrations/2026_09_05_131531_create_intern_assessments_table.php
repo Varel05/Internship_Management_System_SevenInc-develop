@@ -14,9 +14,11 @@ return new class extends Migration
         Schema::create('intern_assessments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('intern_id')->constrained('internship_registrations')->onDelete('cascade');
+            $table->string('assessment_number')->nullable();
             $table->json('aspek_penilaian');
             $table->double('rata_rata', 8, 2)->nullable();
             $table->string('company_name')->nullable();
+            $table->text('company_address')->nullable();
             $table->string('company_logo_path')->nullable();
             $table->string('signatory_name')->nullable();
             $table->string('signatory_position')->nullable();

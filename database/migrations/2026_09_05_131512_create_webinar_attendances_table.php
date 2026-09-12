@@ -16,6 +16,12 @@ return new class extends Migration
             $table->foreignId('webinar_id')->constrained('webinars')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->string('proof_file')->nullable();
+            $table->text('proof_note')->nullable();
+            $table->text('rejection_reason')->nullable();
+            $table->foreignId('reviewed_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('reviewed_at')->nullable();
+            $table->foreignId('certificate_id')->nullable();
             $table->timestamps();
         });
     }

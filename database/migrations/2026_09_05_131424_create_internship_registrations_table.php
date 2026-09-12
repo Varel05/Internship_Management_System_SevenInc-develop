@@ -29,8 +29,19 @@ return new class extends Migration
             $table->enum('current_status', ['Mahasiswa/Pelajar', 'Lulusan Baru', 'Karyawan', 'Tidak Bekerja']);
             $table->enum('english_book_ability', ['Saya bisa', 'Kurang bisa', 'Tidak bisa']);
             $table->foreignId('division_id')->constrained('divisions');
-            $table->foreignId('brand_id')->nullable()->constrained('brands');
-            $table->enum('internship_status', ['new', 'waiting', 'active', 'pending', 'completed', 'exited'])->default('new');
+            $table->foreignId('brand_id')->nullable()->constrained('brands')->onDelete('set null');
+            $table->enum('internship_status', ['new', 'waiting', 'active', 'pending', 'completed', 'exited', 'accepted', 'rejected'])->default('new');
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
+            $table->string('supervisor_contact', 20)->nullable();
+            $table->string('supervisor_name', 255)->nullable();
+            $table->string('parent_wa_contact', 20)->nullable();
+            $table->string('parent_name', 255)->nullable();
+            $table->text('current_activities')->nullable();
+            $table->string('social_media_instagram', 255)->nullable();
+            $table->string('profile_photo')->nullable();
+            $table->enum('boarding_info', ['Ya', 'Tidak'])->nullable();
+            $table->enum('family_status', ['Belum Menikah', 'Sudah Menikah'])->nullable();
             $table->timestamps();
         });
     }

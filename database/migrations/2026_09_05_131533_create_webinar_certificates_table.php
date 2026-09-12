@@ -23,6 +23,10 @@ return new class extends Migration
             $table->string('signature_image_path')->nullable();
             $table->timestamp('created_at')->useCurrent();
         });
+
+        Schema::table('webinar_attendances', function (Blueprint $table) {
+            $table->foreign('certificate_id')->references('id')->on('webinar_certificates')->nullOnDelete();
+        });
     }
 
     /**
@@ -30,6 +34,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('webinar_attendances', function (Blueprint $table) {
+            $table->dropForeign(['certificate_id']);
+        });
         Schema::dropIfExists('webinar_certificates');
     }
 };
