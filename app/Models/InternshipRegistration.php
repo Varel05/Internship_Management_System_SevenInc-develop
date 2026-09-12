@@ -35,6 +35,7 @@ class InternshipRegistration extends Model
         'parent_name', 'parent_wa_contact',
         'current_activities', 'social_media_instagram',
         'profile_photo',
+        'family_status', 'boarding_info',
     ];
 
     /**

@@ -87,8 +87,28 @@
             'toDateInput' => $toDateInput,
         ])
         {{-- Hidden fields untuk kolom NOT NULL yang tidak dirender --}}
-        <input type="hidden" name="supervisor_contact" value="-">
-        <input type="hidden" name="current_activities" value="-">
+        {{-- Nama Pembimbing --}}
+        <div>
+          <label class="{{ $label }}">Nama Pembimbing (Opsional)</label>
+          <input type="text" name="supervisor_name" placeholder="Nama pembimbing (jika ada)"
+            class="{{ $input }}" value="{{ $old('supervisor_name', $reg?->supervisor_name !== '-' ? $reg?->supervisor_name : '') }}">
+        </div>
+
+        {{-- No. WA Pembimbing --}}
+        <div>
+          <label class="{{ $label }}">No. WA Pembimbing (Opsional)</label>
+          <input type="tel" name="supervisor_contact" placeholder="08xxxxxxxxxx"
+            pattern="[0-9]*" inputmode="numeric" title="Hanya boleh angka"
+            class="{{ $input }}" value="{{ $old('supervisor_contact', $reg?->supervisor_contact !== '-' ? $reg?->supervisor_contact : '') }}">
+          <p class="mt-1 text-xs text-gray-400">Hanya angka</p>
+        </div>
+
+        {{-- Kegiatan Lain --}}
+        <div>
+          <label class="{{ $label }}">Kegiatan Lain Selain Magang</label>
+          <textarea name="current_activities" rows="3" placeholder="Contoh: Kuliah malam, freelance, dll (tulis '-' jika tidak ada)"
+            class="{{ $input }} resize-none">{{ $old('current_activities', $reg?->current_activities !== '-' ? $reg?->current_activities : '') }}</textarea>
+        </div>
       @else
         {{-- ===== FORM STATIS (fallback) ===== --}}
 
@@ -345,9 +365,28 @@
       </div>
       <p class="text-xs text-gray-400 -mt-2">Maks. 5MB per file, format PDF/JPG/PNG sesuai ketentuan field</p>
 
-      {{-- Hidden fields dengan nilai default yang tidak tampil di form --}}
-      <input type="hidden" name="supervisor_contact" value="-">
-      <input type="hidden" name="current_activities" value="-">
+      {{-- Nama Pembimbing --}}
+      <div>
+        <label class="{{ $label }}">Nama Pembimbing (Opsional)</label>
+        <input type="text" name="supervisor_name" placeholder="Nama pembimbing (jika ada)"
+          class="{{ $input }}" value="{{ $old('supervisor_name', $reg?->supervisor_name !== '-' ? $reg?->supervisor_name : '') }}">
+      </div>
+
+      {{-- No. WA Pembimbing --}}
+      <div>
+        <label class="{{ $label }}">No. WA Pembimbing (Opsional)</label>
+        <input type="tel" name="supervisor_contact" placeholder="08xxxxxxxxxx"
+          pattern="[0-9]*" inputmode="numeric" title="Hanya boleh angka"
+          class="{{ $input }}" value="{{ $old('supervisor_contact', $reg?->supervisor_contact !== '-' ? $reg?->supervisor_contact : '') }}">
+        <p class="mt-1 text-xs text-gray-400">Hanya angka</p>
+      </div>
+
+      {{-- Kegiatan Lain --}}
+      <div>
+        <label class="{{ $label }}">Kegiatan Lain Selain Magang</label>
+        <textarea name="current_activities" rows="3" placeholder="Contoh: Kuliah malam, freelance, dll (tulis '-' jika tidak ada)"
+          class="{{ $input }} resize-none">{{ $old('current_activities', $reg?->current_activities !== '-' ? $reg?->current_activities : '') }}</textarea>
+      </div>
 
       {{-- ===== INFORMASI TAMBAHAN ===== --}}
       <div class="border-t border-gray-100 pt-5">

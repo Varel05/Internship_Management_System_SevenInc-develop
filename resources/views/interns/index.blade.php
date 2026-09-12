@@ -1856,7 +1856,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams({
             scope:    activeFilter,
             page:     String(page),
-            per_page: '25',
+            per_page: '10',
         });
 
         // Hanya tambah q jika ada isi
