@@ -10,30 +10,31 @@ class DivisionSeeder extends Seeder
     public function run(): void
     {
         $divisions = [
-            'Administration',
-            'Human Resources (HR)',
-            'UI/UX Designer',
-            'Programmer (Front End / Backend)',
-            'Photographer',
-            'Videographer',
-            'Graphic Designer (Konten Kreatif)',
-            'Social Media Specialist',
-            'Content Writer',
-            'Content Planner',
-            'Sales & Marketing',
-            'Public Relations (Marcomm)',
-            'Digital Marketing',
-            'TikTok Creator',
-            'Project Manager',
-            'Pengelasan',
-            'Animasi',
-            'Customer Service',
+            ['name' => 'Administration', 'code' => 'ADM'],
+            ['name' => 'Human Resources (HR)', 'code' => 'HRD'],
+            ['name' => 'UI/UX Designer', 'code' => 'UIUX'],
+            ['name' => 'Programmer (Front End / Backend)', 'code' => 'PROG'],
+            ['name' => 'Photographer', 'code' => 'FOTO'],
+            ['name' => 'Videographer', 'code' => 'VIDEO'],
+            ['name' => 'Graphic Designer (Konten Kreatif)', 'code' => 'GD'],
+            ['name' => 'Social Media Specialist', 'code' => 'SOCMED'],
+            ['name' => 'Content Writer', 'code' => 'CW'],
+            ['name' => 'Content Planner', 'code' => 'CP'],
+            ['name' => 'Sales & Marketing', 'code' => 'SALES'],
+            ['name' => 'Public Relations (Marcomm)', 'code' => 'PR'],
+            ['name' => 'Digital Marketing', 'code' => 'DM'],
+            ['name' => 'TikTok Creator', 'code' => 'TIKTOK'],
+            ['name' => 'Project Manager', 'code' => 'PM'],
+            ['name' => 'Pengelasan', 'code' => 'LAS'],
+            ['name' => 'Animasi', 'code' => 'ANIM'],
+            ['name' => 'Customer Service', 'code' => 'CS'],
         ];
 
-        foreach ($divisions as $name) {
+        foreach ($divisions as $division) {
             \Illuminate\Support\Facades\DB::table('divisions')->insert([
-                'name' => $name,
-                'slug' => \Illuminate\Support\Str::slug($name),
+                'name' => $division['name'],
+                'slug' => \Illuminate\Support\Str::slug($division['name']),
+                'code' => $division['code'],
                 'is_active' => true,
             ]);
         }
