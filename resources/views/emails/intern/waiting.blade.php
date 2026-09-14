@@ -70,7 +70,7 @@
 
     $laptop  = $normalizeYesNo(old('laptop_equipment', $intern->laptop_equipment ?? ''));
     $boarding= $normalizeYesNo(old('boarding_info',    $intern->boarding_info ?? ''));
-    $family  = $normalizeYesNo(old('family_status',    $intern->family_status ?? ''));
+
 
     // owned_tools di DB kemungkinan CSV → jadikan array & lowercase utk cek
     $ownedToolsStored = collect(preg_split('/\s*,\s*/', (string)($intern->owned_tools ?? ''), -1, PREG_SPLIT_NO_EMPTY))
@@ -359,11 +359,8 @@
             @error('internship_type') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
           </div>
 
-          <div class="col-span-12 md:col-span-6 lg:col-span-4">
-            <label class="{{ $label }}">Skema / Arrangement</label>
-            <input type="text" name="internship_arrangement" value="{{ old('internship_arrangement', $intern->internship_arrangement) }}" class="{{ $input }} @error('internship_arrangement') border-red-500 focus:ring-red-500 @enderror" required>
-            @error('internship_arrangement') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-          </div>
+          <input type="hidden" name="internship_arrangement" value="Onsite">
+
 
           <div class="col-span-12 md:col-span-6 lg:col-span-4">
             <label class="{{ $label }}">Status Saat Ini</label>
@@ -564,29 +561,7 @@
             </ul>
           </div>
 
-          <div class="col-span-12 md:col-span-6">
-            <label class="{{ $label }}">Apakah Anda sudah berkeluarga?</label>
-            <ul class="rounded-xl border border-gray-300/80 dark:border-gray-700/70 overflow-hidden">
-              <li class="border-b border-gray-200/70 dark:border-gray-700/60">
-                <label class="flex items-center gap-3 px-3 py-2">
-                  <input type="radio" name="family_status" value="Ya" {{ $family === 'ya' ? 'checked' : '' }} class="h-4 w-4">
-                  <span class="text-sm">YA</span>
-                </label>
-              </li>
-              <li>
-                <label class="flex items-center gap-3 px-3 py-2">
-                  <input type="radio" name="family_status" value="Tidak" {{ $family === 'tidak' ? 'checked' : '' }} class="h-4 w-4">
-                  <span class="text-sm">TIDAK</span>
-                </label>
-              </li>
-            </ul>
-          </div>
 
-          <div class="col-span-12 md:col-span-6">
-            <label class="{{ $label }}">No. HP Aktif (WA) Wali / Ortu</label>
-            <input name="parent_wa_contact" value="{{ old('parent_wa_contact', $intern->parent_wa_contact) }}" placeholder="08xxxxxxxxxx (Bapak Budi)" class="{{ $input }}">
-            @error('parent_wa_contact') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
-          </div>
 
           <div class="col-span-12 md:col-span-6">
             <label class="{{ $label }}">Sosial Media (Instagram)</label>

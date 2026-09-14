@@ -199,6 +199,7 @@ class FormFieldSeeder extends Seeder
                 ],
                 'is_required' => true,
                 'is_system'   => true,
+                'is_active'   => false, // Selalu Onsite, disembunyikan dari form
                 'group_name'  => null,
                 'sort_order'  => 150,
                 'column_span' => 2,
@@ -303,20 +304,7 @@ class FormFieldSeeder extends Seeder
             ],
 
             // ===== INFORMASI TAMBAHAN =====
-            [
-                'field_key'   => 'family_status',
-                'field_type'  => 'select',
-                'label'       => 'Status Keluarga',
-                'options'     => [
-                    ['value' => 'Tidak', 'label' => 'Belum Menikah'],
-                    ['value' => 'Ya',    'label' => 'Sudah Menikah'],
-                ],
-                'is_required' => false,
-                'is_system'   => true,
-                'group_name'  => 'informasi_tambahan',
-                'sort_order'  => 10,
-                'column_span' => 1,
-            ],
+
             [
                 'field_key'   => 'boarding_info',
                 'field_type'  => 'select',
@@ -331,18 +319,7 @@ class FormFieldSeeder extends Seeder
                 'sort_order'  => 20,
                 'column_span' => 1,
             ],
-            [
-                'field_key'   => 'parent_wa_contact',
-                'field_type'  => 'tel',
-                'label'       => 'No. WA Wali / Orang Tua',
-                'placeholder' => '08xxxxxxxxxx',
-                'helper_text' => 'Hanya angka, opsional',
-                'is_required' => false,
-                'is_system'   => true,
-                'group_name'  => 'informasi_tambahan',
-                'sort_order'  => 30,
-                'column_span' => 1,
-            ],
+
             [
                 'field_key'   => 'social_media_instagram',
                 'field_type'  => 'text',

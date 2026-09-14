@@ -112,8 +112,6 @@ class InternshipRegistrationController extends Controller
             // Lain-lain
             'current_activities'    => 'nullable|string|max:1000',
             'boarding_info'         => 'nullable|string|max:50',   // Ya / Tidak
-            'family_status'         => 'nullable|string|max:50',   // form: Ya/Tidak (akan kita mapping)
-            'parent_wa_contact'     => 'nullable|string|max:255',
             'social_media_instagram'=> 'nullable|string|max:255',
 
             // File
@@ -161,21 +159,7 @@ class InternshipRegistrationController extends Controller
         }
         $data['internship_info_sources'] = $infoCsv;
 
-        // Map family_status dari form (Ya/Tidak) → standar DB (single/married)
-        // default: not_provided
-        $fs = $request->input('family_status');
-        if ($fs) {
-            $fsLower = mb_strtolower($fs);
-            if (in_array($fsLower, ['ya', 'yes'], true)) {
-                $data['family_status'] = 'married';
-            } elseif (in_array($fsLower, ['tidak', 'no'], true)) {
-                $data['family_status'] = 'single';
-            } else {
-                $data['family_status'] = 'other';
-            }
-        } else {
-            $data['family_status'] = 'not_provided';
-        }
+
 
         // Upload file: pakai nama asli + penomoran jika duplikat
         if ($request->hasFile('cv_ktp_portofolio_pdf')) {
@@ -264,8 +248,6 @@ class InternshipRegistrationController extends Controller
 
             'current_activities'        => 'nullable|string|max:255',
             'boarding_info'             => 'nullable|string|max:20',   // Ya/Tidak
-            'family_status'             => 'sometimes|string|in:Ya,Tidak', // hanya jika dikirim
-            'parent_wa_contact'         => 'nullable|string|max:100',
             'social_media_instagram'    => 'nullable|string|max:100',
 
             'start_date' => 'nullable', // parse manual
@@ -306,7 +288,6 @@ class InternshipRegistrationController extends Controller
         };
         if (($v = $yn($request->input('laptop_equipment'))) !== null) $validated['laptop_equipment'] = $v; else unset($validated['laptop_equipment']);
         if (($v = $yn($request->input('boarding_info')))    !== null) $validated['boarding_info']    = $v; else unset($validated['boarding_info']);
-        if (($v = $yn($request->input('family_status')))    !== null) $validated['family_status']    = $v; else unset($validated['family_status']);
 
         // ——— Checkbox arrays → simpan CSV
         $owned = $request->input('owned_tools');

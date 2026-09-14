@@ -150,18 +150,10 @@
             </ul>
           </div>
 
-          <!-- Sistem Magang (value Indonesia) -->
-          <div>
-            <h3 class="{{ $label }}">Sistem Magang</h3>
-            <ul class="{{ $group }}">
-              <li>
-                <label for="arr-onsite" class="{{ $item }}">
-                  <input id="arr-onsite" type="radio" value="Onsite" name="internship_arrangement" class="{{ $radio }}" @checked(old('internship_arrangement') === 'Onsite') />
-                  <span class="text-sm">WFO (Work From Office)</span>
-                </label>
-              </li>
-            </ul>
-          </div>
+
+          <!-- Sistem Magang: otomatis Onsite -->
+          <input type="hidden" name="internship_arrangement" value="Onsite">
+
 
           <!-- Status Saat Ini (value Indonesia) -->
           <div>
@@ -461,30 +453,7 @@
             </ul>
           </div>
 
-          <!-- Status keluarga -->
-          <div>
-            <h3 class="{{ $label }}">Apakah Anda sudah berkeluarga?</h3>
-            <ul class="{{ $group }}"> 
-              <li class="border-b border-zinc-200">
-                <label for="family-yes" class="{{ $item }}">
-                  <input id="family-yes" type="radio" value="Ya" name="family_status" class="{{ $radio }}" @checked(old('family_status') === 'Ya') />
-                  <span class="text-sm">YA</span>
-                </label>
-              </li>
-              <li>
-                <label for="family-no" class="{{ $item }}">
-                  <input id="family-no" type="radio" value="Tidak" name="family_status" class="{{ $radio }}" @checked(old('family_status') === 'Tidak') />
-                  <span class="text-sm">TIDAK</span>
-                </label>
-              </li>
-            </ul>
-          </div>
 
-          <!-- WA Ortu -->
-          <div>
-            <label for="parent-wa-contact" class="{{ $label }}">No. HP Aktif (WA) Wali / Ortu</label>
-            <input id="parent-wa-contact" name="parent_wa_contact" placeholder="08xxxxxxxxxx (Bapak Budi)" class="{{ $input }}" value="{{ old('parent_wa_contact') }}" />
-          </div>
 
           <!-- Instagram -->
           <div>

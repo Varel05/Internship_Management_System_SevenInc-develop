@@ -1285,9 +1285,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ${sectionHtml('Informasi Tambahan')}
                 ${detailRow('Kegiatan Lain', it.current_activities)}
                 ${detailRow('Butuh Info Kost', it.boarding_info)}
-                ${detailRow('Status Keluarga', it.family_status)}
-                ${detailRow('Nama Wali / Ortu', it.parent_name)}
-                ${detailRow('No. WA Wali / Ortu', it.parent_wa_contact)}
+
                 ${detailRow('Instagram', it.social_media_instagram)}
                 ${detailRow('Info Magang Dari', it.internship_info_sources)}
                 ${detailRow('Tgl Daftar', fmtDate(it.created_at))}
@@ -1581,16 +1579,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <option value="Tidak" ${it.boarding_info === 'Tidak' ? 'selected' : ''}>Tidak</option>
                     </select>
                 </div>
-                <div>
-                    <label class="mb-1 block text-[12px] font-semibold text-[#1B3A34]">Status Keluarga</label>
-                    <select name="family_status" class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659]">
-                        <option value="">-- Pilih --</option>
-                        <option value="Belum Menikah" ${it.family_status === 'Belum Menikah' ? 'selected' : ''}>Belum Menikah</option>
-                        <option value="Sudah Menikah" ${it.family_status === 'Sudah Menikah' ? 'selected' : ''}>Sudah Menikah</option>
-                    </select>
-                </div>
-                ${editField('Nama Wali / Ortu', 'parent_name', it.parent_name)}
-                ${editField('No. WA Wali / Ortu', 'parent_wa_contact', it.parent_wa_contact)}
+
                 ${editField('Instagram', 'social_media_instagram', it.social_media_instagram)}
                 ${editField('Sumber Info Magang', 'internship_info_sources', it.internship_info_sources)}
                 <div class="sm:col-span-2">

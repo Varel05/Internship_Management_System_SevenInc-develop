@@ -35,13 +35,10 @@ return new class extends Migration
             $table->date('end_date')->nullable();
             $table->string('supervisor_contact', 20)->nullable();
             $table->string('supervisor_name', 255)->nullable();
-            $table->string('parent_wa_contact', 20)->nullable();
-            $table->string('parent_name', 255)->nullable();
             $table->text('current_activities')->nullable();
             $table->string('social_media_instagram', 255)->nullable();
             $table->string('profile_photo')->nullable();
             $table->enum('boarding_info', ['Ya', 'Tidak'])->nullable();
-            $table->enum('family_status', ['Belum Menikah', 'Sudah Menikah'])->nullable();
             $table->timestamps();
         });
     }

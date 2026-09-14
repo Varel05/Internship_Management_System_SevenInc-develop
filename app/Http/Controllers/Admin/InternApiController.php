@@ -136,15 +136,7 @@ class InternApiController extends Controller
         'no'  => 'Tidak', 'n' => 'Tidak', '0' => 'Tidak', 'false' => 'Tidak', 'tidak' => 'Tidak',
     ];
     
-    private array $mapFamilyStatus = [
-        'not_provided' => '-',
-        'single'       => 'Belum menikah',
-        'married'      => 'Sudah menikah',
-        'other'        => 'Lainnya',
-        // kompat lama (kalau ada data yes/no)
-        'yes' => 'Sudah menikah', 'ya' => 'Sudah menikah', '1' => 'Sudah menikah', 'true' => 'Sudah menikah',
-        'no'  => 'Belum menikah', 'tidak' => 'Belum menikah', '0' => 'Belum menikah', 'false' => 'Belum menikah',
-    ];
+
 
     /** Humanize slug → “Corel Photoshop” */
     private function humanizeSlug(string $val): string
@@ -190,8 +182,8 @@ class InternApiController extends Controller
             'current_status','internship_status',
             'english_book_ability','supervisor_contact','supervisor_name',
             'start_date','end_date',
-            'current_activities','boarding_info','family_status',
-            'parent_wa_contact','parent_name','social_media_instagram',
+            'current_activities','boarding_info',
+            'social_media_instagram',
             'created_at',
         ];
 
@@ -365,9 +357,7 @@ class InternApiController extends Controller
                 'internship_info_other' => $r->internship_info_other,
                 'current_activities' => $r->current_activities,
                 'boarding_info' => $this->labelize($this->mapYesNo, $r->boarding_info),
-                'family_status' => $this->labelize($this->mapFamilyStatus, $r->family_status),
-                'parent_wa_contact' => $r->parent_wa_contact,
-                'parent_name' => $r->parent_name,
+
                 'social_media_instagram' => $r->social_media_instagram,
                 'cv_ktp_portofolio_pdf' => $r->cv_ktp_portofolio_pdf ? asset('storage/'.$r->cv_ktp_portofolio_pdf) : null,
                 'portofolio_visual' => $r->portofolio_visual ? asset('storage/'.$r->portofolio_visual) : null,
@@ -434,12 +424,7 @@ class InternApiController extends Controller
                 return ['value' => $k, 'label' => $this->labelize($this->mapArrangement, $k)];
             }, array_keys($this->mapArrangement)),
 
-            'family_status' => [
-                ['value' => 'not_provided', 'label' => $this->labelize($this->mapFamilyStatus, 'not_provided')],
-                ['value' => 'single',       'label' => $this->labelize($this->mapFamilyStatus, 'single')],
-                ['value' => 'married',      'label' => $this->labelize($this->mapFamilyStatus, 'married')],
-                ['value' => 'other',        'label' => $this->labelize($this->mapFamilyStatus, 'other')],
-            ],
+
         ];
 
         // Template sertifikat yang tersedia (sinkron dengan routes)

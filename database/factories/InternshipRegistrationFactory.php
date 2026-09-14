@@ -50,8 +50,7 @@ class InternshipRegistrationFactory extends Factory
             'internship_info_other' => null,
             'current_activities' => $faker->randomElement(['Kuliah','Freelance','Belum Bekerja']),
             'boarding_info' => $faker->randomElement(['Tinggal dengan orang tua','Kost','Kontrak']),
-            'family_status' => $faker->randomElement(['Sudah','Belum']),
-            'parent_wa_contact' => '08'.$faker->numerify('##########'),
+
             'social_media_instagram' => '@'.$faker->userName(),
             'cv_ktp_portofolio_pdf' => null,
             'portofolio_visual' => null,

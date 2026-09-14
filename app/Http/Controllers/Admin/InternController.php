@@ -394,9 +394,7 @@ class InternController extends Controller
             // Informasi Tambahan
             'current_activities'     => 'nullable|string',
             'boarding_info'          => 'nullable|string|max:50',
-            'family_status'          => 'nullable|string|max:50',
-            'parent_name'            => 'nullable|string|max:255',
-            'parent_wa_contact'      => 'nullable|string|max:20',
+
             'social_media_instagram' => 'nullable|string|max:255',
             'internship_info_sources'=> 'nullable|string|max:500',
             // Status & Brand (dikelola admin)

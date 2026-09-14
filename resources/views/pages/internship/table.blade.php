@@ -67,8 +67,7 @@
                   'internship_info_other' => 'Info Lain',
                   'current_activities' => 'Aktivitas Saat Ini',
                   'boarding_info' => 'Info Kost',
-                  'family_status' => 'Izin Keluarga',
-                  'parent_wa_contact' => 'Kontak WA Orang Tua',
+
                   'social_media_instagram' => 'Instagram',
                   'cv_ktp_portofolio_pdf' => 'File PDF',
                   'portofolio_visual' => 'File Visual'

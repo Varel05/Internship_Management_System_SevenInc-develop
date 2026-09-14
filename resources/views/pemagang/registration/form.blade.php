@@ -258,12 +258,7 @@
             </p>
           </div>
         </div>
-        <div>
-          <label class="{{ $label }}">Sistem Magang <span class="text-red-500">*</span></label>
-          <select name="internship_arrangement" required class="{{ $input }}">
-            <option value="Onsite" @selected($old('internship_arrangement') === 'Onsite')>Onsite (WFO)</option>
-          </select>
-        </div>
+        <input type="hidden" name="internship_arrangement" value="Onsite">
       </div>
 
       {{-- Alasan Magang --}}
@@ -393,14 +388,7 @@
         <h3 class="text-sm font-semibold text-gray-700 mb-4">Informasi Tambahan</h3>
         <div class="space-y-4">
 
-          {{-- Status Keluarga --}}
-          <div>
-            <label class="{{ $label }}">Status Keluarga</label>
-            <select name="family_status" class="{{ $input }}">
-              <option value="Belum Menikah" @selected(($old('family_status') ?: 'Belum Menikah') === 'Belum Menikah')>Belum Menikah</option>
-              <option value="Sudah Menikah" @selected($old('family_status') === 'Sudah Menikah')>Sudah Menikah</option>
-            </select>
-          </div>
+
 
           {{-- Butuh Info Kost --}}
           <div>
@@ -411,19 +399,7 @@
             </select>
           </div>
 
-          {{-- Nama & No WA Wali / Orang Tua --}}
-          <div>
-            <label class="{{ $label }}">Nama Wali / Orang Tua</label>
-            <input type="text" name="parent_name" placeholder="Nama lengkap wali"
-              class="{{ $input }}" value="{{ $old('parent_name', $reg?->parent_name !== '-' ? $reg?->parent_name : '') }}">
-          </div>
-          <div>
-            <label class="{{ $label }}">No. WA Wali / Orang Tua</label>
-            <input type="tel" name="parent_wa_contact" placeholder="08xxxxxxxxxx"
-              pattern="[0-9]*" inputmode="numeric" title="Hanya boleh angka"
-              class="{{ $input }}" value="{{ $old('parent_wa_contact', $reg?->parent_wa_contact !== '-' ? $reg?->parent_wa_contact : '') }}">
-            <p class="mt-1 text-xs text-gray-400">Hanya angka, opsional</p>
-          </div>
+
 
           {{-- Instagram --}}
           <div>
@@ -709,10 +685,7 @@
       'input[name="phone_number"]',
       '⚠ No. HP hanya boleh berisi angka (contoh: 08123456789)'
     );
-    setupNumericValidation(
-      'input[name="parent_wa_contact"]',
-      '⚠ No. HP hanya boleh berisi angka'
-    );
+
 
     // ===== Keterangan Jenis Magang (form statis fallback) =====
     (function() {

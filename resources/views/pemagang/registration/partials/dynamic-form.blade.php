@@ -200,6 +200,9 @@
     };
 @endphp
 
+{{-- Sistem Magang selalu Onsite, tidak ditampilkan ke pengguna --}}
+<input type="hidden" name="internship_arrangement" value="Onsite">
+
 {{-- Render field grup utama --}}
 {!! $renderGroup($mainFields) !!}
 
@@ -224,18 +227,7 @@
             <p class="mt-1 text-xs text-gray-400">{{ $field->helper_text }}</p>
             @endif
         </div>
-        @elseif($field->field_key === 'parent_wa_contact')
-        <div>
-            <label class="{{ $label }}">{{ $field->label }}@if($field->is_required) <span class="text-red-500">*</span>@endif</label>
-            <input type="tel" name="parent_wa_contact"
-                placeholder="{{ $field->placeholder ?? '08xxxxxxxxxx' }}"
-                pattern="[0-9]*" inputmode="numeric"
-                class="{{ $input }}"
-                value="{{ old('parent_wa_contact', ($reg?->parent_wa_contact !== '-' ? $reg?->parent_wa_contact : '')) }}">
-            @if($field->helper_text)
-            <p class="mt-1 text-xs text-gray-400">{{ $field->helper_text }}</p>
-            @endif
-        </div>
+
         @else
         <div>{!! $renderField($field) !!}</div>
         @endif

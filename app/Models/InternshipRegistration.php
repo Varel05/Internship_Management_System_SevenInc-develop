@@ -32,10 +32,9 @@ class InternshipRegistration extends Model
         'start_date', 'end_date',
         'internship_status',
         'supervisor_name', 'supervisor_contact',
-        'parent_name', 'parent_wa_contact',
         'current_activities', 'social_media_instagram',
         'profile_photo',
-        'family_status', 'boarding_info',
+        'boarding_info',
     ];
 
     /**

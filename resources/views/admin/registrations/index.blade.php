@@ -82,8 +82,7 @@
                                 'internship_info_other' => 'INFO LAIN',
                                 'current_activities' => 'AKTIVITAS SAAT INI',
                                 'boarding_info' => 'INFO KOST',
-                                'family_status' => 'IZIN KELUARGA',
-                                'parent_wa_contact' => 'KONTAK ORANG TUA',
+
                                 'social_media_instagram' => 'INSTAGRAM',
                                 'cv_ktp_portofolio_pdf' => 'FILE PDF',
                                 'portofolio_visual' => 'FILE VISUAL',
