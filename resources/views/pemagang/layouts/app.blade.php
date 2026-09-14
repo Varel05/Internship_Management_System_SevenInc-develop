@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>@yield('title', 'Dashboard') — Listmagang</title>
+  <title>@yield('title', 'Dashboard') — InternHub</title>
 
   @vite(['resources/css/app.css','resources/js/app.js'])
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -41,11 +41,11 @@
       {{-- Brand --}}
       <div class="flex items-center gap-3 px-4 py-5 border-b border-white/10">
         <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-sm">
-          {{ strtoupper(substr(config('app.name', 'L'), 0, 1)) }}
+          IH
         </div>
         <div class="text-white">
-          <div class="text-sm font-semibold leading-tight">Listmagang</div>
-          <div class="text-xs text-white/60 leading-tight">Seveninc Internship</div>
+          <div class="text-sm font-semibold leading-tight">InternHub</div>
+          <div class="text-xs text-white/60 leading-tight">Internship Platform</div>
         </div>
       </div>
 
@@ -138,7 +138,7 @@
       <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0">
         {{-- Breadcrumb --}}
         <div class="text-sm text-gray-500">
-          <span class="font-medium text-gray-700">Listmagang</span>
+          <span class="font-medium text-gray-700">InternHub</span>
           @hasSection('breadcrumb')
             <span class="mx-1">/</span>
             @yield('breadcrumb')

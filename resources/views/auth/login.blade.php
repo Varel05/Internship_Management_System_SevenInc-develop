@@ -18,7 +18,7 @@
 <div style="width:100%; max-width:440px; padding:20px;">
   <div style="text-align:center; margin-bottom:30px;">
     <a href="{{ route('home') }}" style="display:inline-flex; align-items:center; gap:10px; text-decoration:none;">
-      <div style="width:32px; height:32px; border-radius:8px; background:#1a5c38; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:14px;">I</div>
+      <div style="width:32px; height:32px; border-radius:8px; background:#1a5c38; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:14px;">IH</div>
       <span style="font-weight:700; color:#1a1a1a; font-size:18px;">InternHub</span>
     </a>
   </div>

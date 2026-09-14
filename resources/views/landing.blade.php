@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>Magang di Seveninc — Listmagang</title>
+  <title>InternHub — Platform Program Magang</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -49,9 +49,8 @@
 @endif
   <div style="max-width:1100px;margin:0 auto;padding:0 20px;height:100%;display:flex;align-items:center;justify-content:space-between;">
     <div style="display:flex;align-items:center;gap:10px;">
-      <div style="width:32px;height:32px;border-radius:8px;background:#1a5c38;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;">S</div>
-      <span style="font-weight:700;color:#1a1a1a;font-size:15px;">Listmagang</span>
-      <span style="color:#9ca3af;font-size:12px;display:none;" class="sm:inline">· Seveninc</span>
+      <div style="width:32px;height:32px;border-radius:8px;background:#1a5c38;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;">IH</div>
+      <span style="font-weight:700;color:#1a1a1a;font-size:15px;">InternHub</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
       <a href="{{ route('user.register') }}" style="background:#1a5c38;color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;text-decoration:none;transition:.2s;"
@@ -76,7 +75,7 @@
       </div>
       <h1 style="color:#fff;font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.2;margin-bottom:16px;">
         Mulai Karir Impianmu<br>
-        <span style="color:#86efac;">Bersama Seveninc</span>
+        <span style="color:#86efac;">Bersama InternHub</span>
       </h1>
       <p style="color:rgba(255,255,255,.7);font-size:17px;line-height:1.7;margin-bottom:32px;max-width:540px;margin-left:auto;margin-right:auto;">
         Program magang profesional di berbagai divisi. Dapatkan pengalaman nyata,
@@ -154,10 +153,10 @@
 <footer style="background:#fff;border-top:1px solid #f3f4f6;padding:28px 20px;">
   <div style="max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
     <div style="display:flex;align-items:center;gap:8px;">
-      <div style="width:24px;height:24px;border-radius:6px;background:#1a5c38;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;">S</div>
-      <span style="font-size:13px;font-weight:600;color:#374151;">Listmagang · Seveninc</span>
+      <div style="width:24px;height:24px;border-radius:6px;background:#1a5c38;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;">IH</div>
+      <span style="font-size:13px;font-weight:600;color:#374151;">InternHub</span>
     </div>
-    <p style="font-size:12px;color:#9ca3af;">© {{ date('Y') }} Seveninc. Program Magang Profesional Yogyakarta.</p>
+    <p style="font-size:12px;color:#9ca3af;">© {{ date('Y') }} InternHub. Program Magang Profesional Yogyakarta.</p>
     <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7280;">
       <i class="fas fa-map-marker-alt" style="color:#1a5c38;"></i> Yogyakarta, Indonesia
     </div>

@@ -50,7 +50,7 @@
 <div class="max-w-4xl mx-auto">
   <div class="bg-white rounded-xl border border-gray-100 p-6">
     <h2 class="text-lg font-semibold text-gray-800 mb-1">Form Pendaftaran Magang</h2>
-    <p class="text-sm text-gray-500 mb-6">Lengkapi data berikut untuk mendaftar program magang Seveninc</p>
+    <p class="text-sm text-gray-500 mb-6">Lengkapi data berikut untuk mendaftar program magang</p>
 
     @if($reg && $reg->is_draft)
       <div class="mb-5 flex items-center gap-2 bg-yellow-50 border border-yellow-200 text-yellow-700 text-sm px-4 py-3 rounded-lg">

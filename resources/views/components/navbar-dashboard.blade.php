@@ -18,7 +18,7 @@
 
             <div class="min-w-0">
                 <p class="truncate text-[17px] font-bold text-admin-text-dark">Panel Administrasi</p>
-                <p class="hidden truncate text-xs text-admin-text-mid sm:block">Listmagang / Seveninc</p>
+                <p class="hidden truncate text-xs text-admin-text-mid sm:block">InternHub</p>
             </div>
         </div>
 

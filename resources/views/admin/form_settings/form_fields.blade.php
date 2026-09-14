@@ -564,7 +564,7 @@ function buildPreviewHtml(data) {
 
     let html = `
         <h3 class="text-sm font-semibold text-gray-800 mb-1">Form Pendaftaran Magang</h3>
-        <p class="text-xs text-gray-500 mb-4">Lengkapi data berikut untuk mendaftar program magang Seveninc</p>
+        <p class="text-xs text-gray-500 mb-4">Lengkapi data berikut untuk mendaftar program magang</p>
         <div class="space-y-3">`;
 
     function renderField(f) {

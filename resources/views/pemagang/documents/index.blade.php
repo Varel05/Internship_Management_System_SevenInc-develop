@@ -159,7 +159,7 @@
       </div>
       <p class="text-sm font-semibold text-gray-800 mb-1">Surat Rekomendasi</p>
       <p class="text-xs text-gray-400 flex-1 mb-4">
-        Surat rekomendasi dari Seveninc untuk keperluan karir Anda.
+        Surat rekomendasi dari mitra magang untuk keperluan karir Anda.
       </p>
       @if(!$isCompleted)
         <span class="flex items-center justify-center w-full py-2 text-xs text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
@@ -186,7 +186,7 @@
       </div>
       <p class="text-sm font-semibold text-gray-800 mb-1">Grup Alumni</p>
       <p class="text-xs text-gray-400 flex-1 mb-4">
-        Bergabung ke komunitas alumni magang Seveninc.
+        Bergabung ke komunitas alumni magang InternHub.
       </p>
       @if(!$isCompleted)
         <span class="flex items-center justify-center w-full py-2 text-xs text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
@@ -213,7 +213,7 @@
       </div>
       <p class="text-sm font-semibold text-gray-800 mb-1">Info Kerja</p>
       <p class="text-xs text-gray-400 flex-1 mb-4">
-        Informasi lowongan pekerjaan dari jaringan Seveninc.
+        Informasi lowongan pekerjaan dari jaringan mitra InternHub.
       </p>
       @if(!$isCompleted)
         <span class="flex items-center justify-center w-full py-2 text-xs text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">

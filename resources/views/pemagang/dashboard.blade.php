@@ -188,7 +188,7 @@
           </div>
           <div>
             <div class="text-sm font-medium text-gray-700">Syarat & Ketentuan</div>
-            <div class="text-xs text-gray-400">Ketentuan program magang Seveninc</div>
+            <div class="text-xs text-gray-400">Ketentuan program magang InternHub</div>
           </div>
         </div>
         <i class="fas fa-chevron-right text-xs text-gray-400 group-hover:text-green-600"></i>
@@ -275,7 +275,7 @@
       <li>Durasi minimal 1 bulan, maksimal 6 bulan</li>
       <li>Wajib hadir minimal 90% dari total hari kerja</li>
       <li>Membawa laptop dan perlengkapan kerja sendiri</li>
-      <li>Mematuhi peraturan dan budaya kerja Seveninc</li>
+      <li>Mematuhi peraturan dan budaya kerja mitra magang</li>
       <li>Sertifikat diberikan setelah masa magang selesai</li>
     </ul>
     <div class="mt-5 flex justify-end">

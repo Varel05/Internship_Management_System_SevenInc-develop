@@ -207,7 +207,7 @@
             <label class="block text-sm font-medium text-[#1B3A34] mb-1.5">Label Tombol</label>
             <input type="text" name="alumni_group_label" id="inp_alumni_group_label"
                    value="{{ old('alumni_group_label', $extra->alumni_group_label) }}"
-                   placeholder="Grup Alumni Seveninc"
+                   placeholder="Grup Alumni InternHub"
                    class="w-full px-3 py-2 text-sm border border-[#DCE7E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D8659]">
           </div>
         </div>
@@ -241,7 +241,7 @@
           <div>
             <label class="block text-sm font-medium text-[#1B3A34] mb-1.5">Deskripsi singkat <span class="text-gray-400 text-xs">(opsional)</span></label>
             <textarea name="job_info_description" id="inp_job_info_description" rows="2"
-                      placeholder="Contoh: Lowongan Full Stack Developer di partner Seveninc..."
+                      placeholder="Contoh: Lowongan Full Stack Developer di partner kami..."
                       class="w-full px-3 py-2 text-sm border border-[#DCE7E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D8659] resize-none">{{ old('job_info_description', $extra->job_info_description) }}</textarea>
           </div>
         </div>

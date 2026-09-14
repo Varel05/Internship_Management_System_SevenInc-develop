@@ -17,13 +17,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block mb-1.5 text-sm font-semibold text-[#1B3A34]">Kode Brand <span class="text-red-500">*</span></label>
-                    <input type="text" name="code" value="{{ old('code') }}" required placeholder="Contoh: svn, listmagang"
+                    <input type="text" name="code" value="{{ old('code') }}" required placeholder="Contoh: svn, alb"
                         class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-4 py-2.5 text-sm text-[#1B3A34] outline-none focus:border-[#2D8659] focus:ring-1 focus:ring-[#2D8659] transition">
                     @error('code') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
                 <div>
                     <label class="block mb-1.5 text-sm font-semibold text-[#1B3A34]">Nama Brand <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="Contoh: Seveninc"
+                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="Contoh: Alona"
                         class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-4 py-2.5 text-sm text-[#1B3A34] outline-none focus:border-[#2D8659] focus:ring-1 focus:ring-[#2D8659] transition">
                     @error('name') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>

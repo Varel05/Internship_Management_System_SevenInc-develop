@@ -58,11 +58,11 @@
 >
     <div class="flex h-16 items-center gap-3 border-b border-admin-border px-5">
         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] bg-gradient-to-br from-admin-primary to-admin-primary-dark text-sm font-extrabold text-white">
-            LM
+            IH
         </div>
 
         <div class="admin-sidebar-label min-w-0">
-            <p class="truncate text-[15px] font-bold text-admin-text-dark">Listmagang</p>
+            <p class="truncate text-[15px] font-bold text-admin-text-dark">InternHub</p>
             <p class="text-[11px] text-admin-text-mid">Panel Admin</p>
         </div>
     </div>

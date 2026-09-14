@@ -15,7 +15,7 @@
     </a>
     <div>
       <h2 class="text-lg font-semibold text-gray-800">Membercard Digital</h2>
-      <p class="text-sm text-gray-500">Kartu anggota alumni magang Seveninc</p>
+      <p class="text-sm text-gray-500">Kartu anggota alumni magang InternHub</p>
     </div>
   </div>
 
