@@ -24,6 +24,7 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'name',
         'email',
         'password',
         'role',
@@ -169,7 +170,11 @@ class User extends Authenticatable
 
     public function getNameAttribute()
     {
-        return $this->registration ? $this->registration->fullname : null;
+        // Prioritas: fullname dari registrasi (pemagang) -> name di kolom users (admin/user)
+        if ($this->registration && $this->registration->fullname) {
+            return $this->registration->fullname;
+        }
+        return $this->attributes['name'] ?? null;
     }
 
     public function getProfilePictureAttribute()

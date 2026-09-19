@@ -69,18 +69,13 @@
                         type="text"
                         id="fullname"
                         name="fullname"
-                        value="{{ old('fullname', $user->internshipRegistration->fullname ?? $user->name) }}"
+                        value="{{ old('fullname', $user->internshipRegistration->fullname ?? ($user->attributes['name'] ?? '')) }}"
                         placeholder="Nama lengkap Anda"
                         class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none transition focus:border-[#2D8659] focus:ring-1 focus:ring-[#2D8659]"
                     >
                     @error('fullname')
                         <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
                     @enderror
-                    @if(!$user->internshipRegistration)
-                        <p class="mt-1 text-[11px] text-[#4B5F5A]">
-                            Akun ini belum memiliki data registrasi. Nama tidak akan tersimpan sampai data registrasi dibuat.
-                        </p>
-                    @endif
                 </div>
 
                 {{-- Email --}}

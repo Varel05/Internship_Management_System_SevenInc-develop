@@ -136,18 +136,19 @@ class UserController extends Controller
         }
 
         $user->email = $validated['email'];
-        $user->save();
 
-        // Update nama di tabel internship_registrations jika ada
         if (!empty($validated['fullname'])) {
             if ($user->internshipRegistration) {
+                // Pemagang / user dengan data registrasi: simpan ke internship_registrations
                 $user->internshipRegistration->fullname = $validated['fullname'];
                 $user->internshipRegistration->save();
             } else {
-                // Admin murni tanpa data pemagang — simpan di tabel terpisah jika diperlukan
-                // Untuk saat ini lewati, karena nama admin diambil dari internshipRegistration
+                // Admin murni: simpan langsung ke kolom users.name
+                $user->name = $validated['fullname'];
             }
         }
+
+        $user->save();
 
         return back()->with('success', 'Profil berhasil diperbarui.');
     }
