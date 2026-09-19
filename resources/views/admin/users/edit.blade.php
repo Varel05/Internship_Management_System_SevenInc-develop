@@ -24,10 +24,10 @@
                     $initials = collect(explode(' ', $user->name))->take(2)->map(fn($w)=>strtoupper($w[0]??''))->implode('');
                 @endphp
                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#E8F5E9] text-sm font-bold text-[#1F5F3F]">
-                    {{ $initials }}
+                    {{ $initials ?: '?' }}
                 </div>
                 <div>
-                    <p class="font-semibold text-[#1B3A34]">{{ $user->name }}</p>
+                    <p class="font-semibold text-[#1B3A34]">{{ $user->name ?? '(Belum ada nama)' }}</p>
                     <p class="text-[12px] text-[#4B5F5A]">{{ $user->email }}</p>
                 </div>
             </div>
@@ -42,24 +42,48 @@
             </div>
             @endif
 
+            @if(session('success'))
+            <div class="mb-5 rounded-[9px] border border-green-200 bg-green-50 px-4 py-3 text-sm text-[#1F5F3F]">
+                {{ session('success') }}
+            </div>
+            @endif
+
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="space-y-5">
                 @csrf @method('PUT')
 
-                {{-- Nama (tampilkan saja, tidak bisa diubah karena controller hanya update role) --}}
+                {{-- Nama Lengkap (bisa diedit jika punya data registrasi) --}}
                 <div>
-                    <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Nama</label>
-                    <div class="rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#4B5F5A]">
-                        {{ $user->name }}
-                    </div>
-                    <p class="mt-1 text-[11px] text-[#4B5F5A]">Nama tidak dapat diubah dari sini.</p>
+                    <label for="fullname" class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                        Nama Lengkap
+                    </label>
+                    @if($user->internshipRegistration)
+                        <input
+                            type="text"
+                            id="fullname"
+                            name="fullname"
+                            value="{{ old('fullname', $user->internshipRegistration->fullname) }}"
+                            class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none transition focus:border-[#2D8659] focus:ring-1 focus:ring-[#2D8659]"
+                            placeholder="Nama lengkap pengguna"
+                        >
+                        <p class="mt-1 text-[11px] text-[#4B5F5A]">Mengubah nama akan memperbarui data registrasi magang.</p>
+                    @else
+                        <div class="rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#4B5F5A]">
+                            (Tidak ada data registrasi)
+                        </div>
+                        <p class="mt-1 text-[11px] text-[#4B5F5A]">Nama hanya dapat diubah jika pengguna memiliki data registrasi.</p>
+                    @endif
+                    @error('fullname')
+                        <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
+                    @enderror
                 </div>
 
-                {{-- Email --}}
+                {{-- Email (tampil saja, tidak bisa diubah di sini) --}}
                 <div>
                     <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">Email</label>
                     <div class="rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#4B5F5A]">
                         {{ $user->email }}
                     </div>
+                    <p class="mt-1 text-[11px] text-[#4B5F5A]">Email tidak dapat diubah dari halaman ini.</p>
                 </div>
 
                 {{-- Role --}}

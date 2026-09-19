@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\InternshipRegistration;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -46,13 +47,11 @@ class UserController extends Controller
             case 'email_desc': $query->orderBy('users.email', 'desc'); break;
             case 'role_asc':   $query->orderBy('users.role', 'asc'); break;
             case 'role_desc':  $query->orderBy('users.role', 'desc'); break;
-            case 'status_asc': $query->orderBy('users.is_online', 'asc'); break;   // offline dulu
-            case 'status_desc':$query->orderBy('users.is_online', 'desc'); break;  // online dulu
+            case 'status_asc': $query->orderBy('users.is_online', 'asc'); break;
+            case 'status_desc':$query->orderBy('users.is_online', 'desc'); break;
             default:
-                // ✅ Default: Online dulu
                 $query->orderBy('users.is_online', 'desc')->orderBy('internship_registrations.fullname', 'asc');
         }
-
 
         $users = $query->paginate(10)->appends($request->query());
 
@@ -67,39 +66,93 @@ class UserController extends Controller
         return view('admin.users.show', compact('user', 'internship'));
     }
 
-    // Mengedit data pengguna
+    // Mengedit data pengguna lain (hanya role)
     public function edit($id)
     {
-        $user = User::findOrFail($id); // Cari pengguna berdasarkan ID
-        return view('admin.users.edit', compact('user')); // Tampilkan form edit
+        $user = User::findOrFail($id);
+        return view('admin.users.edit', compact('user'));
     }
 
     public function update(Request $request, $id)
     {
-        // Fetch the user from the database
         $user = User::findOrFail($id);
 
-        // Ensure the authenticated user is an admin
         if (auth()->user()->role !== 'admin') {
             return redirect()->route('admin.dashboard')->with('error', 'Unauthorized access');
         }
 
-        // Validate the role input (make sure only valid roles can be assigned)
         $validated = $request->validate([
-            'role' => 'required|string|in:admin,user,pemagang', // Allowed roles
+            'role'     => 'required|string|in:admin,user,pemagang',
+            'fullname' => 'nullable|string|max:150',
         ]);
 
-        // Update the user's role
-        $user = User::findOrFail($id);
         $user->role = $validated['role'];
         $user->save();
 
+        // Jika user punya data registrasi, update nama lengkapnya
+        if (!empty($validated['fullname']) && $user->internshipRegistration) {
+            $user->internshipRegistration->fullname = $validated['fullname'];
+            $user->internshipRegistration->save();
+        }
 
-        // Redirect back with a success message
         return redirect()->route('admin.users.index')
-            ->with('success', 'User role updated successfully.');
+            ->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
+    // ─── Edit Profil Sendiri (admin yang sedang login) ───────────────────────
+
+    public function editProfile()
+    {
+        $user = auth()->user();
+        return view('admin.profile.edit', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'fullname'              => 'nullable|string|max:150',
+            'email'                 => 'required|email|max:150|unique:users,email,' . $user->id,
+            'current_password'      => 'nullable|string',
+            'password'              => 'nullable|string|min:8|confirmed',
+        ]);
+
+        // Validasi password lama jika ingin ganti password
+        if (!empty($validated['password'])) {
+            if (empty($validated['current_password'])) {
+                return back()
+                    ->withErrors(['current_password' => 'Password saat ini wajib diisi untuk mengganti password.'])
+                    ->withInput();
+            }
+
+            if (!Hash::check($validated['current_password'], $user->password)) {
+                return back()
+                    ->withErrors(['current_password' => 'Password saat ini tidak sesuai.'])
+                    ->withInput();
+            }
+
+            $user->password = Hash::make($validated['password']);
+        }
+
+        $user->email = $validated['email'];
+        $user->save();
+
+        // Update nama di tabel internship_registrations jika ada
+        if (!empty($validated['fullname'])) {
+            if ($user->internshipRegistration) {
+                $user->internshipRegistration->fullname = $validated['fullname'];
+                $user->internshipRegistration->save();
+            } else {
+                // Admin murni tanpa data pemagang — simpan di tabel terpisah jika diperlukan
+                // Untuk saat ini lewati, karena nama admin diambil dari internshipRegistration
+            }
+        }
+
+        return back()->with('success', 'Profil berhasil diperbarui.');
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     // Menghapus data pengguna
     public function destroy($id)
@@ -117,7 +170,6 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        // Admin tidak bisa ban sesama admin
         if ($user->role === 'admin') {
             return redirect()->route('admin.users.index')
                 ->with('error', 'Tidak dapat menonaktifkan akun admin.');
@@ -133,7 +185,6 @@ class UserController extends Controller
             'ban_reason' => $validated['ban_reason'] ?? 'Dinonaktifkan oleh admin.',
         ]);
 
-        // Force logout jika sedang online
         if ($user->is_online) {
             $user->update(['is_online' => false]);
         }
@@ -164,5 +215,4 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')
             ->with('success', "Akun {$user->name} berhasil diaktifkan kembali.");
     }
-
 }

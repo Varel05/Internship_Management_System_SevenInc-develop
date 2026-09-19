@@ -230,6 +230,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'preve
         Route::delete('/fields/{field}',                      [\App\Http\Controllers\Admin\FormFieldController::class, 'destroy'])->name('fields.destroy');
     });
 
+    // Profil admin yang sedang login
+    Route::get('/profile',  [AdminUserController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/profile',  [AdminUserController::class, 'updateProfile'])->name('profile.update');
+
     // Users CRUD -> admin.users.*
     Route::resource('users', AdminUserController::class);
     // Ban / Unban user
