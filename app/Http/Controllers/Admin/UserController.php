@@ -111,11 +111,23 @@ class UserController extends Controller
     {
         $user = auth()->user();
 
+        $username = $request->input('username') ?? $request->input('fullname');
+        $request->merge(['username' => $username]);
+
         $validated = $request->validate([
-            'fullname'              => 'nullable|string|max:150',
+            'username'              => 'required|string|max:150|unique:users,name,' . $user->id,
             'email'                 => 'required|email|max:150|unique:users,email,' . $user->id,
             'current_password'      => 'nullable|string',
             'password'              => 'nullable|string|min:8|confirmed',
+        ], [
+            'username.required'     => 'Username wajib diisi.',
+            'username.unique'       => 'Username sudah digunakan, silakan pilih username lain.',
+            'username.max'          => 'Username maksimal 150 karakter.',
+            'email.required'        => 'Email wajib diisi.',
+            'email.email'           => 'Format email tidak valid.',
+            'email.unique'          => 'Email sudah terdaftar.',
+            'password.min'          => 'Password minimal 8 karakter.',
+            'password.confirmed'    => 'Konfirmasi password tidak cocok.',
         ]);
 
         // Validasi password lama jika ingin ganti password
@@ -135,18 +147,8 @@ class UserController extends Controller
             $user->password = Hash::make($validated['password']);
         }
 
+        $user->name = $validated['username'];
         $user->email = $validated['email'];
-
-        if (!empty($validated['fullname'])) {
-            if ($user->internshipRegistration) {
-                // Pemagang / user dengan data registrasi: simpan ke internship_registrations
-                $user->internshipRegistration->fullname = $validated['fullname'];
-                $user->internshipRegistration->save();
-            } else {
-                // Admin murni: simpan langsung ke kolom users.name
-                $user->name = $validated['fullname'];
-            }
-        }
 
         $user->save();
 

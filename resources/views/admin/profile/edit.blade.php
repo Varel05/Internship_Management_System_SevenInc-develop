@@ -60,20 +60,21 @@
 
                 <p class="mb-4 text-[12px] font-bold uppercase tracking-[0.08em] text-[#2D8659]">Informasi Akun</p>
 
-                {{-- Nama Lengkap --}}
+                {{-- Username --}}
                 <div class="mb-4">
-                    <label for="fullname" class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
-                        Nama Lengkap
+                    <label for="username" class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                        Username <span class="text-[#D32F2F]">*</span>
                     </label>
                     <input
                         type="text"
-                        id="fullname"
-                        name="fullname"
-                        value="{{ old('fullname', $user->internshipRegistration->fullname ?? ($user->attributes['name'] ?? '')) }}"
-                        placeholder="Nama lengkap Anda"
+                        id="username"
+                        name="username"
+                        required
+                        value="{{ old('username', $user->attributes['name'] ?? $user->name) }}"
+                        placeholder="Masukkan username Anda"
                         class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none transition focus:border-[#2D8659] focus:ring-1 focus:ring-[#2D8659]"
                     >
-                    @error('fullname')
+                    @error('username')
                         <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
