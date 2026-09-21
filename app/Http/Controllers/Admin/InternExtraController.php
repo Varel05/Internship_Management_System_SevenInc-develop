@@ -243,14 +243,15 @@ class InternExtraController extends Controller
                 }
 
                 $interest = $target->internship_interest ?? '';
-                $dbDivision = \App\Models\Division::where('name', $interest)
+                $dbDivision = $target->division ?? \App\Models\Division::where('name', $interest)
                     ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
                     ->first();
-                $divisionName = $dbDivision?->code ?? 'UMUM';
+                $divisionCode = $dbDivision?->code ?? 'UMUM';
+                $divisionFullName = $dbDivision?->name ?? $target->internship_interest ?? '-';
 
                 $running      = str_pad((string) $target->id, 3, '0', STR_PAD_LEFT);
                 $brandCodeStr = strtoupper($brand->code ?? 'SVII');
-                $letterNumber = "{$running}/SR/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
+                $letterNumber = "{$running}/SR/{$divisionCode}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
                 
                 $letterDateStr = now()->isoFormat('D MMMM Y');
 
@@ -258,7 +259,7 @@ class InternExtraController extends Controller
                     $bodyTemplate,
                     [
                         'nama'          => $target->fullname,
-                        'divisi'        => $target->internship_interest ?? '-',
+                        'divisi'        => $divisionFullName,
                         'mulai'         => $startStr,
                         'selesai'       => $endStr,
                         'durasi'        => $durationStr,

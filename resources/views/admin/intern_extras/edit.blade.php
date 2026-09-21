@@ -12,8 +12,9 @@
 
   <div class="mb-5 flex flex-wrap items-center gap-3">
     <a href="{{ route('admin.intern_extras.index') }}"
-       class="w-9 h-9 flex items-center justify-center rounded-lg border border-[#DCE7E1] bg-white text-[#4B5F5A] hover:border-[#2D8659] hover:text-[#2D8659] transition">
-      <i class="fas fa-arrow-left text-sm"></i>
+       class="w-9 h-9 flex items-center justify-center rounded-lg border border-[#DCE7E1] bg-white text-[#4B5F5A] hover:border-[#2D8659] hover:text-[#2D8659] transition"
+       title="Kembali">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
     </a>
     <div>
       <p class="text-xs font-bold uppercase tracking-widest text-[#2D8659] mb-0.5">Informasi Alumni</p>
@@ -221,7 +222,12 @@
       <div class="bg-white rounded-xl border border-[#DCE7E1] p-6 shadow-sm">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-purple-700">
-            <i class="fas fa-users"></i>
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
           </div>
           <h3 class="font-bold text-[#1B3A34]">Link Grup Alumni</h3>
           @if($allBrandMode && $intern->brand)
@@ -256,7 +262,10 @@
       <div class="bg-white rounded-xl border border-[#DCE7E1] p-6 shadow-sm">
         <div class="flex items-center gap-3 mb-4">
           <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
-            <i class="fas fa-briefcase"></i>
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
           </div>
           <h3 class="font-bold text-[#1B3A34]">Info Kerja</h3>
           @if($allBrandMode && $intern->brand)

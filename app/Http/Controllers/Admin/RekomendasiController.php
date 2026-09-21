@@ -160,14 +160,15 @@ class RekomendasiController extends Controller
                 }
 
                 $interest = $intern->internship_interest ?? '';
-                $dbDivision = \App\Models\Division::where('name', $interest)
+                $dbDivision = $intern->division ?? \App\Models\Division::where('name', $interest)
                     ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
                     ->first();
-                $divisionName = $dbDivision?->code ?? 'UMUM';
+                $divisionCode = $dbDivision?->code ?? 'UMUM';
+                $divisionFullName = $dbDivision?->name ?? $intern->internship_interest ?? '-';
 
                 $running      = str_pad((string) $intern->id, 3, '0', STR_PAD_LEFT);
                 $brandCodeStr = strtoupper($brand->code ?? 'SVII');
-                $letterNumber = "{$running}/SR/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
+                $letterNumber = "{$running}/SR/{$divisionCode}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
                 
                 $letterDateStr = now()->isoFormat('D MMMM Y');
 
@@ -175,7 +176,7 @@ class RekomendasiController extends Controller
                     $bodyTemplate,
                     [
                         'nama'          => $intern->fullname,
-                        'divisi'        => $intern->internship_interest ?? '-',
+                        'divisi'        => $divisionFullName,
                         'mulai'         => $startStr,
                         'selesai'       => $endStr,
                         'durasi'        => $durationStr,
@@ -303,10 +304,11 @@ class RekomendasiController extends Controller
             $participantInstitute = $intern->institution_name ?? '-';
             
             $interest = $intern->internship_interest ?? '';
-            $dbDivision = \App\Models\Division::where('name', $interest)
+            $dbDivision = $intern->division ?? \App\Models\Division::where('name', $interest)
                 ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
                 ->first();
-            $divisionName = $dbDivision?->code ?? 'UMUM';
+            $divisionCode = $dbDivision?->code ?? 'UMUM';
+            $divisionFullName = $dbDivision?->name ?? $interest ?: '-';
 
             $startStr = $intern->start_date
                 ? Carbon::parse($intern->start_date)->isoFormat('MMMM Y')
@@ -325,14 +327,15 @@ class RekomendasiController extends Controller
 
             $running      = str_pad((string) $intern->id, 3, '0', STR_PAD_LEFT);
             $brandCodeStr = strtoupper($brand ? $brand->code : 'SVII');
-            $letterNumber = "{$running}/SR/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
+            $letterNumber = "{$running}/SR/{$divisionCode}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
         } else {
             // Dummy data jika belum ada pemagang dipilih
             $participantName      = '— Pilih pemagang untuk preview —';
             $participantId        = '-';
             $participantMajor     = '-';
             $participantInstitute = '-';
-            $divisionName         = '-';
+            $divisionCode         = 'UMUM';
+            $divisionFullName     = '-';
             $startStr             = 'Bulan Tahun';
             $endStr               = 'Bulan Tahun';
             $durationStr          = '? bulan';
@@ -343,7 +346,7 @@ class RekomendasiController extends Controller
 
         $bodyText = $this->buildBodyText($bodyTemplate, [
             'nama'          => $participantName,
-            'divisi'        => $divisionName,
+            'divisi'        => $divisionFullName,
             'mulai'         => $startStr,
             'selesai'       => $endStr,
             'durasi'        => $durationStr,
@@ -419,14 +422,15 @@ class RekomendasiController extends Controller
             }
 
             $interest = $intern->internship_interest ?? '';
-            $dbDivision = \App\Models\Division::where('name', $interest)
+            $dbDivision = $intern->division ?? \App\Models\Division::where('name', $interest)
                 ->orWhere('slug', \Illuminate\Support\Str::slug($interest, '-'))
                 ->first();
-            $divisionName = $dbDivision?->code ?? 'UMUM';
+            $divisionCode = $dbDivision?->code ?? 'UMUM';
+            $divisionFullName = $dbDivision?->name ?? $intern->internship_interest ?? '-';
 
             $running      = str_pad((string) $intern->id, 3, '0', STR_PAD_LEFT);
             $brandCodeStr = strtoupper($brand->code ?? 'SVII');
-            $letterNumber = "{$running}/SR/{$divisionName}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
+            $letterNumber = "{$running}/SR/{$divisionCode}/SEVEN.{$brandCodeStr}/{$romanMonth}/{$year}";
             
             $letterDateStr = now()->isoFormat('D MMMM Y');
 
@@ -434,7 +438,7 @@ class RekomendasiController extends Controller
                 $bodyTemplate,
                 [
                     'nama'          => $intern->fullname,
-                    'divisi'        => $intern->internship_interest ?? '-',
+                    'divisi'        => $divisionFullName,
                     'mulai'         => $startStr,
                     'selesai'       => $endStr,
                     'durasi'        => $durationStr,
