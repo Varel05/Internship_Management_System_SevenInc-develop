@@ -51,6 +51,26 @@
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="space-y-5">
                 @csrf @method('PUT')
 
+                {{-- Nama User (Username) --}}
+                <div>
+                    <label for="name" class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                        Nama User <span class="text-[#D32F2F]">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        required
+                        value="{{ old('name', $user->getRawOriginal('name') ?? $user->name) }}"
+                        class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none transition focus:border-[#2D8659] focus:ring-1 focus:ring-[#2D8659]"
+                        placeholder="Contoh: username_user"
+                    >
+                    <p class="mt-1 text-[11px] text-[#4B5F5A]">Nama user (username) digunakan untuk identitas dan login akun.</p>
+                    @error('name')
+                        <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Nama Lengkap (bisa diedit jika punya data registrasi) --}}
                 <div>
                     <label for="fullname" class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
@@ -70,9 +90,35 @@
                         <div class="rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#4B5F5A]">
                             (Tidak ada data registrasi)
                         </div>
-                        <p class="mt-1 text-[11px] text-[#4B5F5A]">Nama hanya dapat diubah jika pengguna memiliki data registrasi.</p>
+                        <p class="mt-1 text-[11px] text-[#4B5F5A]">Nama lengkap hanya dapat diubah jika pengguna memiliki data registrasi.</p>
                     @endif
                     @error('fullname')
+                        <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- No. HP --}}
+                <div>
+                    <label for="phone_number" class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                        No. HP
+                    </label>
+                    @if($user->internshipRegistration)
+                        <input
+                            type="text"
+                            id="phone_number"
+                            name="phone_number"
+                            value="{{ old('phone_number', $user->internshipRegistration->phone_number) }}"
+                            class="w-full rounded-[8px] border border-[#DCE7E1] bg-white px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none transition focus:border-[#2D8659] focus:ring-1 focus:ring-[#2D8659]"
+                            placeholder="Contoh: 081234567890"
+                        >
+                        <p class="mt-1 text-[11px] text-[#4B5F5A]">Nomor telepon atau WhatsApp aktif pengguna.</p>
+                    @else
+                        <div class="rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#4B5F5A]">
+                            (Tidak ada data registrasi)
+                        </div>
+                        <p class="mt-1 text-[11px] text-[#4B5F5A]">No. HP hanya dapat diubah jika pengguna memiliki data registrasi.</p>
+                    @endif
+                    @error('phone_number')
                         <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
                     @enderror
                 </div>

@@ -113,7 +113,7 @@ class UserController extends Controller
         return view('admin.users.show', compact('user', 'internship'));
     }
 
-    // Mengedit data pengguna lain (hanya role)
+    // Mengedit data pengguna
     public function edit($id)
     {
         $user = User::findOrFail($id);
@@ -125,21 +125,45 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         if (auth()->user()->role !== 'admin') {
-            return redirect()->route('admin.dashboard')->with('error', 'Unauthorized access');
+            return redirect()->route('admin.dashboard.index')->with('error', 'Unauthorized access');
+        }
+
+        $username = $request->input('name') ?? $request->input('username');
+        if ($username !== null) {
+            $request->merge(['name' => $username]);
         }
 
         $validated = $request->validate([
-            'role'     => 'required|string|in:admin,user,pemagang',
-            'fullname' => 'nullable|string|max:150',
+            'name'         => ['required', 'string', 'max:150', 'unique:users,name,' . $user->id],
+            'role'         => ['required', 'string', 'in:admin,user,pemagang'],
+            'fullname'     => ['nullable', 'string', 'max:150'],
+            'phone_number' => ['nullable', 'string', 'max:20'],
+        ], [
+            'name.required'         => 'Nama user wajib diisi.',
+            'name.unique'           => 'Nama user sudah digunakan, silakan pilih nama user lain.',
+            'name.max'              => 'Nama user maksimal 150 karakter.',
+            'role.required'         => 'Role wajib dipilih.',
+            'role.in'               => 'Role tidak valid.',
+            'phone_number.max'      => 'Nomor HP maksimal 20 digit.',
         ]);
 
+        $user->name = $validated['name'];
         $user->role = $validated['role'];
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'phone_number') && isset($validated['phone_number'])) {
+            $user->phone_number = $validated['phone_number'];
+        }
         $user->save();
 
-        // Jika user punya data registrasi, update nama lengkapnya
-        if (!empty($validated['fullname']) && $user->internshipRegistration) {
-            $user->internshipRegistration->fullname = $validated['fullname'];
-            $user->internshipRegistration->save();
+        // Jika user punya data registrasi, update nama lengkap & no hp
+        $registration = $user->internshipRegistration ?? $user->registration;
+        if ($registration) {
+            if (array_key_exists('fullname', $validated) && $validated['fullname'] !== null) {
+                $registration->fullname = $validated['fullname'];
+            }
+            if (array_key_exists('phone_number', $validated) && $validated['phone_number'] !== null) {
+                $registration->phone_number = $validated['phone_number'];
+            }
+            $registration->save();
         }
 
         return redirect()->route('admin.users.index')
