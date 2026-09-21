@@ -47,20 +47,33 @@ class InternExtraController extends Controller
     }
 
     /**
-     * Form edit extras untuk satu intern — termasuk template rekomendasi.
+     * Form edit extras untuk satu intern atau bulk — termasuk template rekomendasi.
      */
-    public function edit(IR $intern)
+    public function edit(Request $request, IR $intern)
     {
         $extra = InternExtra::firstOrNew([
             'intern_id' => $intern->id,
         ]);
 
         $brands = \App\Models\Brand::orderBy('name')->get();
-        return view('admin.intern_extras.edit', compact('intern', 'extra', 'brands'));
+
+        $bulkMode = $request->input('mode') === 'bulk' || $request->filled('ids');
+        $selectedIds = [];
+        $targetInterns = collect([$intern]);
+
+        if ($request->filled('ids')) {
+            $selectedIds = array_values(array_filter(explode(',', $request->input('ids'))));
+            $targetInterns = IR::whereIn('id', $selectedIds)->get();
+            if ($targetInterns->isNotEmpty() && !$targetInterns->contains('id', $intern->id)) {
+                $intern = $targetInterns->first();
+            }
+        }
+
+        return view('admin.intern_extras.edit', compact('intern', 'extra', 'brands', 'bulkMode', 'targetInterns', 'selectedIds'));
     }
 
     /**
-     * Simpan/update extras (link alumni + info kerja) untuk satu intern.
+     * Simpan/update extras (link alumni + info kerja) untuk satu intern atau bulk pemagang.
      */
     public function update(Request $request, IR $intern)
     {
@@ -71,11 +84,18 @@ class InternExtraController extends Controller
             'job_info_description' => 'nullable|string|max:500',
         ]);
 
-        // Jika mode all_brand, simpan ke semua pemagang brand yang sama
+        // Jika mode bulk atau all_brand, simpan ke semua pemagang terpilih/brand
         $allBrandMode = $request->input('mode') === 'all_brand';
-        $targets = ($allBrandMode && !empty($intern->brand_id))
-            ? IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand_id', $intern->brand_id)->get()
-            : collect([$intern]);
+        $bulkMode     = $request->input('mode') === 'bulk' || $request->filled('ids');
+
+        if ($bulkMode && $request->filled('ids')) {
+            $ids = array_values(array_filter(explode(',', $request->input('ids'))));
+            $targets = IR::whereIn('id', $ids)->get();
+        } elseif ($allBrandMode && !empty($intern->brand_id)) {
+            $targets = IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand_id', $intern->brand_id)->get();
+        } else {
+            $targets = collect([$intern]);
+        }
 
         foreach ($targets as $target) {
             $extra = InternExtra::firstOrNew([
@@ -123,11 +143,19 @@ class InternExtraController extends Controller
             $extra->save();
         }
 
-        $redirectUrl = route('admin.intern_extras.edit', $intern->id)
-            . ($allBrandMode ? '?mode=all_brand' : '');
+        $redirectParams = [];
+        if ($bulkMode && $request->filled('ids')) {
+            $redirectParams['mode'] = 'bulk';
+            $redirectParams['ids'] = $request->input('ids');
+        } elseif ($allBrandMode) {
+            $redirectParams['mode'] = 'all_brand';
+        }
 
-        $msg = ($allBrandMode && $targets->count() > 1)
-            ? "Link grup alumni & info kerja berhasil disimpan untuk <strong>{$targets->count()} pemagang</strong> brand <strong>{$intern->brand}</strong>."
+        $redirectUrl = route('admin.intern_extras.edit', $intern->id)
+            . ($redirectParams ? '?' . http_build_query($redirectParams) : '');
+
+        $msg = ($targets->count() > 1)
+            ? "Link grup alumni & info kerja berhasil disimpan untuk <strong>{$targets->count()} pemagang terpilih</strong>."
             : "Akses eksklusif untuk <strong>{$intern->fullname}</strong> berhasil diperbarui.";
 
         return redirect($redirectUrl)->with('success', $msg);
@@ -151,15 +179,22 @@ class InternExtraController extends Controller
 
     /**
      * Kirim semua sekaligus: generate surat rekomendasi + simpan link alumni + info kerja
-     * untuk satu pemagang atau semua pemagang satu brand.
+     * untuk satu pemagang, bulk pemagang terpilih, atau semua pemagang satu brand.
      * Return JSON.
      */
     public function sendAll(Request $request, IR $intern)
     {
         $allBrandMode = $request->input('mode') === 'all_brand';
-        $targets = ($allBrandMode && !empty($intern->brand_id))
-            ? IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand_id', $intern->brand_id)->get()
-            : collect([$intern]);
+        $bulkMode     = $request->input('mode') === 'bulk' || $request->filled('ids');
+
+        if ($bulkMode && $request->filled('ids')) {
+            $ids = array_values(array_filter(explode(',', $request->input('ids'))));
+            $targets = IR::whereIn('id', $ids)->get();
+        } elseif ($allBrandMode && !empty($intern->brand_id)) {
+            $targets = IR::where('internship_status', IR::STATUS_COMPLETED)->where('brand_id', $intern->brand_id)->get();
+        } else {
+            $targets = collect([$intern]);
+        }
 
         $request->validate([
             'brand_id'             => 'required|integer|exists:brands,id',

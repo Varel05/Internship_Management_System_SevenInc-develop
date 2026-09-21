@@ -2,12 +2,15 @@
 
 @section('content')
 @php
-  $allBrandMode = request('mode') === 'all_brand';
+  $allBrandMode  = request('mode') === 'all_brand';
+  $bulkMode      = $bulkMode ?? (request('mode') === 'bulk' || request()->filled('ids'));
+  $selectedIds   = $selectedIds ?? (request()->filled('ids') ? array_values(array_filter(explode(',', request('ids')))) : []);
+  $targetInterns = $targetInterns ?? collect([$intern]);
 @endphp
 
 <div class="min-h-screen bg-[#F4F8F6] p-4 sm:p-6 lg:p-7">
 
-  <div class="mb-5 flex items-center gap-3">
+  <div class="mb-5 flex flex-wrap items-center gap-3">
     <a href="{{ route('admin.intern_extras.index') }}"
        class="w-9 h-9 flex items-center justify-center rounded-lg border border-[#DCE7E1] bg-white text-[#4B5F5A] hover:border-[#2D8659] hover:text-[#2D8659] transition">
       <i class="fas fa-arrow-left text-sm"></i>
@@ -21,13 +24,38 @@
         @endif
       </p>
     </div>
-    @if($allBrandMode && $intern->brand)
+    @if($bulkMode && $targetInterns->count() > 1)
+      <span class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#2D8659] bg-[#EBF5EF] border border-[#BDE3CC] rounded-lg shadow-sm">
+        <i class="fas fa-users-cog text-xs"></i>
+        Mode: Bulk Kelola ({{ $targetInterns->count() }} Alumni)
+      </span>
+    @elseif($allBrandMode && $intern->brand)
       <span class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#2D8659] bg-[#EBF5EF] border border-[#BDE3CC] rounded-lg">
         <i class="fas fa-users text-xs"></i>
         Mode: Semua Brand {{ $intern->brand }}
       </span>
     @endif
   </div>
+
+  @if($bulkMode && $targetInterns->count() > 1)
+    <div class="mb-5 p-3.5 bg-white border border-[#DCE7E1] rounded-xl text-xs text-[#4B5F5A] shadow-sm">
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="font-bold text-[#1B3A34] flex items-center gap-1.5">
+          <i class="fas fa-user-check text-[#2D8659]"></i>
+          Alumni Terpilih ({{ $targetInterns->count() }} pemagang):
+        </span>
+        <span class="text-[11px] text-[#4B5F5A]">Perubahan akan diterapkan ke semua alumni ini</span>
+      </div>
+      <div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
+        @foreach($targetInterns as $t)
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#F4F8F6] border border-[#DCE7E1] text-[11.5px] font-medium text-[#1B3A34]">
+            {{ $t->fullname }}
+            @if($t->brand)<span class="text-[10.5px] text-[#2D8659] font-semibold">({{ $t->brand }})</span>@endif
+          </span>
+        @endforeach
+      </div>
+    </div>
+  @endif
 
   @if(session('success'))
     <div class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm font-medium">{!! session('success') !!}</div>
@@ -51,7 +79,9 @@
         <i class="fas fa-medal text-xs"></i>
       </div>
       <h2 class="font-bold text-[#1B3A34]">Surat Rekomendasi</h2>
-      @if($allBrandMode && $intern->brand)
+      @if($bulkMode && $targetInterns->count() > 1)
+        <span class="text-xs text-[#4B5F5A] ml-1">— akan digenerate dan dikirim ke <strong>{{ $targetInterns->count() }} pemagang terpilih</strong></span>
+      @elseif($allBrandMode && $intern->brand)
         <span class="text-xs text-[#4B5F5A] ml-1">— akan dikirim ke semua pemagang brand <strong>{{ $intern->brand }}</strong></span>
       @else
         <span class="text-xs text-[#4B5F5A] ml-1">— khusus untuk <strong>{{ $intern->fullname }}</strong></span>
@@ -177,8 +207,11 @@
   <form action="{{ route('admin.intern_extras.update', $intern->id) }}" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
-    {{-- Kirim mode agar simpan otomatis ke semua brand bila mode all_brand --}}
-    @if($allBrandMode)
+    {{-- Kirim mode agar simpan otomatis ke target bila mode bulk atau all_brand --}}
+    @if($bulkMode && !empty($selectedIds))
+      <input type="hidden" name="mode" value="bulk">
+      <input type="hidden" name="ids" value="{{ implode(',', $selectedIds) }}">
+    @elseif($allBrandMode)
       <input type="hidden" name="mode" value="all_brand">
     @endif
 
@@ -272,7 +305,9 @@
           class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white rounded-xl"
           style="background-color:#1B3A34;">
           <i class="fas fa-paper-plane text-xs"></i>
-          @if($allBrandMode && $intern->brand)
+          @if($bulkMode && $targetInterns->count() > 1)
+            Kirim Semua ke {{ $targetInterns->count() }} Pemagang Terpilih
+          @elseif($allBrandMode && $intern->brand)
             Kirim Semua ke Brand {{ $intern->brand }}
           @else
             Kirim Semua
@@ -347,6 +382,8 @@
   const SAVE_URL       = @json(route('admin.intern_extras.rekomendasi.save_template', $intern->id));
   const SEND_ALL_URL   = @json(route('admin.intern_extras.send_all', $intern->id));
   const ALL_BRAND_MODE = @json($allBrandMode);
+  const BULK_MODE      = @json($bulkMode);
+  const SELECTED_IDS   = @json($selectedIds);
   const INTERN_ID      = {{ $intern->id }};
   const INTERN_BRAND   = @json($intern->brand ?? '');
   const csrf           = document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -464,9 +501,9 @@
 
   // ── Kirim Semua (rekomendasi + grup alumni + info kerja) ─────────
   document.getElementById('btnKirimSemua')?.addEventListener('click', async function () {
-    const targetLabel = ALL_BRAND_MODE && INTERN_BRAND
-      ? `semua pemagang brand "${INTERN_BRAND}"`
-      : 'pemagang ini';
+    const targetLabel = (BULK_MODE && SELECTED_IDS.length > 1)
+      ? `${SELECTED_IDS.length} pemagang terpilih`
+      : (ALL_BRAND_MODE && INTERN_BRAND ? `semua pemagang brand "${INTERN_BRAND}"` : 'pemagang ini');
 
     if (!confirm(
       `Kirim semua ke ${targetLabel}?\n\n` +
@@ -477,14 +514,15 @@
     )) return;
 
     showModal('loading', {
-      title: ALL_BRAND_MODE ? 'Mengirim ke Semua Pemagang...' : 'Mengirim...',
+      title: (BULK_MODE || ALL_BRAND_MODE) ? 'Mengirim ke Semua Pemagang...' : 'Mengirim...',
       msg:   'Membuat surat rekomendasi dan menyimpan informasi alumni...',
     });
 
     try {
       // Gabungkan data rekomendasi + alumni + info kerja dalam satu FormData
       const formData = buildRekomendasiFormData({
-        mode: ALL_BRAND_MODE ? 'all_brand' : 'single',
+        mode: BULK_MODE ? 'bulk' : (ALL_BRAND_MODE ? 'all_brand' : 'single'),
+        ids:  BULK_MODE ? SELECTED_IDS.join(',') : '',
       });
 
       // Ambil nilai link alumni & info kerja dari field form bawah
