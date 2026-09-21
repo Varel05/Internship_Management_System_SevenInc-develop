@@ -169,13 +169,16 @@ class DocumentController extends Controller
             return back()->with('error', 'Membercard hanya tersedia setelah masa magang selesai.');
         }
 
-        $membercard = \App\Models\AlumniMembercard::where('intern_id', $reg->id)->latest()->first();
+        $membercard = \App\Models\AlumniMembercard::with(['intern.brandRel', 'intern.institution', 'intern.division'])
+            ->where('intern_id', $reg->id)->latest()->first();
 
         if (!$membercard) {
             return back()->with('error', 'Membercard belum tersedia. Hubungi admin.');
         }
 
-        return view('pemagang.membercard', compact('membercard', 'reg'));
+        $brandObj = $membercard->intern?->brandRel;
+
+        return view('pemagang.membercard', compact('membercard', 'reg', 'brandObj'));
     }
 
     /**
@@ -192,7 +195,8 @@ class DocumentController extends Controller
             abort(403, 'Membercard hanya tersedia setelah masa magang selesai.');
         }
 
-        $membercard = \App\Models\AlumniMembercard::where('intern_id', $reg->id)->latest()->first();
+        $membercard = \App\Models\AlumniMembercard::with(['intern.brandRel', 'intern.institution', 'intern.division'])
+            ->where('intern_id', $reg->id)->latest()->first();
 
         if (!$membercard) {
             return back()->with('error', 'Membercard belum tersedia. Hubungi admin.');
@@ -202,8 +206,10 @@ class DocumentController extends Controller
             'name'     => $membercard->intern->fullname,
             'code'     => $membercard->member_code,
             'brand'    => $membercard->intern->brand ?? 'magangjogja.com',
+            'brandObj' => $membercard->intern?->brandRel,
             'angkatan' => $membercard->batch_year,
             'instansi' => $membercard->intern->institution_name,
+            'divisi'   => $membercard->intern->division?->name ?? $membercard->intern->internship_interest,
         ];
 
         // Pakai Browsershot — set ukuran persis kartu kredit standar (85.6 × 54mm)

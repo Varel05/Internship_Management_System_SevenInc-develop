@@ -19,44 +19,9 @@
     </div>
   </div>
 
-  {{-- Preview Kartu — sesuai template baru --}}
-  <div class="mb-5 flex justify-center">
-    <div style="width:342px; height:216px; background:#1a3a2a; border-radius:12px; position:relative; overflow:hidden; box-shadow:0 8px 32px rgba(0,0,0,0.35); font-family:Georgia, serif;">
-
-      {{-- Brand kanan atas --}}
-      <div style="position:absolute;top:16px;right:18px;font-size:13px;font-style:italic;font-weight:bold;color:#c9a84c;letter-spacing:0.5px;text-align:right;">
-        {{ $membercard->brand ?? 'magangjogja.com' }}
-      </div>
-
-      {{-- Nama di tengah --}}
-      <div style="position:absolute;top:50%;left:0;right:0;transform:translateY(-65%);text-align:center;padding:0 20px;">
-        <div style="font-size:28px;font-weight:normal;color:#c9a84c;letter-spacing:1px;margin-bottom:10px;">
-          {{ $membercard->name }}
-        </div>
-        <div style="width:70%;height:1px;background:#c9a84c;margin:0 auto;"></div>
-      </div>
-
-      {{-- Pills bawah --}}
-      <div style="position:absolute;bottom:16px;left:18px;right:18px;display:flex;flex-direction:column;gap:6px;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <div style="background:#d4c06a;border-radius:8px;padding:3px 10px;display:inline-block;">
-            <span style="font-size:8px;font-weight:bold;color:#1a3a2a;text-transform:uppercase;letter-spacing:0.5px;display:block;line-height:1.3;">ID:</span>
-            <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $membercard->code }}</span>
-          </div>
-          <div style="background:#d4c06a;border-radius:8px;padding:3px 10px;display:inline-block;">
-            <span style="font-size:8px;font-weight:bold;color:#1a3a2a;text-transform:uppercase;letter-spacing:0.5px;display:block;line-height:1.3;">Angkatan:</span>
-            <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $membercard->angkatan ?? '-' }}</span>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <div style="background:#d4c06a;border-radius:8px;padding:3px 10px;display:inline-block;max-width:280px;">
-            <span style="font-size:8px;font-weight:bold;color:#1a3a2a;text-transform:uppercase;letter-spacing:0.5px;display:block;line-height:1.3;">Kampus/Sekolah:</span>
-            <span style="font-size:10px;color:#1a3a2a;line-height:1.3;">{{ $membercard->instansi ?? '-' }}</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
+  {{-- Preview Kartu Modern --}}
+  <div class="mb-6 flex justify-center py-2">
+    <x-membercard :membercard="$membercard" width="380px" height="240px" />
   </div>
 
   {{-- Info & Tombol Download --}}

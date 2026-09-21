@@ -88,7 +88,32 @@
                         <p class="text-sm text-[#4B5F5A] italic">Belum ada background</p>
                     @endif
                 </div>
+                <div>
+                    <label class="block mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-[#4B5F5A]">Background Membercard Digital</label>
+                    @if($brand->membercard_bg)
+                        <img src="{{ Storage::url($brand->membercard_bg) }}" alt="BG Membercard" class="h-32 w-52 object-cover rounded border border-[#DCE7E1] p-1 bg-gray-50 shadow-xs">
+                    @else
+                        <p class="text-sm text-[#4B5F5A] italic">Belum ada background kustom (menggunakan tema warna bawaan brand)</p>
+                    @endif
+                </div>
             </div>
+
+            <hr class="border-[#DCE7E1]">
+            <div>
+                <div class="mb-3">
+                    <h3 class="text-md font-bold text-[#1B3A34]">Preview Membercard Digital</h3>
+                    <p class="text-xs text-[#4B5F5A]">Pratinjau tampilan kartu anggota alumni untuk pemagang pada brand <strong>{{ $brand->name }}</strong>.</p>
+                </div>
+                <div class="p-6 rounded-xl bg-[#0f172a]/5 border border-[#DCE7E1] flex justify-center">
+                    <x-membercard :brand="$brand"
+                                  name="CONTOH NAMA LENGKAP"
+                                  :code="$brand->code . '24001'"
+                                  :angkatan="date('Y')"
+                                  instansi="Universitas / Institut Contoh"
+                                  divisi="Divisi Magang" />
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

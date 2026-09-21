@@ -97,6 +97,16 @@
                     <input type="file" name="webinar_certificate_bg" accept="image/*"
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-[8px] file:border-0 file:text-sm file:font-semibold file:bg-[#E8F5E9] file:text-[#2D8659] hover:file:bg-[#D4E8D6] transition">
                 </div>
+                <div>
+                    <label class="block mb-1.5 text-sm font-semibold text-[#1B3A34]">Background Membercard Digital</label>
+                    @if($brand->membercard_bg)
+                        <div class="mb-2"><img src="{{ Storage::url($brand->membercard_bg) }}" alt="BG Membercard" class="h-16 w-24 object-cover rounded-md border p-1 bg-gray-50 shadow-xs"></div>
+                    @endif
+                    <input type="file" name="membercard_bg" accept="image/*"
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-[8px] file:border-0 file:text-sm file:font-semibold file:bg-[#E8F5E9] file:text-[#2D8659] hover:file:bg-[#D4E8D6] transition">
+                    <p class="text-[11px] text-[#4B5F5A] mt-1">Rekomendasi rasio kartu 85.6 × 54 mm (~1.58:1, contoh: 1011 × 638 px). Biarkan kosong jika tidak ingin mengubah.</p>
+                    @error('membercard_bg') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-4 border-t border-[#DCE7E1]">

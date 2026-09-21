@@ -28,12 +28,14 @@ class BrandController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'internship_certificate_bg' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'webinar_certificate_bg' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'membercard_bg' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
             'signature' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $data = $request->except(['logo', 'internship_certificate_bg', 'webinar_certificate_bg', 'signature']);
+        $fileFields = ['logo', 'internship_certificate_bg', 'webinar_certificate_bg', 'membercard_bg', 'signature'];
+        $data = $request->except($fileFields);
 
-        foreach (['logo', 'internship_certificate_bg', 'webinar_certificate_bg', 'signature'] as $fileField) {
+        foreach ($fileFields as $fileField) {
             if ($request->hasFile($fileField)) {
                 $path = $request->file($fileField)->store('brands', 'public');
                 $data[$fileField] = $path;
@@ -63,12 +65,14 @@ class BrandController extends Controller
             'logo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'internship_certificate_bg' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'webinar_certificate_bg' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'membercard_bg' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
             'signature' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $data = $request->except(['logo', 'internship_certificate_bg', 'webinar_certificate_bg', 'signature']);
+        $fileFields = ['logo', 'internship_certificate_bg', 'webinar_certificate_bg', 'membercard_bg', 'signature'];
+        $data = $request->except($fileFields);
 
-        foreach (['logo', 'internship_certificate_bg', 'webinar_certificate_bg', 'signature'] as $fileField) {
+        foreach ($fileFields as $fileField) {
             if ($request->hasFile($fileField)) {
                 if ($brand->$fileField) {
                     Storage::disk('public')->delete($brand->$fileField);
@@ -85,7 +89,8 @@ class BrandController extends Controller
 
     public function destroy(Brand $brand)
     {
-        foreach (['logo', 'internship_certificate_bg', 'webinar_certificate_bg', 'signature'] as $fileField) {
+        $fileFields = ['logo', 'internship_certificate_bg', 'webinar_certificate_bg', 'membercard_bg', 'signature'];
+        foreach ($fileFields as $fileField) {
             if ($brand->$fileField) {
                 Storage::disk('public')->delete($brand->$fileField);
             }

@@ -29,4 +29,29 @@ class AlumniMembercard extends Model
     {
         return $this->belongsTo(InternshipRegistration::class, 'intern_id');
     }
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->intern?->fullname;
+    }
+
+    public function getCodeAttribute(): ?string
+    {
+        return $this->member_code;
+    }
+
+    public function getBrandAttribute(): ?string
+    {
+        return $this->intern?->brand;
+    }
+
+    public function getInstansiAttribute(): ?string
+    {
+        return $this->intern?->institution_name;
+    }
+
+    public function getAngkatanAttribute(): ?string
+    {
+        return $this->batch_year;
+    }
 }
