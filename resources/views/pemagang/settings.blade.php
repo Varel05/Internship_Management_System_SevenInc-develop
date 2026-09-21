@@ -6,164 +6,135 @@
 @section('content')
 
 <div class="max-w-2xl mx-auto">
-  <h2 class="text-lg font-semibold text-gray-800 mb-1">Pengaturan Akun</h2>
-  <p class="text-sm text-gray-500 mb-6">Kelola informasi profil dan keamanan akun Anda</p>
+  <div class="mb-6">
+    <h2 class="text-xl font-bold text-gray-800">Pengaturan Akun</h2>
+    <p class="text-sm text-gray-500">Kelola informasi akun dan keamanan login Anda</p>
+  </div>
 
-  <form action="{{ route('pemagang.settings.update') }}" method="POST" enctype="multipart/form-data">
+  @if(session('success'))
+    <div class="mb-5 flex items-center gap-3 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+      <i class="fas fa-check-circle text-green-600"></i>
+      <span>{{ session('success') }}</span>
+    </div>
+  @endif
+
+  @if($errors->any())
+    <div class="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+      <ul class="list-inside list-disc space-y-1">
+        @foreach($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
+
+  {{-- Pemberitahuan Pemisahan Data Pendaftaran vs Akun --}}
+  @if($user->internshipRegistration)
+    <div class="mb-5 flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50/80 p-4 text-xs text-blue-800">
+      <i class="fas fa-info-circle text-blue-500 text-sm mt-0.5 shrink-0"></i>
+      <div>
+        <p class="font-semibold text-blue-900 mb-0.5">Informasi Biodata Pemagang</p>
+        <p class="text-blue-700 leading-relaxed">
+          Halaman ini khusus untuk pengaturan kredensial akun pengguna (tabel users). Data biodata seperti nama lengkap, nomor HP, asal instansi, dan foto profil dikelola melalui form pendaftaran pemagang.
+        </p>
+      </div>
+    </div>
+  @endif
+
+  <form action="{{ route('pemagang.settings.update') }}" method="POST">
     @csrf
     @method('PUT')
 
-    {{-- ===== FOTO PROFIL ===== --}}
-    <div class="bg-white rounded-xl border border-gray-100 p-6 mb-5">
-      <p class="text-sm font-semibold text-gray-700 mb-4">Foto Profil</p>
-
-      <div class="flex items-center gap-5">
-        {{-- Preview foto --}}
-        <div class="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 border-2 border-gray-200 bg-gray-100 flex items-center justify-center"
-             style="width:80px;height:80px;min-width:80px;min-height:80px;"
-             id="photo-preview-container">
-          @if($user->profile_picture && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->profile_picture))
-            <img id="photo-preview"
-                 src="{{ asset('storage/' . $user->profile_picture) }}"
-                 alt="foto profil"
-                 class="w-full h-full object-cover">
-          @else
-            <div id="photo-initials"
-                 class="w-full h-full flex items-center justify-center text-white text-2xl font-bold"
-                 style="background-color:#1a5c38;">
-              {{ strtoupper(substr($user->name, 0, 2)) }}
-            </div>
-          @endif
+    {{-- ===== INFORMASI AKUN (TABEL USERS) ===== --}}
+    <div class="bg-white rounded-xl border border-gray-100 p-6 mb-5 shadow-sm">
+      <div class="flex items-center gap-4 mb-6 pb-5 border-b border-gray-100">
+        <div class="w-14 h-14 rounded-full flex items-center justify-center text-white text-lg font-bold flex-shrink-0"
+             style="background-color:#1a5c38;">
+          {{ strtoupper(substr($user->attributes['name'] ?? $user->name ?? 'P', 0, 2)) }}
         </div>
-
         <div>
-          <label for="profile_picture"
-                 class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
-            <i class="fas fa-upload text-xs"></i> Unggah Foto
-          </label>
-          <input type="file" id="profile_picture" name="profile_picture"
-                 accept="image/jpg,image/jpeg,image/png" class="hidden"
-                 onchange="previewPhoto(this)">
-          <p class="text-xs text-gray-400 mt-1.5">JPG atau PNG, maks. 2MB</p>
-          @error('profile_picture')
-            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
-          @enderror
+          <h3 class="font-semibold text-gray-800 text-base">{{ $user->attributes['name'] ?? $user->name ?? 'Pemagang' }}</h3>
+          <p class="text-xs text-gray-500">{{ $user->email }}</p>
+          <span class="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide bg-green-50 text-green-700 border border-green-200 uppercase">
+            {{ $user->role }}
+          </span>
         </div>
       </div>
-    </div>
 
-    {{-- ===== DATA DIRI ===== --}}
-    <div class="bg-white rounded-xl border border-gray-100 p-6 mb-5">
-      <p class="text-sm font-semibold text-gray-700 mb-4">Data Diri</p>
+      <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Kredensial Akun</p>
 
       <div class="space-y-4">
+        {{-- Username --}}
         <div>
-          <label class="block mb-1.5 text-sm font-medium text-gray-700">
-            Nama Lengkap
+          <label for="username" class="block mb-1.5 text-sm font-medium text-gray-700">
+            Username <span class="text-red-500">*</span>
           </label>
-          <div class="block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-500 select-none">
-            {{ $user->internshipRegistration->fullname ?? $user->name }}
-          </div>
-          <p class="mt-1 text-xs text-gray-400">Nama lengkap tidak dapat diubah. Hubungi admin jika ada kesalahan.</p>
+          <input type="text" id="username" name="username" required
+            value="{{ old('username', $user->attributes['name'] ?? $user->name) }}"
+            placeholder="Masukkan username Anda"
+            class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
+          @error('username')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+          <p class="mt-1 text-xs text-gray-400">Username digunakan untuk login ke sistem.</p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block mb-1.5 text-sm font-medium text-gray-700">
-              Email <span class="text-red-500">*</span>
-            </label>
-            <input type="email" name="email" required
-              value="{{ old('email', $user->email) }}"
-              class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
-            @error('email')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
-          </div>
-          <div>
-            <label class="block mb-1.5 text-sm font-medium text-gray-700">No. HP</label>
-            <input type="text" name="phone_number"
-              value="{{ old('phone_number', $user->internshipRegistration->phone_number ?? $user->phone_number) }}"
-              placeholder="08xxxxxxxxxx"
-              class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
-          </div>
+        {{-- Email --}}
+        <div>
+          <label for="email" class="block mb-1.5 text-sm font-medium text-gray-700">
+            Email <span class="text-red-500">*</span>
+          </label>
+          <input type="email" id="email" name="email" required
+            value="{{ old('email', $user->email) }}"
+            placeholder="email@contoh.com"
+            class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
+          @error('email')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
         </div>
       </div>
     </div>
 
     {{-- ===== GANTI PASSWORD ===== --}}
-    <div class="bg-white rounded-xl border border-gray-100 p-6 mb-6">
-      <p class="text-sm font-semibold text-gray-700 mb-1">Ganti Password</p>
+    <div class="bg-white rounded-xl border border-gray-100 p-6 mb-6 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Keamanan Password</p>
       <p class="text-xs text-gray-400 mb-4">Kosongkan jika tidak ingin mengganti password</p>
 
       <div class="space-y-4">
         <div>
-          <label class="block mb-1.5 text-sm font-medium text-gray-700">Password Baru</label>
-          <input type="password" name="password"
-            placeholder="Min. 8 karakter"
+          <label for="current_password" class="block mb-1.5 text-sm font-medium text-gray-700">Password Saat Ini</label>
+          <input type="password" id="current_password" name="current_password"
+            placeholder="Masukkan password saat ini"
             class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
-          @error('password')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+          @error('current_password')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
         </div>
-        <div>
-          <label class="block mb-1.5 text-sm font-medium text-gray-700">Konfirmasi Password Baru</label>
-          <input type="password" name="password_confirmation"
-            placeholder="Ulangi password baru"
-            class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label for="password" class="block mb-1.5 text-sm font-medium text-gray-700">Password Baru</label>
+            <input type="password" id="password" name="password"
+              placeholder="Min. 8 karakter"
+              class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
+            @error('password')<p class="text-xs text-red-500 mt-1">{{ $message }}</p>@enderror
+          </div>
+          <div>
+            <label for="password_confirmation" class="block mb-1.5 text-sm font-medium text-gray-700">Konfirmasi Password Baru</label>
+            <input type="password" id="password_confirmation" name="password_confirmation"
+              placeholder="Ulangi password baru"
+              class="block w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500">
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-3">
+      <a href="{{ route('pemagang.dashboard') }}"
+         class="px-5 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+        Batal
+      </a>
       <button type="submit"
-        class="px-6 py-2.5 text-sm font-semibold text-white rounded-lg"
+        class="px-6 py-2.5 text-sm font-semibold text-white rounded-lg transition hover:opacity-90"
         style="background-color:#1a5c38;">
         Simpan Perubahan
       </button>
     </div>
   </form>
 </div>
-
-@push('scripts')
-<script>
-  function previewPhoto(input) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const container = document.getElementById('photo-preview-container');
-        container.innerHTML = `<img src="${e.target.result}"
-          alt="preview"
-          style="width:100%;height:100%;object-fit:cover;border-radius:9999px;">`;
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  // Validasi real-time No. HP
-  document.addEventListener('DOMContentLoaded', function() {
-    const phoneInput = document.querySelector('input[name="phone_number"]');
-    if (!phoneInput) return;
-
-    const msg = document.createElement('p');
-    msg.className = 'text-xs text-red-500 mt-1 hidden';
-    msg.textContent = '⚠ No. HP hanya boleh berisi angka (contoh: 08123456789)';
-    phoneInput.parentNode.appendChild(msg);
-
-    phoneInput.addEventListener('input', function() {
-      const hasLetter = /[a-zA-Z]/.test(this.value);
-      if (hasLetter) {
-        this.classList.add('border-red-400');
-        msg.classList.remove('hidden');
-      } else {
-        this.classList.remove('border-red-400');
-        msg.classList.add('hidden');
-      }
-    });
-
-    phoneInput.addEventListener('paste', function(e) {
-      const pasted = (e.clipboardData || window.clipboardData).getData('text');
-      if (/[a-zA-Z]/.test(pasted)) {
-        e.preventDefault();
-      }
-    });
-  });
-</script>
-@endpush
 
 @endsection
