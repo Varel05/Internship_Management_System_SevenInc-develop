@@ -58,6 +58,53 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
+    // Menampilkan form tambah pengguna
+    public function create()
+    {
+        return view('admin.users.create');
+    }
+
+    // Menyimpan pengguna baru
+    public function store(Request $request)
+    {
+        if (auth()->user()->role !== 'admin') {
+            return redirect()->route('admin.dashboard.index')->with('error', 'Unauthorized access');
+        }
+
+        $username = $request->input('name') ?? $request->input('username');
+        $request->merge([
+            'name' => $username,
+            'role' => 'admin',
+        ]);
+
+        $validated = $request->validate([
+            'name'                  => ['required', 'string', 'max:150', 'unique:users,name'],
+            'email'                 => ['required', 'email', 'max:150', 'unique:users,email'],
+            'password'              => ['required', 'string', 'min:8', 'confirmed'],
+            'role'                  => ['nullable', 'string', 'in:admin'],
+        ], [
+            'name.required'         => 'Username wajib diisi.',
+            'name.unique'           => 'Username sudah digunakan, silakan pilih username lain.',
+            'name.max'              => 'Username maksimal 150 karakter.',
+            'email.required'        => 'Email wajib diisi.',
+            'email.email'           => 'Format email tidak valid.',
+            'email.unique'          => 'Email sudah terdaftar.',
+            'password.required'     => 'Password wajib diisi.',
+            'password.min'          => 'Password minimal 8 karakter.',
+            'password.confirmed'    => 'Konfirmasi password tidak cocok.',
+        ]);
+
+        $user = User::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'     => 'admin',
+        ]);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Admin baru {$user->name} berhasil ditambahkan.");
+    }
+
     // Menampilkan detail pengguna
     public function show($id)
     {

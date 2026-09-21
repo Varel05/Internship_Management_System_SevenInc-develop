@@ -79,16 +79,114 @@
     </div>
 </div>
 
+{{-- Modal Tambah Admin Baru --}}
+<div id="addUserModal" class="fixed inset-0 z-[110] {{ $errors->hasBag('default') && old('_is_add_user') ? '' : 'hidden' }}">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onclick="closeAddUserModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="w-full max-w-lg rounded-[16px] bg-white shadow-xl overflow-hidden">
+            <div class="flex items-center justify-between border-b border-[#DCE7E1] px-6 py-4">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-[#E8F5E9] text-[#1F5F3F]">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-[16px] font-bold text-[#1B3A34]">Tambah Admin Baru</h3>
+                        <p class="text-[12px] text-[#4B5F5A]">Khusus untuk menambahkan akun dengan hak akses Admin</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeAddUserModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <form action="{{ route('admin.users.store') }}" method="POST" class="p-6">
+                @csrf
+                <input type="hidden" name="_is_add_user" value="1">
+                <input type="hidden" name="role" value="admin">
+
+                <div class="space-y-4">
+                    {{-- Username --}}
+                    <div>
+                        <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                            Username <span class="text-[#D32F2F]">*</span>
+                        </label>
+                        <input type="text" name="name" required value="{{ old('name') }}"
+                            placeholder="Contoh: admin_utama"
+                            class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                        @error('name')
+                            <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Email --}}
+                    <div>
+                        <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                            Email <span class="text-[#D32F2F]">*</span>
+                        </label>
+                        <input type="email" name="email" required value="{{ old('email') }}"
+                            placeholder="Contoh: admin@seveninc.com"
+                            class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                        @error('email')
+                            <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Password & Konfirmasi --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                                Password <span class="text-[#D32F2F]">*</span>
+                            </label>
+                            <input type="password" name="password" required placeholder="Min. 8 karakter"
+                                class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                            @error('password')
+                                <p class="mt-1 text-[11px] text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label class="mb-1.5 block text-[12.5px] font-semibold text-[#1B3A34]">
+                                Konfirmasi Password <span class="text-[#D32F2F]">*</span>
+                            </label>
+                            <input type="password" name="password_confirmation" required placeholder="Ulangi password"
+                                class="w-full rounded-[8px] border border-[#DCE7E1] bg-[#F4F8F6] px-3 py-2.5 text-[13px] text-[#1B3A34] outline-none focus:border-[#2D8659] transition">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3 border-t border-[#DCE7E1] pt-4">
+                    <button type="button" onclick="closeAddUserModal()"
+                        class="rounded-[9px] border border-[#DCE7E1] bg-white px-4 py-2 text-sm font-semibold text-[#1B3A34] hover:bg-[#F4F8F6]">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="rounded-[9px] bg-[#2D8659] px-5 py-2 text-sm font-semibold text-white hover:bg-[#1F5F3F] transition shadow-sm">
+                        Simpan Admin
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Toast --}}
 <div id="toastStack" class="fixed bottom-5 right-5 z-[200] flex flex-col gap-2"></div>
 
 <div class="min-h-screen bg-[#F4F8F6] p-4 sm:p-6 lg:p-7">
 
     {{-- Header --}}
-    <div class="mb-6">
-        <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2D8659]">Manajemen Pengguna</p>
-        <h1 class="text-2xl font-extrabold tracking-tight text-[#1B3A34] sm:text-[28px]">Semua Pengguna</h1>
-        <p class="mt-1 text-sm text-[#4B5F5A]">Kelola akun pengguna, role, dan status aktivitas dalam sistem.</p>
+    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <p class="mb-1 text-[11px] font-bold uppercase tracking-[0.08em] text-[#2D8659]">Manajemen Pengguna</p>
+            <h1 class="text-2xl font-extrabold tracking-tight text-[#1B3A34] sm:text-[28px]">Semua Pengguna</h1>
+            <p class="mt-1 text-sm text-[#4B5F5A]">Kelola akun pengguna, role, dan status aktivitas dalam sistem.</p>
+        </div>
+        <button type="button" onclick="openAddUserModal()"
+            class="flex items-center gap-2 rounded-[9px] bg-[#2D8659] px-4 py-2 text-[13px] font-semibold text-white hover:bg-[#1F5F3F] transition shadow-sm">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Tambah Admin Baru
+        </button>
     </div>
 
     @if(session('success'))
@@ -311,6 +409,14 @@
 </div>
 
 <script>
+// ── Add User modal ────────────────────────────────────────────────────────────
+function openAddUserModal() {
+    document.getElementById('addUserModal').classList.remove('hidden');
+}
+function closeAddUserModal() {
+    document.getElementById('addUserModal').classList.add('hidden');
+}
+
 // ── Delete modal ──────────────────────────────────────────────────────────────
 function openDeleteModal(action, name) {
     document.getElementById('deleteUserName').textContent = name;
