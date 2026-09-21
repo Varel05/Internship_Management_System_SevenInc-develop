@@ -36,12 +36,23 @@
       <form action="{{ route('user.register.submit') }}" method="POST" class="space-y-4">
         @csrf
 
-
+        <!-- Username -->
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-800 dark:text-gray-200">Username</label>
+          <input type="text" id="username" name="username" required autocomplete="username"
+                 value="{{ old('username') }}"
+                 placeholder="johndoe"
+                 class="mt-1 w-full px-4 py-2 rounded-lg border
+                        bg-white text-gray-900 placeholder-gray-400
+                        border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                        dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:border-gray-700 dark:focus:ring-primary-400 dark:focus:border-primary-400"/>
+        </div>
 
         <!-- Email -->
         <div>
           <label for="email" class="block text-sm font-medium text-gray-800 dark:text-gray-200">Email</label>
-          <input type="email" id="email" name="email" required autocomplete="username"
+          <input type="email" id="email" name="email" required autocomplete="email"
+                 value="{{ old('email') }}"
                  placeholder="you@example.com"
                  class="mt-1 w-full px-4 py-2 rounded-lg border
                         bg-white text-gray-900 placeholder-gray-400

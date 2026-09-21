@@ -26,11 +26,23 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
+            'username' => ['required', 'string', 'max:150', 'unique:users,name'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ], [
+            'username.required' => 'Username wajib diisi.',
+            'username.unique' => 'Username sudah digunakan, silakan pilih username lain.',
+            'username.max' => 'Username maksimal 150 karakter.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah terdaftar.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
         $user = User::create([
+            'name' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'user',
@@ -62,18 +74,45 @@ class AuthController extends Controller
 
 
     /**
-     * Proses login admin
+     * Proses login (admin/user/pemagang via email atau username)
      */
     public function login(Request $request)
     {
+        // Mendukung input 'login', 'email', atau 'username'
+        $loginInput = $request->input('login') ?? $request->input('email') ?? $request->input('username');
+        $request->merge(['login' => $loginInput]);
+
         // Validasi kredensial login
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
+        $request->validate([
+            'login' => ['required', 'string'],
             'password' => ['required'],
+        ], [
+            'login.required' => 'Email atau username wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
         ]);
 
-        // Proses login menggunakan kredensial
-        if (auth()->attempt($credentials, $request->boolean('remember'))) {
+        // Cek apakah input berupa format email atau username (kolom 'name')
+        $fieldType = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+
+        $credentials = [
+            $fieldType => $loginInput,
+            'password' => $request->password,
+        ];
+
+        $remember = $request->boolean('remember');
+        $attempt = auth()->attempt($credentials, $remember);
+
+        // Fallback jika tidak ditemukan pada fieldType pertama (misal username berformat mirip email atau sebaliknya)
+        if (!$attempt) {
+            $fallbackField = ($fieldType === 'email') ? 'name' : 'email';
+            $attempt = auth()->attempt([
+                $fallbackField => $loginInput,
+                'password' => $request->password,
+            ], $remember);
+        }
+
+        // Proses jika login berhasil
+        if ($attempt) {
             // Regenerasi session untuk keamanan
             $request->session()->regenerate();
 
@@ -86,7 +125,7 @@ class AuthController extends Controller
                 $request->session()->regenerateToken();
                 return back()
                     ->with('error', 'Akun Anda telah dinonaktifkan. Hubungi admin untuk informasi lebih lanjut.')
-                    ->onlyInput('email');
+                    ->withInput($request->only('login', 'email', 'username'));
             }
 
             // Admin → admin dashboard
@@ -99,7 +138,9 @@ class AuthController extends Controller
         }
 
         // Jika login gagal
-        return back()->with('error', 'Email atau password salah!')->onlyInput('email');
+        return back()
+            ->with('error', 'Email/Username atau password salah!')
+            ->withInput($request->only('login', 'email', 'username'));
     }
 
 
