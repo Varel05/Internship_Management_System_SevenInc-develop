@@ -327,24 +327,29 @@ class RegistrationController extends Controller
 
     private function submitRules(): array
     {
-        // Submit: field utama wajib diisi
+        // Submit: hanya field terkait Data Diri, Data Mahasiswa, dan Data Magang yang wajib diisi.
+        // Berkas (surat pengantar, CV/portofolio, foto), keahlian, kemampuan bahasa inggris, dll bersifat opsional.
         return array_merge($this->draftRules(), [
+            // Data Diri
             'fullname'           => 'required|string|max:255',
             'born_date'          => 'required|string|max:255',
-            'student_id'         => 'required|string|max:50',
-            'email'              => 'required|string|max:255',
             'gender'             => 'required|string|max:50',
-            'phone_number'       => 'required|regex:/^[0-9]{10,15}$/',
-            'institution_name'   => 'required|string|max:255',
-            'study_program'      => 'required|string|max:255',
-            'faculty'            => 'required|string|max:255',
             'current_city'       => 'required|string|max:255',
-            'internship_reason'  => 'required|string',
-            'internship_type'    => 'required|string|max:50',
-            'internship_arrangement' => 'required|string|max:50',
+            'email'              => 'required|string|max:255',
+            'phone_number'       => 'required|regex:/^[0-9]{10,15}$/',
+
+            // Data Mahasiswa
             'current_status'     => 'required|string|max:50',
-            'english_book_ability'   => 'required|string|max:50',
+            'student_id'         => 'required|string|max:50',
+            'institution_name'   => 'required|string|max:255',
+            'faculty'            => 'required|string|max:255',
+            'study_program'      => 'required|string|max:255',
+
+            // Data Magang
             'internship_interest'    => 'required|string|max:255',
+            'internship_type'        => 'required|string|max:50',
+            'internship_arrangement' => 'nullable|string|max:50',
+            'internship_reason'      => 'required|string',
         ]);
     }
 
